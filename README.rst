@@ -45,7 +45,75 @@
    :target: https://pypi.org/project/python-mimeogram/
 
 
-.. todo:: Provide content.
+What and Why
+===============================================================================
+
+Exchange hierarchical file collections with Large Language Models.
+
+Motivation
+-------------------------------------------------------------------------------
+
+Cost and Efficiency
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Cost optimization through GUI-based LLM services vs API billing
+* Support for batch operations instead of file-by-file interactions
+
+Technical Benefits
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Preserves hierarchical directory structure
+* Version control friendly
+* Supports async workflows
+* Enables automation through text processing
+
+Flexibility and Accessibility
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* IDE and platform agnostic
+* No premium subscriptions required
+* Works with LLM GUIs lacking project functionality
+* Can be used by CLIs and GUIs and passed directly via API
+
+Limitations and Alternatives
+-------------------------------------------------------------------------------
+
+* LLMs must be prompted to understand and use mimeograms
+* Manual refresh needed (no automatic sync)
+* Cannot retract stale content from conversation history in provider GUIs
+* Consider dedicated tools (e.g., Cursor) for tighter collaboration
+
+Comparison
+----------
+
++---------------------+-------------+------------+-------------+---------------+
+| Feature             | Mimeograms  | Projects   | Direct API  | Specialized   |
+|                     |             | (Web) [1]_ | Integration | IDEs [2]_     |
++=====================+=============+============+=============+===============+
+| Cost Model          | Varies [3]_ | Flat rate  | Usage-based | Subscription  |
++---------------------+-------------+------------+-------------+---------------+
+| Directory Structure | Yes         | No         | Yes [4]_    | Yes           |
++---------------------+-------------+------------+-------------+---------------+
+| Real-time Updates   | No          | No         | Yes [4]_    | Yes           |
++---------------------+-------------+------------+-------------+---------------+
+| IDE Integration     | Any         | Web only   | N/A         | N/A           |
++---------------------+-------------+------------+-------------+---------------+
+| Setup Required      | CLI tool    | None       | SDK/Auth    | Full install  |
++---------------------+-------------+------------+-------------+---------------+
+| Version Control     | Yes         | No         | Yes         | Yes           |
++---------------------+-------------+------------+-------------+---------------+
+| Platform Support    | Universal   | Web        | Universal   | Limited       |
++---------------------+-------------+------------+-------------+---------------+
+| Automation Support  | Yes         | No         | Yes         | Varies        |
++---------------------+-------------+------------+-------------+---------------+
+
+.. [1] ChatGPT and Claude.ai subscription feature
+.. [2] `Cursor <https://www.cursor.com/>`_, etc...
+.. [3] Flat rate for GUI, usage-based for API
+.. [4] Requires custom implementation
+
+Notes:
+- "Direct API Integration" refers to custom applications providing I/O tools
+  for LLMs to use via APIs, such as the Anthropic or OpenAI API
+- Cost differences can be significant at scale
+- Real-time updates in specialized IDEs may require premium features
 
 
 `More Flair <https://www.imdb.com/title/tt0151804/characters/nm0431918>`_

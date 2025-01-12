@@ -1,0 +1,47 @@
+I'll create a mimeogram with a few different types of content to test both the parser and CLI.
+
+
+
+Here's a test mimeogram:
+
+This text should be ignored by the parser as it appears before the first boundary.
+
+--====MIMEOGRAM_2468ace0123456789abcdef0123456789====
+Content-Location: mimeogram://editor-message
+Content-Type: text/plain; charset=utf-8
+
+This is a test mimeogram containing multiple parts with different content types.
+Testing the following cases:
+1. Text before boundary
+2. Missing blank line after headers (in last part)
+3. Different content types
+4. Multiple parts
+--====MIMEOGRAM_2468ace0123456789abcdef0123456789====
+Content-Location: test/hello.py
+Content-Type: text/x-python; charset=utf-8
+
+def hello():
+    print("Hello, World!")
+
+if __name__ == "__main__":
+    hello()
+--====MIMEOGRAM_2468ace0123456789abcdef0123456789====
+Content-Location: test/config.json
+Content-Type: application/json; charset=utf-8
+
+{
+    "name": "test-config",
+    "version": "1.0.0",
+    "description": "Test configuration file"
+}
+--====MIMEOGRAM_2468ace0123456789abcdef0123456789====
+Content-Location: test/README.md
+Content-Type: text/markdown; charset=utf-8
+This is an intentionally malformed part with no blank line after headers
+# Test README
+
+This is a test readme file. The part above this one has no blank line after the headers,
+which should be handled gracefully by the parser with a warning.
+--====MIMEOGRAM_2468ace0123456789abcdef0123456789====--
+
+You can save this to a file or use it directly to test both the parser and the new CLI functionality. Would you like me to explain the specific test cases I've included, or would you prefer to test it first and then discuss what we find?

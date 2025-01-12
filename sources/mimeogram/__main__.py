@@ -18,31 +18,16 @@
 #============================================================================#
 
 
-''' Family of exceptions for package API.
+''' Entry point for python -m mimeogram '''
 
-    * ``Omniexception``: Base for all package exceptions
-    * ``Omnierror``: Base for all package errors
-'''
 
+from __future__ import annotations
 
 from . import __
+from .cli import main
 
 
-class Omniexception( BaseException ):
-    ''' Base for all exceptions raised by package API. '''
-    # TODO: Class and instance attribute concealment and immutability.
-
-    _attribute_visibility_includes_: __.cabc.Collection[ str ] = (
-        frozenset( ( '__cause__', '__context__', ) ) )
-
-
-class Omnierror( Omniexception, Exception ):
-    ''' Base for error exceptions raised by package API. '''
-
-
-class MimeogramError( Omnierror ):
-    ''' Base for mimeogram-specific errors. '''
-
-
-class EmptyMimeogramError( MimeogramError ):
-    ''' Attempt to create an empty mimeogram. '''
+if __name__ == '__main__':
+    import asyncio
+    import sys
+    sys.exit(asyncio.run(main()))

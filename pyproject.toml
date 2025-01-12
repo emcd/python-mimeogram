@@ -12,6 +12,11 @@ license = 'Apache-2.0'
 readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
 requires-python = '>= 3.10'
 dependencies = [
+  'aiofiles',
+  'gitignorefile',
+  'httpx',
+  'pyperclip',
+  'python-magic',
   'typing-extensions',
 ]
 classifiers = [ # https://pypi.org/classifiers
