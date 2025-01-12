@@ -1,0 +1,471 @@
+[build-system]
+requires = [
+  'hatchling',
+]
+build-backend = 'hatchling.build'
+
+[project]
+name = 'python-mimeogram'
+description = 'Exchange of MIME bundles with LLMs.'
+dynamic = [ 'version' ]
+license = 'Apache-2.0'
+readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
+requires-python = '>= 3.10'
+dependencies = [
+  'typing-extensions',
+]
+classifiers = [ # https://pypi.org/classifiers
+  'Development Status :: 3 - Alpha',
+  #'Intended Audience :: Developers',
+  'License :: OSI Approved :: Apache Software License',
+  'Programming Language :: Python :: 3 :: Only',
+  'Programming Language :: Python :: 3.10',
+  'Programming Language :: Python :: 3.11',
+  'Programming Language :: Python :: 3.12',
+  'Programming Language :: Python :: 3.13',
+  'Programming Language :: Python :: Implementation :: CPython',
+  'Programming Language :: Python :: Implementation :: PyPy',
+  #'Topic :: Software Development',
+  # TODO: Add classifiers as appropriate.
+]
+keywords = [ ] # TODO: Add keywords.
+[[project.authors]]
+name = 'Eric McDonald'
+email = 'emcd@users.noreply.github.com'
+[project.urls]
+'Homepage' = 'https://github.com/emcd/python-mimeogram'
+'Documentation' = 'https://emcd.github.io/python-mimeogram'
+'Download' = 'https://pypi.org/project/python-mimeogram/#files'
+'Source Code' = 'https://github.com/emcd/python-mimeogram'
+'Issue Tracker' = 'https://github.com/emcd/python-mimeogram/issues'
+
+[tool.SELF]
+year-of-origin = 2025
+
+[tool.bandit]
+exclude_dirs = [ 'tests' ]
+
+# https://coverage.readthedocs.io/en/latest/config.html
+[tool.coverage.run]
+branch = true
+command_line = '-m pytest' # TODO? '--fail-under'
+data_file = '.auxiliary/caches/pytest/coverage.sqlite3'
+parallel = true
+source = [ 'sources', 'tests' ]
+[tool.coverage.html]
+directory = '.auxiliary/artifacts/coverage-pytest'
+[tool.coverage.xml]
+output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
+
+# https://hatch.pypa.io/latest/config/metadata/
+[tool.hatch.build]
+directory = '.auxiliary/artifacts/hatch-build'
+[tool.hatch.build.targets.sdist]
+only-include = [ 'sources/mimeogram' ]
+strict-naming = false
+[tool.hatch.build.targets.wheel]
+only-include = [ 'sources/mimeogram' ]
+strict-naming = false
+[tool.hatch.build.targets.wheel.sources]
+'sources/mimeogram' = 'mimeogram'
+[tool.hatch.envs.default]
+python = '3.10'
+[tool.hatch.envs.develop]
+description = ''' Development environment. '''
+dependencies = [
+  'Jinja2',
+  'bandit',
+  'coverage[toml]',
+  'furo',
+  'icecream',
+  'packaging',
+  'pre-commit',
+  'pylint',
+  'pylint-per-file-ignores',
+  'pyright',
+  'pytest',
+  'ruff',
+  'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
+  'sphinx',
+  'sphinx-copybutton',
+  'sphinx-inline-tabs',
+  'towncrier',
+  'tryceratops',
+  'yapf',
+]
+post-install-commands = [
+]
+[tool.hatch.envs.develop.env-vars]
+PYTHONUNBUFFERED = 'TRUE' # TODO: Only for coverage/pytest.
+[tool.hatch.envs.develop.scripts]
+docsgen = [
+  '''sphinx-build -E -b doctest -d .auxiliary/caches/sphinx \
+     documentation/sphinx .auxiliary/artifacts/sphinx-doctest''',
+  '''sphinx-build -E -b linkcheck -d .auxiliary/caches/sphinx \
+     documentation/sphinx .auxiliary/artifacts/sphinx-linkcheck''',
+  '''sphinx-build -a -d .auxiliary/caches/sphinx \
+     documentation/sphinx .auxiliary/artifacts/sphinx-html''',
+]
+linters = [
+  '''ruff check --quiet sources documentation tests''',
+  '''bandit --configfile pyproject.toml --quiet --recursive sources''',
+  '''tryceratops sources''',
+  '''pyright sources''',
+  '''pylint --recursive yes sources documentation tests''',
+  '''semgrep --config p/python --error --quiet --skip-unknown-extensions \
+     sources/mimeogram''',
+]
+packagers = [
+  'hatch build',
+  # TODO? Sign packages.
+]
+testers = [
+  'coverage erase',
+  'coverage run',
+  'coverage combine',
+  'coverage report --skip-covered',
+  'coverage html',
+  'coverage xml',
+]
+make-all = [
+  'linters',
+  'testers',
+  'packagers',
+  'docsgen',
+]
+[tool.hatch.envs.qa]
+description = ''' Quality assurance environment. '''
+template = 'develop'
+[[tool.hatch.envs.qa.matrix]]
+python = [
+    '3.10',
+    '3.11',
+    '3.12',
+    '3.13',
+    'pypy3.10',
+]
+[tool.hatch.version]
+path = 'sources/mimeogram/__init__.py'
+
+# https://pycqa.github.io/isort/docs/configuration/options.html
+# https://pycqa.github.io/isort/docs/configuration/multi_line_output_modes.html
+[tool.isort]
+atomic = true
+#color = false
+#combine_as = false
+#combine_straight_imports = false
+#extra_standard_library = [ ]
+follow_links = false
+#force_alphabetical_sort_within_sections = false
+#float_to_top = false
+honor_noqa = true
+#ignore_whitespace = false
+include_trailing_comma = true
+# known_OTHER: substitute OTHER
+known_first_party = [ 'mimeogram' ]
+#known_third_party = [ ]
+#line_length = 79
+#lines_after_imports = -1 # automatic
+#lines_before_imports = -1 # automatic
+multi_line_output = 3 # vertical hanging indent
+#quiet = false
+#sections = [ 'FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER' ]
+skip_gitignore = true
+split_on_trailing_comma = true
+#src_paths = [ ]
+#star_first = false
+#supported_extensions = [ 'pxd', 'py', 'pyi', 'pyx' ]
+use_parentheses = true
+
+
+
+# https://mypy.readthedocs.io/en/stable/config_file.html
+[tool.mypy]
+# Note: Due to repeated painful experiences with Mypy, we use Pyright instead.
+#       Pyright properly handles TypeVars, etc...
+cache_dir = '.auxiliary/caches/mypy'
+exclude = [ '.*' ]  # Ignore everything
+ignore_errors = true
+follow_imports = 'skip'
+pretty = true
+strict = false
+
+# https://pylint.pycqa.org/en/latest/user_guide/configuration/index.html
+[tool.pylint.main]
+fail-under = 10
+# TODO: jobs: Consider parallelization if output interleaving, dependency
+#             grouping, and similarities detection bugs have been fixed.
+load-plugins = [
+  # 'pylint.extensions.bad_builtin',
+  'pylint.extensions.broad_try_clause',
+  'pylint.extensions.check_elif',
+  'pylint.extensions.code_style',
+  'pylint.extensions.confusing_elif',
+  # 'pylint.extensions.consider_ternary_expression',
+  'pylint.extensions.dict_init_mutate',
+  'pylint.extensions.dunder',
+  'pylint.extensions.eq_without_hash',
+  'pylint.extensions.for_any_all',
+  'pylint.extensions.magic_value',
+  'pylint.extensions.mccabe',
+  'pylint.extensions.no_self_use',
+  'pylint.extensions.overlapping_exceptions',
+  'pylint.extensions.private_import',
+  'pylint.extensions.redefined_loop_name',
+  'pylint.extensions.redefined_variable_type',
+  # 'pylint.extensions.set_membership',
+  # 'pylint.extensions.while_used',
+  'pylint_per_file_ignores',
+]
+recursive = false
+suggestion-mode = true
+[tool.pylint.basic]
+const-rgx = '([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$'
+good-names = [ '_', '__' ]
+include-naming-hint = true
+[tool.pylint.classes]
+defining-attr-methods = [ '__init__', '__new__', '__post_init__' ]
+exclude-protected = [ ]
+valid-classmethod-first-arg = [ 'selfclass' ]
+valid-metaclass-classmethod-first-arg = [ 'clscls' ]
+[tool.pylint.design]
+# TODO: exclude-too-few-public-methods: Consider exception hierarchies.
+ignored-parents = [
+  'abc.ABCMeta',
+  'builtins.AttributeError',
+  'builtins.BaseException',
+  'builtins.Exception',
+  'builtins.KeyError',
+  'builtins.TypeError',
+  'builtins.ValueError',
+  'builtins.type',
+  # --- BEGIN: Injected by Copier ---
+  'mimeogram.exceptions.Omnierror',
+  'mimeogram.exceptions.Omniexception',
+  # --- END: Injected by Copier ---
+]
+max-args = 5
+max-attributes = 7
+max-bool-expr = 3
+max-branches = 12
+max-locals = 10
+max-parents = 3
+max-public-methods = 10
+max-returns = 6
+max-statements = 30
+min-public-methods = 1
+[tool.pylint.exceptions]
+overgeneral-exceptions = [
+  'builtins.BaseException',
+  'builtins.Exception',
+  # --- BEGIN: Injected by Copier ---
+  'mimeogram.exceptions.Omnierror',
+  'mimeogram.exceptions.Omniexception',
+  # --- END: Injected by Copier ---
+]
+[tool.pylint.format]
+ignore-long-lines = '''^(\s*<?https?://\S+>?|([^'"]*\s+)?#.*)$'''
+max-line-length = 79
+max-module-lines = 800
+single-line-class-stmt = true
+single-line-if-stmt = true
+[tool.pylint.imports]
+allow-wildcard-with-all = false
+# TODO: ext-import-graph
+# TODO: int-import-graph
+[tool.pylint.logging]
+logging-format-style = 'new'
+[tool.pylint.'messages control']
+disable = [
+  'bad-dunder-name',
+  'consider-using-assignment-expr',
+  'consider-using-f-string',
+  'duplicate-code',  # TODO: Re-enable after heuristic is fixed.
+  'fixme',
+  'f-string-without-interpolation',
+  'import-outside-toplevel',
+  'logging-fstring-interpolation',
+  'multiple-statements',
+  'reimported',
+  'too-few-public-methods',
+  'ungrouped-imports',
+  'use-dict-literal',
+  'wrong-import-order',
+  'wrong-import-position',
+]
+# TODO: Latest 'per-file-ignores' code may supports dicts and lists in addition to strings.
+per-file-ignores = '''
+  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,singleton-comparison,superfluous-parens,unexpected-keyword-arg
+  __init__\.py:unused-import
+''' # Note: Paths are regexes.
+[tool.pylint.refactoring]
+max-nested-blocks = 3
+never-returning-functions = [ 'sys.exit', 'argparse.parse_error' ]
+[tool.pylint.reports]
+msg-template = '{path} {line:3d},{column:2d} [{symbol}] {msg}'
+output-format = 'colorized'
+reports = false
+score = true
+[tool.pylint.similarities]
+ignore-comments = true
+ignore-docstrings = true
+ignore-imports = true
+ignore-signatures = true
+min-similarity-lines = 5
+[tool.pylint.spelling]
+max-spelling-suggestions = 4
+# TODO: spelling-dict
+[tool.pylint.typecheck]
+contextmanager-decorators = [ 'contextlib.contextmanager' ]
+ignored-checks-for-mixins = [
+  'attribute-defined-outside-init',
+  'no-member',
+  'not-async-context-manager',
+  'not-context-manager',
+]
+#ignored-classes = [ 'thread._local', '_thread._local', 'argparse.Namespace' ]
+ignore-mixin-members = false
+missing-member-hint = true
+missing-member-hint-distance = 1
+missing-member-max-choices = 2
+#mixin-class-rgx = '.*[Mm]ixin'
+#signature-mutators = [ ]
+[tool.pylint.variables]
+additional-builtins = [ 'ic' ]
+callbacks = [ ]
+dummy-variables-rgx = '''_$'''
+ignored-argument-names = '''_.*'''
+redefining-builtins-modules = [ 'builtins', 'io' ]
+
+# https://microsoft.github.io/pyright/#/configuration
+[tool.pyright]
+include = [ 'sources' ]
+reportConstantRedefinition = true
+reportInvalidTypeVarUse = true
+reportMatchNotExhaustive = true
+reportMissingImports = true
+reportMissingTypeStubs = true
+reportMissingTypeArgument = true
+reportPrivateUsage = true
+reportSelfClsParameterName = false
+reportUnknownArgumentType = true
+reportUnknownLambdaType = true
+reportUnknownMemberType = true
+reportUnknownParameterType = true
+reportUnknownVariableType = true
+reportUnnecessaryCast = true
+reportUnnecessaryComparison = true
+reportUntypedBaseClass = true
+reportUntypedClassDecorator = true
+reportUntypedFunctionDecorator = true
+reportUntypedNamedTuple = true
+reportUnusedExpression = true
+#strict = [ 'sources' ]
+stubPath = 'sources/mimeogram/_typedecls'
+
+[tool.pytest.ini_options]
+# Note: Cannot run doctests from Pytest, because Pytest tries to update '_'
+#       attribute on protected modules. Instead, we use Sphinx to run doctests.
+minversion = '8.1'
+addopts = '--capture=no --exitfirst -rfE'
+testpaths = [ 'tests', 'sources' ]
+python_files = [ '*.py' ]
+python_functions = [ 'test_[0-9][0-9][0-9]_*' ]
+cache_dir = '.auxiliary/caches/pytest'
+
+[tool.ruff]
+builtins = [ 'ic' ]
+cache-dir = '.auxiliary/caches/ruff'
+[tool.ruff.lint]
+ignore = [
+  'E701', # multiple-statements-on-one-line-colon
+]
+[tool.ruff.lint.per-file-ignores]
+'__init__.py' = [
+  'F401', # unused-import
+  'F403', # undefined-local-with-import-star
+  'F405', # undefined-local-with-import-star-usage
+]
+
+[tool.towncrier]
+directory = 'documentation/towncrier'
+filename = 'changelog.rst'
+package = 'mimeogram'
+package_dir = 'sources'
+[[tool.towncrier.type]]
+directory = 'bugfix'
+name = 'Bugfixes'
+showcontent = true
+[[tool.towncrier.type]]
+directory = 'docs'
+name = 'Documentation Improvements'
+showcontent = true
+[[tool.towncrier.type]]
+directory = 'feature'
+name = 'Features'
+showcontent = true
+[[tool.towncrier.type]]
+directory = 'platform'
+name = 'Supported Platforms'
+showcontent = true
+[[tool.towncrier.type]]
+directory = 'removal'
+name = 'Deprecations and Removals'
+showcontent = true
+
+# https://github.com/google/yapf?tab=readme-ov-file#knobs
+# yapf --style-help
+[tool.yapf]
+align_closing_bracket_with_visual_indent = false
+allow_multiline_dictionary_keys = true
+allow_multiline_lambdas = true
+#allow_split_before_default_or_named_assigns = true
+#allow_split_before_dict_value = true
+blank_line_before_module_docstring = true
+#blank_line_before_nested_class_or_def = true
+#blank_lines_around_top_level_definition = 2
+blank_lines_between_top_level_imports_and_variables = 2
+#coalesce_brackets = false
+#column_limit = 79
+#continuation_align_style = 'SPACE'
+#continuation_indent_width = 4
+dedent_closing_brackets = true
+#disable_ending_comma_heuristic = false
+#disable_split_list_with_comment = false
+#each_dict_entry_on_separate_line = true
+#force_multiline_dict = false
+indent_dictionary_value = true
+#indent_width = 4
+join_multiple_lines = true
+#space_between_ending_comma_and_closing_bracket = true
+space_inside_brackets = true
+spaces_around_default_or_named_assign = true
+spaces_around_dict_delimiters = true
+spaces_around_list_delimiters = true
+spaces_around_power_operator = true
+spaces_around_subscript_colon = true
+spaces_around_tuple_delimiters = true
+#spaces_before_comment = 2
+#split_all_comma_separated_values = false
+#split_all_top_level_comma_separated_values = false
+split_arguments_when_comma_terminated = true
+split_before_arithmetic_operator = true
+split_before_bitwise_operator = true
+split_before_closing_bracket = false
+#split_before_dict_set_generator = true
+split_before_dot = true
+split_before_expression_after_opening_paren = true
+split_before_first_argument = true
+split_before_logical_operator = true
+#split_before_named_assigns = true
+split_complex_comprehension = true
+split_penalty_after_opening_bracket = 100   # default: 300
+#split_penalty_after_unary_operator = 10000
+#split_penalty_arithmetic_operator = 300
+#split_penalty_before_if_expr = 0
+#split_penalty_bitwise_operator = 300
+#split_penalty_comprehension = 80
+#split_penalty_excess_character = 7000
+#split_penalty_for_added_line_split = 30
+#split_penalty_import_names = 0
+#split_penalty_logical_operator = 300

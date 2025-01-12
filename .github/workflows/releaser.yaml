@@ -1,0 +1,138 @@
+name: release
+
+on:
+  push:
+    tags: [ 'v[1-9]+.*' ]
+  workflow_dispatch:
+    inputs:
+      which-pypi:
+        description: 'Which Python package index?'
+        required: true
+        type: choice
+        options:
+          - pypi
+          - testpypi
+        default: testpypi
+
+env:
+  DISTRIBUTIONS_PATH: '.auxiliary/artifacts/hatch-build'
+
+jobs:
+
+  initialize:
+    uses: ./.github/workflows/core--initializer.yaml
+
+  test:
+    needs: [initialize]
+    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@v1.8.1
+    with:
+      matrix-exclusions: '${{ needs.initialize.outputs.matrix-exclusions }}'
+      platforms: '${{ needs.initialize.outputs.platforms }}'
+      python-descriptors: '${{ needs.initialize.outputs.python-descriptors }}'
+      python-versions: '${{ needs.initialize.outputs.python-versions }}'
+      
+
+  report:
+    needs: [initialize, test]
+    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@v1.8.1
+    with:
+      python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
+
+  docsgen:
+    needs: [initialize, report]
+    permissions:
+      contents: write
+      id-token: write
+      pages: write
+    uses: emcd/python-project-common/.github/workflows/xrepo--documenter.yaml@v1.8.1
+    with:
+      include-reports: true
+      python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
+
+  package:
+    needs: [initialize, docsgen]
+    uses: emcd/python-project-common/.github/workflows/xrepo--packager.yaml@v1.8.1
+    with:
+      artifacts-path: '.auxiliary/artifacts/hatch-build' # TODO: Use environment.
+      python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
+
+  publish-pypi:
+    if: ${{ inputs.which-pypi == 'testpypi' || startsWith(github.ref, 'refs/tags/') }}
+    needs: [initialize, package]
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.which-pypi || 'pypi' }}
+      url: ${{ fromJSON(needs.initialize.outputs.pypi-package-urls)[inputs.which-pypi || 'pypi'] }}mimeogram
+    permissions:
+      id-token: write  # Only needed for PyPI trusted publishing
+    steps:
+
+      - name: Restore Distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions--${{ github.run_id }}
+          path: ${{ env.DISTRIBUTIONS_PATH }}
+
+      - name: Publish Distributions
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: ${{ env.DISTRIBUTIONS_PATH }}
+          repository-url: ${{ fromJSON(needs.initialize.outputs.pypi-api-urls)[inputs.which-pypi || 'pypi'] }}
+          print-hash: true
+          skip-existing: ${{ inputs.which-pypi == 'testpypi' }}
+
+  publish-github:
+    if: ${{ startsWith(github.ref, 'refs/tags/') }}
+    needs: [initialize, package, publish-pypi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+
+      - name: Prepare Python
+        uses: emcd/python-project-common/.github/actions/python-hatch@v1.8.1
+        with:
+          python-version: ${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}
+
+      - name: Restore Distributions
+        uses: actions/download-artifact@v4
+        with:
+          name: python-package-distributions--${{ github.run_id }}
+          path: ${{ env.DISTRIBUTIONS_PATH }}
+
+      - name: Generate Integrity Check Values
+        run: |
+          set -eu -o pipefail
+          cd ${{ env.DISTRIBUTIONS_PATH }}
+          sha256sum *.tar.gz *.whl >SHA256SUMS.txt
+
+      - name: Sign Distributions
+        uses: sigstore/gh-action-sigstore-python@v3.0.0
+        with:
+          inputs: >-
+            ${{ env.DISTRIBUTIONS_PATH }}/SHA256SUMS.txt
+            ${{ env.DISTRIBUTIONS_PATH }}/*.tar.gz
+            ${{ env.DISTRIBUTIONS_PATH }}/*.whl
+
+      - name: Generate Release Notes
+        run: |
+          hatch --env develop run \
+            towncrier build --draft --version ${GITHUB_REF_NAME} \
+            > release-notes.rst
+
+      - name: Create Release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release create '${{ github.ref_name }}' \
+            --repo '${{ github.repository }}' \
+            --notes-file release-notes.rst
+
+      - name: Publish Artifacts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload '${{ github.ref_name }}' \
+            ${{ env.DISTRIBUTIONS_PATH }}/** \
+            --repo '${{ github.repository }}'

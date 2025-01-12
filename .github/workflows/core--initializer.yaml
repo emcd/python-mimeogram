@@ -1,0 +1,116 @@
+name: init
+
+on:
+  workflow_call:
+    outputs:
+      matrix-exclusions:
+        description: 'Array of excluded platform-Python version pairs in JSON format.'
+        value: '${{ jobs.define-constants.outputs.matrix-exclusions }}'
+      platforms:
+        description: 'Array of platforms in JSON format.'
+        value: '${{ jobs.define-constants.outputs.platforms }}'
+      pypi-api-urls:
+        description: 'Map of PyPI API endpoint names to URLS in JSON format.'
+        value: '${{ jobs.define-constants.outputs.pypi-api-urls }}'
+      pypi-package-urls:
+        description: 'Map of PyPI package endpoint names to URLS in JSON format.'
+        value: '${{ jobs.define-constants.outputs.pypi-package-urls }}'
+      python-descriptors:
+        description: 'Map of Python versions to specifications in JSON format.'
+        value: '${{ jobs.define-constants.outputs.python-descriptors }}'
+      python-versions:
+        description: 'Array of Python versions in JSON format.'
+        value: '${{ jobs.define-constants.outputs.python-versions }}'
+      rust-targets:
+        description: 'Map of platforms to supported Rust targets in JSON format.'
+        value: '${{ jobs.define-constants.outputs.rust-targets }}'
+
+jobs:
+
+  define-constants:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix-exclusions: '${{ steps.matrix-exclusions.outputs.items }}'
+      platforms: '${{ steps.platforms.outputs.platforms }}'
+      pypi-api-urls: '${{ steps.pypi-urls.outputs.apis }}'
+      pypi-package-urls: '${{ steps.pypi-urls.outputs.packages }}'
+      python-descriptors: '${{ steps.python-versions.outputs.specs }}'
+      python-versions: '${{ steps.python-versions.outputs.names }}'
+      rust-targets: '${{ steps.rust-targets.outputs.targets }}'
+    steps:
+
+      - name: Declare Platforms
+        id: platforms
+        run: |
+          set -eu
+          platforms="$(jq --compact-output <<EOF
+          [ "ubuntu-latest", "macos-latest", "windows-latest" ]
+          EOF
+          )"
+          echo "platforms=${platforms}" >>${GITHUB_OUTPUT}
+          cat ${GITHUB_OUTPUT}
+
+      - name: Declare Python Versions
+        id: python-versions
+        run: |
+          set -eu
+          python_descriptors="$(cat <<'EOF' | yq --output-format=json | jq --compact-output
+          "3.10":
+            hatch: "py3.10"
+          "3.11":
+            hatch: "py3.11"
+          "3.12":
+            hatch: "py3.12"
+          "3.13":
+            hatch: "py3.13"
+          "pypy3.10":
+            hatch: "pypy3.10"
+          EOF
+          )"
+          echo "specs=${python_descriptors}" >>${GITHUB_OUTPUT}
+          echo -n 'names=' >>${GITHUB_OUTPUT}
+          echo "${python_descriptors}" | jq --compact-output 'keys_unsorted' >>${GITHUB_OUTPUT}
+          cat ${GITHUB_OUTPUT}
+
+      - name: Declare Matrix Exclusions
+        id: matrix-exclusions
+        run: |
+          set -eu
+          # PyPy has slow I/O, even slower on Windows.
+          items="$(jq --compact-output <<EOF
+          [
+            {"platform": "windows-latest", "python-version": "pypy3.10"}
+          ]
+          EOF
+          )"
+          echo "items=${items}" >>${GITHUB_OUTPUT}
+          cat ${GITHUB_OUTPUT}
+
+      - name: Declare PyPI URLs
+        id: pypi-urls
+        run: |
+          set -eu
+          packages="$(jq --compact-output << EOF
+          {
+            "pypi": "https://pypi.org/p/",
+            "testpypi": "https://test.pypi.org/p/"
+          }
+          EOF
+          )"
+          echo "packages=${packages}" >>${GITHUB_OUTPUT}
+          apis="$(jq --compact-output << EOF
+          {
+            "pypi": "https://upload.pypi.org/legacy/",
+            "testpypi": "https://test.pypi.org/legacy/"
+          }
+          EOF
+          )"
+          echo "apis=${apis}" >>${GITHUB_OUTPUT}
+          cat ${GITHUB_OUTPUT}
+
+      - name: Define Rust Targets
+        id: rust-targets
+        run: |
+          set -eu
+          echo "targets=[]" >>${GITHUB_OUTPUT}
+          cat ${GITHUB_OUTPUT}

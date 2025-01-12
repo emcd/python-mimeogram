@@ -1,0 +1,27 @@
+# Changes here will be overwritten by Copier
+_commit: v1.8.1
+_src_path: gh:emcd/python-project-common
+author_email: emcd@users.noreply.github.com
+author_name: Eric McDonald
+description: Exchange of MIME bundles with LLMs.
+development_status: 3 - Alpha
+distribution_name: python-mimeogram
+enable_property_tests: false
+enable_publication: true
+enable_rust_extension: false
+gh_owner: emcd
+inject_docstring_utils: false
+inject_exceptions: true
+inject_foundations: true
+inject_immutables: false
+package_name: mimeogram
+project_name: python-mimeogram
+pypy_versions:
+- '3.10'
+python_version_min: '3.10'
+python_versions:
+- '3.10'
+- '3.11'
+- '3.12'
+- '3.13'
+year_of_origin: 2025

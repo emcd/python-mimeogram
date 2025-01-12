@@ -1,0 +1,123 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+
+default_install_hook_types: [ 'pre-commit', 'pre-push' ]
+
+repos:
+
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v5.0.0
+  hooks:
+  - id: check-added-large-files
+    name: 'Check: Large Files'
+  - id: check-case-conflict
+    name: 'Check: Filename Case Conflict'
+  - id: check-merge-conflict
+    name: 'Check: Merge Conflict Markers'
+  - id: check-symlinks
+    name: 'Check: Dangling Symlinks'
+  - id: check-vcs-permalinks
+    name: 'Check: VCS Permalinks'
+  - id: destroyed-symlinks
+    name: 'Check: Destroyed Symlinks'
+  - id: detect-private-key
+    name: 'Check: Detect Private Keys'
+  - id: mixed-line-ending
+    name: 'Check: Detect Mixed Line Endings'
+    args: [ '--fix', 'no' ]
+  - id: check-ast
+    name: 'Validate: Python Files'
+    fail_fast: true
+  - id: check-json
+    name: 'Validate: JSON Files'
+  - id: check-toml
+    name: 'Validate: TOML Files'
+  - id: check-yaml
+    name: 'Validate: YAML Files'
+  - id: check-docstring-first
+    name: 'Check: Docstring First (Python)'
+  - id: debug-statements
+    name: 'Check: Debug Statements (Python)'
+
+- repo: https://github.com/astral-sh/ruff-pre-commit
+  rev: v0.7.2
+  hooks:
+  - id: ruff
+    name: 'Lint: Ruff'
+    fail_fast: true
+
+- repo: https://github.com/PyCQA/bandit
+  rev: 1.7.10
+  hooks:
+  - id: bandit
+    name: 'Lint: Bandit'
+    args: [ '-c', 'pyproject.toml' ]
+    #stages: [ 'pre-push' ]
+    fail_fast: true
+    additional_dependencies: [ 'bandit[toml]' ]
+
+- repo: https://github.com/guilatrova/tryceratops
+  rev: v2.4.1
+  hooks:
+  - id: tryceratops
+    name: 'Lint: Tryceratops'
+    #stages: [ 'pre-push' ]
+    fail_fast: true
+
+- repo: https://github.com/semgrep/semgrep
+  rev: 'v1.89.0'
+  hooks:
+  - id: semgrep
+    name: 'Lint: Semgrep (Python)'
+    # https://semgrep.dev/explore
+    args: [ '--config', 'p/python', '--error', '--skip-unknown-extensions' ]
+    stages: [ 'pre-push' ]
+    fail_fast: true
+
+- repo: local
+  hooks:
+
+  - id: hatch-pyright
+    name: 'Lint: Pyright'
+    stages: [ 'pre-push' ]
+    fail_fast: true
+    language: system
+    always_run: true
+    pass_filenames: false
+    entry: 'hatch --env develop run pyright'
+
+  - id: hatch-pylint
+    name: 'Lint: Pylint'
+    stages: [ 'pre-push' ]
+    fail_fast: true
+    language: system
+    always_run: true
+    pass_filenames: false
+    entry: 'hatch --env develop run pylint --recursive=yes --reports=no --score=no sources tests'
+
+  - id: hatch-coverage
+    name: 'Coverage: Pytest'
+    stages: [ 'pre-push' ]
+    fail_fast: true
+    language: system
+    always_run: true
+    pass_filenames: false
+    entry: 'hatch --env develop run testers'
+
+  - id: document-python
+    name: 'Document (Python)'
+    stages: [ 'pre-push' ]
+    fail_fast: true
+    language: system
+    always_run: true
+    pass_filenames: false
+    entry: 'hatch --env develop run docsgen'
+
+  - id: package-python
+    name: 'Package (Python)'
+    stages: [ 'pre-push' ]
+    fail_fast: true
+    language: system
+    always_run: true
+    pass_filenames: false
+    entry: 'hatch --env develop run packagers'
