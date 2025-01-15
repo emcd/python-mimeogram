@@ -98,6 +98,8 @@ When working with mimeograms:
 1. Read the editor message first to understand context
 2. Examine file paths to understand project structure
 3. Process all parts as a cohesive unit
+4. Maintain the same format when responding with file changes
+5. Preserve original paths unless explicitly asked to change them
 
 Remember that mimeograms are designed to facilitate structured discussion about
 code and project organization while maintaining context across multiple files.

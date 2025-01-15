@@ -23,17 +23,14 @@
 
 from __future__ import annotations
 
-import enum
-from pathlib import Path
-
 from . import __
+from .parser import ParsedPart as _ParsedPart
 
 
-class UpdateError(Exception):
-    """Base class for update-related errors."""
+_scribe = __.produce_scribe(__name__)
 
 
-class Action(enum.Enum):
+class Action(__.enum.Enum):
     """Available actions for each part in interactive mode."""
     APPLY = 'apply'     # Write the part to filesystem
     DIFF = 'diff'       # Show changes
@@ -42,316 +39,253 @@ class Action(enum.Enum):
     VIEW = 'view'       # Display in pager
 
 
-class AtomicUpdater:
-    """Handles atomic file updates with rollback support."""
+async def write_file_atomically(
+    path: __.Path,
+    content: str,
+    mode: str = 'w',
+    encoding: str = 'utf-8'
+) -> None:
+    """Write content to file atomically."""
+    from .exceptions import WriteFailure
+
+    temp_path = path.with_suffix(f"{path.suffix}.tmp")
+    try:
+        async with __.aiofiles.open(temp_path, mode, encoding=encoding) as f:
+            await f.write(content)
+
+        __.os.replace(str(temp_path), str(path))
+    except Exception as exc:
+        raise WriteFailure(f"Failed to write {path}: {exc}") from exc
+    finally:
+        if temp_path.exists():
+            temp_path.unlink()
+
+
+async def _read_file_content(path: __.Path, encoding: str = 'utf-8') -> str:
+    """Read content from a file."""
+    from .exceptions import ReadFailure
+
+    try:
+        async with __.aiofiles.open(path, 'r', encoding=encoding) as f:
+            return await f.read()
+    except Exception as exc:
+        raise ReadFailure(f"Failed to read {path}: {exc}") from exc
+
+
+def _calculate_differences(
+    new_content: str,
+    current_content: __.typx.Optional[str],
+    target_path: __.Path
+) -> list[str]:
+    """Generate unified diff between contents."""
+    import difflib
+
+    from_lines = current_content.splitlines(keepends=True) if current_content else []
+    to_lines = new_content.splitlines(keepends=True)
+    from_file = str(target_path) if current_content else '/dev/null'
+    to_file = str(target_path)
+
+    return list(difflib.unified_diff(
+        from_lines,
+        to_lines,
+        fromfile=from_file,
+        tofile=to_file,
+        lineterm=''
+    ))
+
+
+async def display_differences(
+    part: _ParsedPart,
+    target: __.Path
+) -> None:
+    """Display differences between current content and target file."""
+    current_content = None
+    if target.exists():
+        current_content = await _read_file_content(target, part.charset)
+    diff_lines = _calculate_differences(
+        part.content,
+        current_content,
+        target
+    )
+    if not diff_lines:
+        print("No changes")
+        return
+    from .display import Pager
+    Pager.display_content( '\n'.join(diff_lines), suffix='.diff' )
+
+
+class Reverter:
+    """Backup and restore filesystem state."""
 
     def __init__(self):
-        self.backups = {}  # Maps paths to original content
-        self.updated = []  # Tracks successful updates in order
+        self.originals: dict[__.Path, str] = {}
+        self.updated: list[__.Path] = []
 
-    async def backup_file(self, path: Path) -> None:
-        """Create backup if file exists."""
+    async def save(self, path: __.Path) -> None:
+        """Save original file state if it exists."""
+        from .exceptions import ReadFailure
         if path.exists():
-            async with __.aiofiles.open(path, 'r', encoding='utf-8') as f:
-                self.backups[path] = await f.read()
+            try:
+                async with __.aiofiles.open(path, 'r', encoding='utf-8') as f:
+                    self.originals[path] = await f.read()
+            except Exception as exc:
+                raise ReadFailure(f"Failed to save original state of {path}: {exc}") from exc
 
-    async def write_file(
-        self,
-        path: Path,
-        content: str,
-        mode: str = 'w',
-        encoding: str = 'utf-8'
-    ) -> None:
-        """Write content to file atomically."""
-        temp_path = path.with_suffix(f"{path.suffix}.tmp")
-        try:
-            # Write to temp file first
-            async with __.aiofiles.open(temp_path, mode, encoding=encoding) as f:
-                await f.write(content)
-
-            # Use os.replace for atomic operation
-            import os
-            os.replace(str(temp_path), str(path))
-        finally:
-            # Clean up temp file if something went wrong
-            if temp_path.exists():
-                temp_path.unlink()
-
-    async def rollback(self) -> None:
-        """Restore files in reverse order of updates."""
-        import logging
-        logger = logging.getLogger(__name__)
-
+    async def restore(self) -> None:
+        """Restore files to their original states in reverse order."""
         for path in reversed(self.updated):
             try:
-                if path in self.backups:
-                    await self.write_file(path, self.backups[path])
+                if path in self.originals:
+                    await write_file_atomically(path, self.originals[path])
                 else:
                     path.unlink()
-            except Exception as e:
-                logger.error('Rollback failed for %s: %s', path, e)
+            except Exception as exc:
+                _scribe.error('Failed to restore %s: %s', path, exc)
 
 
-class Updater:
-    """Updates filesystem with mimeogram part contents."""
+class UserInteraction:
+    """Handle user interaction for updates."""
 
-    def __init__(self, *, interactive: bool = True):
-        self.interactive = interactive
-        self.atomic = AtomicUpdater()
-
-    def _get_path(
-        self,
-        location: str,
-        base_path: __.typx.Optional[Path] = None
-    ) -> Path:
-        """Get a path for a part location.
-
-        Args:
-            location: Part location (URL or path)
-            base_path: Optional base path for relative paths
-
-        Returns:
-            Path object (not resolved)
-
-        Raises:
-            UpdateError: If location is a URL or path is invalid
-        """
-        # Skip editor message parts
-        if location.startswith('mimeogram://'):
-            raise UpdateError(f'Cannot write special location: {location}')
-
-        # Handle relative vs absolute paths
-        path = Path(location)
-        if not path.is_absolute() and base_path is not None:
-            path = base_path / path
-
-        return path
-
-    async def _show_diff(self, part: ParsedPart, target: Path) -> None:
-        """Show differences between current content and target file.
-
-        Args:
-            part: Part being processed
-            target: Target path for this part
-        """
-        import difflib
-        import tempfile
-        import subprocess
-
-        # Prepare inputs for diff
-        from_lines = []
-        to_lines = part.content.splitlines(keepends=True)
-        from_file = '/dev/null'
-        to_file = str(target)
-
-        if target.exists():
-            try:
-                async with __.aiofiles.open(target, 'r', encoding=part.charset) as f:
-                    content = await f.read()
-                    from_lines = content.splitlines(keepends=True)
-                    from_file = str(target)
-            except Exception as e:
-                raise UpdateError(f"Failed to read existing file: {e}") from e
-
-        # Generate unified diff
-        diff_lines = list(difflib.unified_diff(
-            from_lines,
-            to_lines,
-            fromfile=from_file,
-            tofile=to_file,
-            lineterm=''
-        ))
-
-        if not diff_lines:
-            print("No changes")
-            return
-
-        # Show diff in pager
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.diff') as tmp:
-            tmp.writelines(line + '\n' for line in diff_lines)
-            tmp.flush()
-
-            # Try to use $PAGER, fall back to less or more
-            import os
-            pager = os.environ.get('PAGER', 'less')
-            if not pager:
-                pager = 'less'
-
-            try:
-                subprocess.run([pager, tmp.name], check=True)
-            except subprocess.CalledProcessError:
-                # If less fails, try more
-                if pager == 'less':
-                    subprocess.run(['more', tmp.name], check=True)
-            except FileNotFoundError:
-                # If no pager available, just print
-                print(''.join(diff_lines))
-                input("Press Enter to continue...")
-
-    async def _edit_content(self, part: ParsedPart) -> __.typx.Optional[str]:
-        """Edit part content in system editor.
-
-        Args:
-            part: Part to edit
-
-        Returns:
-            Modified content if edited, None if unchanged
-        """
-        from .editor import EditorInterface
+    async def edit_content(self, part: _ParsedPart) -> __.typx.Optional[str]:
+        """Edit part content in system editor."""
+        from .editor import read_message
+        from .exceptions import EditorFailure
 
         # Get suffix from location for proper syntax highlighting
-        suffix = Path(part.location).suffix or '.txt'
+        suffix = __.Path(part.location).suffix or '.txt'
 
         try:
-            edited = EditorInterface.read_message(part.content, suffix=suffix)
+            edited = read_message(part.content, suffix=suffix)
             if edited != part.content:
                 return edited
             return None
-        except Exception as e:
-            raise UpdateError(f"Failed to edit content: {e}") from e
+        except Exception as exc:
+            raise EditorFailure(f"Failed to edit content: {exc}") from exc
 
-    async def _view_content(self, part: ParsedPart) -> None:
-        """Display part content in pager.
+    async def view_content(self, part: _ParsedPart) -> None:
+        """Display part content in pager."""
+        from .display import Pager
+        suffix = __.Path(part.location).suffix or '.txt'
+        Pager.display_content(part.content, suffix=suffix)
 
-        Args:
-            part: Part to display
-        """
-        import tempfile
-        import subprocess
+    async def prompt_action(
+        self, part: _ParsedPart, target: __.Path
+    ) -> tuple[Action, str]:
+        """Prompt user for action on this part."""
+        from .exceptions import OperationCancelledFailure
 
-        # Create temp file for pager
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt') as tmp:
-            tmp.write(part.content)
-            tmp.flush()
-
-            # Try to use $PAGER, fall back to less or more
-            import os
-            pager = os.environ.get('PAGER', 'less')
-            if not pager:
-                pager = 'less'
-
-            try:
-                subprocess.run([pager, tmp.name], check=True)
-            except subprocess.CalledProcessError:
-                # If less fails, try more
-                if pager == 'less':
-                    subprocess.run(['more', tmp.name], check=True)
-            except FileNotFoundError:
-                # If no pager available, just print
-                print(part.content)
-                input("Press Enter to continue...")
-
-    async def _prompt_action(self, part: ParsedPart, target: Path) -> tuple[Action, str]:
-        """Prompt user for action on this part.
-
-        Args:
-            part: Part being processed
-            target: Target path for this part
-
-        Returns:
-            Tuple of (selected action, content to write)
-            Content will be None if action is IGNORE or unchanged after EDIT
-
-        Raises:
-            UpdateError: If user cancels with EOF or interrupt
-        """
         # Check if we can do interactive input
-        import sys
-        if not sys.stdin.isatty():
+        if not __.sys.stdin.isatty():
             # Default to APPLY if we can't prompt
             return Action.APPLY, part.content
 
         content = part.content
         while True:
-            # One-line status with shortcuts
-            print(f"{part.location:<30} [{len(content)} bytes] : (a)pply, (d)iff, (e)dit, (i)gnore, (v)iew", end='')
+            print(
+                f"{part.location:<30} [{len(content)} bytes] : "
+                "(a)pply, (d)iff, (e)dit, (i)gnore, (v)iew",
+                end=''
+            )
 
             try:
                 choice = input(" > ").strip().lower()
             except (EOFError, KeyboardInterrupt):
                 print()  # Add newline after ^C or ^D
-                raise UpdateError("User cancelled operation")
+                raise OperationCancelledFailure("User cancelled operation")
 
-            # Handle single-letter shortcuts
-            if choice in ('a', 'apply'):
-                return Action.APPLY, content
-            elif choice in ('d', 'diff'):
-                await self._show_diff(part, target)
-                continue  # Show prompt again after diff
-            elif choice in ('e', 'edit'):
-                edited = await self._edit_content(part)
-                if edited is not None:
-                    content = edited
-                continue  # Show prompt again after editing
-            elif choice in ('i', 'ignore'):
-                return Action.IGNORE, None
-            elif choice in ('v', 'view'):
-                await self._view_content(part)
-                continue  # Show prompt again after viewing
-            else:
-                print(f"Invalid choice: {choice}", end='')
-                continue
+            match choice:
+                case 'a' | 'apply':
+                    return Action.APPLY, content
+                case 'd' | 'diff':
+                    await display_differences(part, target)
+                case 'e' | 'edit':
+                    edited = await self.edit_content(part)
+                    if edited is not None:
+                        content = edited
+                case 'i' | 'ignore':
+                    return Action.IGNORE, None
+                case 'v' | 'view':
+                    await self.view_content(part)
+                case _:
+                    print(f"Invalid choice: {choice}")
+            continue
+
+
+class Updater:
+    """Update filesystem with mimeogram part contents."""
+
+    def __init__(
+        self,
+        *,
+        interactive: bool = True,
+        reverter: __.typx.Optional[Reverter] = None,
+        interaction: __.typx.Optional[UserInteraction] = None
+    ):
+        self.interactive = interactive
+        self.reverter = reverter or Reverter()
+        self.interaction = interaction or UserInteraction()
+
+    def _get_path(
+        self,
+        location: __.typx.Annotated[str, __.typx.Doc("Part location (URL or path)")],
+        base_path: __.typx.Annotated[
+            __.typx.Optional[__.Path],
+            __.typx.Doc("Base path for relative locations")
+        ] = None
+    ) -> __.Path:
+        """Resolve part location to filesystem path."""
+        from .exceptions import FileOperationFailure
+
+        if location.startswith('mimeogram://'):
+            raise FileOperationFailure(f'Cannot write special location: {location}')
+
+        path = __.Path(location)
+        if not path.is_absolute() and base_path is not None:
+            path = base_path / path
+
+        return path
+
+    async def _process_part(
+        self,
+        part: _ParsedPart,
+        base_path: __.typx.Optional[__.Path]
+    ) -> __.typx.Optional[__.Path]:
+        """Update filesystem from part content."""
+        from .exceptions import WriteFailure
+        if part.location.startswith('mimeogram://'):
+            return None
+        target = self._get_path(part.location, base_path)
+        if self.interactive:
+            action, content = await self.interaction.prompt_action(part, target)
+            if action == Action.IGNORE:
+                return None
+            if content is not None:
+                part.content = content
+        target.parent.mkdir(parents=True, exist_ok=True)
+        await self.reverter.save(target)
+        try:
+            await write_file_atomically(
+                target,
+                part.content,
+                encoding=part.charset
+            )
+        except WriteFailure:
+            await self.reverter.restore()
+            raise
+        self.reverter.updated.append(target)
+        return target
 
     async def update(
         self,
-        parts: __.cabc.Sequence[ParsedPart],
-        base_path: __.typx.Optional[Path] = None,
+        parts: __.cabc.Sequence[_ParsedPart],
+        base_path: __.typx.Optional[__.Path] = None,
         *,
         force: bool = False
     ) -> None:
-        """Update filesystem with content from parts.
-
-        Args:
-            parts: Sequence of parts to process
-            base_path: Optional base path for relative locations
-            force: Currently unused (will be used for protection checks)
-
-        Raises:
-            UpdateError: If update fails
-        """
-        import logging
-        logger = logging.getLogger(__name__)
-
-        success = False
+        """Update filesystem with content from parts."""
         try:
             for part in parts:
-                # Skip editor messages
-                if part.location.startswith('mimeogram://'):
-                    logger.debug('Skipping editor message: %s', part.location)
-                    continue
-
-                try:
-                    target = self._get_path(part.location, base_path)
-                except Exception as e:
-                    raise UpdateError(f'Invalid path {part.location}: {e}') from e
-
-                # In interactive mode, prompt for action
-                if self.interactive:
-                    action, content = await self._prompt_action(part, target)
-                    if action == Action.IGNORE:
-                        logger.debug('User chose to ignore part: %s', part.location)
-                        continue
-                    if content is not None:
-                        part.content = content
-
-                # Create parent directories
-                target.parent.mkdir(parents=True, exist_ok=True)
-
-                # Backup existing file
-                await self.atomic.backup_file(target)
-
-                # Write new content
-                logger.debug('Writing %d bytes to %s', len(part.content), target)
-                await self.atomic.write_file(
-                    target,
-                    part.content,
-                    encoding=part.charset
-                )
-                self.atomic.updated.append(target)
-
-            success = True
-
-        finally:
-            if not success:
-                logger.debug('Update failed, initiating rollback')
-                await self.atomic.rollback()
+                await self._process_part(part, base_path)
+        except Exception:
+            await self.reverter.restore()
+            raise

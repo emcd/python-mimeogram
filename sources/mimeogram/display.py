@@ -18,30 +18,39 @@
 #============================================================================#
 
 
-''' Common imports and type aliases used throughout the package. '''
-
-# pylint: disable=unused-import
-# ruff: noqa: F401
+''' System pager interaction. '''
 
 
-from __future__ import annotations
+from . import __
 
-import abc
-import asyncio
-import collections.abc as cabc
-import enum
-import os
-import sys
-import types
+class Pager:
+    """Interface to system pager."""
 
-from dataclasses import dataclass
-from logging import getLogger as produce_scribe
-from pathlib import Path
+    @staticmethod
+    def display_content(
+        content: str,
+        suffix: __.typx.Annotated[
+            str, __.typx.Doc("File extension for syntax highlighting")
+        ] = '.txt'
+    ) -> None:
+        """Display content in system pager."""
+        import tempfile
+        import subprocess
 
-import aiofiles
-import httpx
-import magic
-import typing_extensions as typx
+        with tempfile.NamedTemporaryFile(mode='w', suffix=suffix) as tmp:
+            tmp.write(content)
+            tmp.flush()
 
+            pager = __.os.environ.get('PAGER', 'less')
+            if not pager:
+                pager = 'less'
 
-ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
+            try:
+                subprocess.run([pager, tmp.name], check=True)
+            except subprocess.CalledProcessError:
+                if pager == 'less':
+                    subprocess.run(['more', tmp.name], check=True)
+            except FileNotFoundError:
+                # If no pager available, just print
+                print(content)
+                input("Press Enter to continue...")

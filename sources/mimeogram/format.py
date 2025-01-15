@@ -24,62 +24,68 @@
 from __future__ import annotations
 
 from . import __
-from .exceptions import EmptyMimeogramError
 from .acquirers import Part
+from .exceptions import EmptyMimeogramError
 
 
-class MimeogramFormatter:
-    ''' Handles formatting of parts into a MIME-like bundle. '''
+_scribe = __.produce_scribe(__name__)
 
-    @staticmethod
-    def create_boundary() -> str:
-        ''' Create a unique boundary marker for the mimeogram. '''
-        # Import uuid only when needed
-        import uuid
-        return f'====MIMEOGRAM_{uuid.uuid4().hex}===='
 
-    @staticmethod
-    def format_bundle(
-        parts: __.cabc.Sequence[Part],
-        message: __.typx.Optional[str] = None,
-        boundary: __.typx.Optional[str] = None
-    ) -> str:
-        ''' Format a sequence of parts into a MIME-like bundle.
+def create_boundary() -> str:
+    """Create a unique boundary marker."""
+    import uuid
+    return f'====MIMEOGRAM_{uuid.uuid4().hex}===='
 
-            Args:
-                parts: Sequence of Part objects to include in the bundle
-                message: Optional message to include at the start of the bundle
-                boundary: Optional custom boundary marker (generated if not provided)
 
-            Returns:
-                Formatted bundle as a string
+def format_part(
+    part: Part,
+    boundary: str,
+    is_last: bool = False
+) -> str:
+    """Format a single part with headers."""
+    headers = [
+        f'--{boundary}',
+        f'Content-Location: {part.location}',
+        f'Content-Type: {part.content_type}; charset={part.charset}\n'
+    ]
 
-            Raises:
-                EmptyMimeogramError: If no parts and no message provided
-        '''
-        if not parts and message is None:
-            raise EmptyMimeogramError('Cannot create an empty mimeogram (no parts and no message)')
+    if is_last:
+        return '\n'.join(headers + [part.content.rstrip('\n')])
+    return '\n'.join(headers + [part.content])
 
-        if boundary is None:
-            boundary = MimeogramFormatter.create_boundary()
 
-        lines = []
+def format_message(
+    message: str,
+    boundary: str
+) -> str:
+    """Format an editor message as a part."""
+    headers = [
+        f'--{boundary}',
+        'Content-Location: mimeogram://editor-message',
+        'Content-Type: text/plain; charset=utf-8\n'
+    ]
+    return '\n'.join(headers + [message.rstrip('\n')])
 
-        if message is not None:
-            lines.extend([
-                f'--{boundary}',
-                'Content-Location: mimeogram://editor-message',
-                'Content-Type: text/plain; charset=utf-8\n',
-                message.rstrip('\n')
-            ])
 
-        for part in parts:
-            lines.extend([
-                f'--{boundary}',
-                f'Content-Location: {part.location}',
-                f'Content-Type: {part.content_type}; charset={part.charset}\n',
-                part.content.rstrip('\n')
-            ])
+def format_bundle(
+    parts: __.cabc.Sequence[Part],
+    message: __.typx.Optional[str] = None,
+    boundary: __.typx.Optional[str] = None
+) -> str:
+    """Format parts into a MIME-like bundle."""
+    if not parts and message is None:
+        raise EmptyMimeogramError('Cannot create an empty mimeogram')
 
-        lines.append(f'--{boundary}--')
-        return '\n'.join(lines)
+    if boundary is None:
+        boundary = create_boundary()
+
+    lines = []
+
+    if message is not None:
+        lines.append(format_message(message, boundary))
+
+    for i, part in enumerate(parts):
+        lines.append(format_part(part, boundary, i == len(parts) - 1))
+
+    lines.append(f'--{boundary}--')
+    return '\n'.join(lines)

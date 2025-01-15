@@ -24,53 +24,36 @@
 from __future__ import annotations
 
 from . import __
-from .exceptions import MimeogramError
 
 
-class EditorInterface:
-    """Handles interaction with system editor."""
+_scribe = __.produce_scribe(__name__)
 
-    @staticmethod
-    def read_message(initial_text: str = '', *, suffix: str = '.md') -> str:
-        """Spawn system editor to capture a message.
 
-        Args:
-            initial_text: Optional text to pre-populate the editor
-            suffix: File suffix to use for syntax highlighting
+def read_message(initial_text: str = '', *, suffix: str = '.md') -> str:
+    """Spawn system editor to capture message."""
+    import subprocess
+    import tempfile
+    from .exceptions import EditorFailure
 
-        Returns:
-            Text entered by user in editor
+    editor = __.os.environ.get('VISUAL') or __.os.environ.get('EDITOR') or 'nano'
 
-        Raises:
-            MimeogramError: If editor interaction fails
-        """
-        # Import dependencies only when needed
-        import os
-        import subprocess
-        import tempfile
+    with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix=suffix) as tmp:
+        tmp_path = tmp.name
+        tmp.write(initial_text)
 
-        editor = os.environ.get('VISUAL') or os.environ.get('EDITOR') or 'nano'
+    try:
+        result = subprocess.run([editor, tmp_path], check=True)
+        if result.returncode != 0:
+            raise EditorFailure(f'Editor exited with status {result.returncode}')
 
-        with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix=suffix) as tmp:
-            tmp_path = tmp.name
-            tmp.write(initial_text)
-
-        try:
-            result = subprocess.run([editor, tmp_path], check=True)
-            if result.returncode != 0:
-                raise MimeogramError(f'Editor exited with status {result.returncode}')
-
-            with open(tmp_path, 'r', encoding='utf-8') as f:
-                return f.read()
-        except Exception as e:
-            raise MimeogramError('Failed to capture message from editor') from e
-        finally:
-            # Import needed for removal
-            import os
-            try:
-                os.remove(tmp_path)
-            except Exception as e:
-                # Log but don't fail if cleanup fails
-                import logging
-                logger = logging.getLogger(__name__)
-                logger.warning('Failed to remove temporary file %s: %s', tmp_path, str(e))
+        with open(tmp_path, 'r', encoding='utf-8') as f:
+            return f.read()
+    except subprocess.SubprocessError as exc:
+        raise EditorFailure('Editor process failed') from exc
+    except OSError as exc:
+        raise EditorFailure('Failed to read editor output') from exc
+    finally:
+        try: __.os.remove(tmp_path)
+        except Exception as exc:
+            # Log but don't fail if cleanup fails
+            _scribe.warning('Failed to remove temporary file %s: %s', tmp_path, exc)
