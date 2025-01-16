@@ -40,45 +40,75 @@ class Omnierror( Omniexception, Exception ):
     ''' Base for error exceptions raised by package API. '''
 
 
-# TODO: Fix class names to comply with nomenclature standards.
-# TODO: Fix docstrings to comply with coding style.
+class ContentAcquireFailure( Omnierror ):
+    ''' Failure to acquire content from location. '''
+
+    def __init__( self, location: str | __.Path ):
+        super( ).__init__( f"Could not acquire content from '{location}'." )
 
 
-class EmptyMimeogramError( Omnierror ):
-    ''' Attempt to create an empty mimeogram. '''
+class ContentDecodeFailure( Omnierror ):
+    ''' Failure to decode content as character set from location. '''
+
+    def __init__( self, location: str | __.Path, charset: str ):
+        super( ).__init__(
+            f"Could not decode content at '{location}' "
+            f"as character set '{charset}'." )
 
 
-class ContentAcquisitionFailure( Omnierror ):
-    ''' Base class for content acquisition failures. '''
+class ContentUpdateFailure( Omnierror ):
+    ''' Failure to update content at location. '''
+
+    def __init__( self, location: str | __.Path ):
+        super( ).__init__( f"Could not update content at '{location}'." )
 
 
-class ContentReadFailure(ContentAcquisitionFailure):
-    ''' Failure while reading file content. '''
+class EditorFailure( Omnierror ):
+    ''' Failure while operating editor. '''
+
+    def __init__( self, cause: str | Exception ):
+        super( ).__init__( f"Could not edit content. Cause: {cause}" )
 
 
-class ContentFetchFailure(ContentAcquisitionFailure):
-    ''' Failure while fetching URL content. '''
+class LocationInvalidity( Omnierror ):
+    ''' Invalid location. '''
+
+    def __init__( self, location: str | __.Path ):
+        super( ).__init__( f"Invalid location '{location}'." )
 
 
-class FileOperationFailure(Omnierror):
-    ''' Base class for file operation failures. '''
+class MimeogramFormatEmpty( Omnierror ):
+    ''' Attempt to format empty mimeogram. '''
+
+    def __init__( self ):
+        super( ).__init__( "Cannot format empty mimeogram." )
 
 
-class WriteFailure(FileOperationFailure):
-    ''' Failure while writing file content. '''
+class MimeogramParseFailure( Omnierror ):
+    ''' Failure to parse mimeogram content. '''
+
+    def __init__( self, reason: str ):
+        super( ).__init__( f"Could not parse mimeogram. Reason: {reason}" )
 
 
-class ReadFailure(FileOperationFailure):
-    ''' Failure while reading file content. '''
+class MimetypeDetermineFailure( Omnierror ):
+    ''' Failure to determine MIME type for content at location. '''
+
+    def __init__( self, location: str | __.Path ):
+        super( ).__init__(
+            f"Could not determine MIME type for content at '{location}'." )
 
 
-class ContentParsingFailure(Omnierror):
-    ''' Failure while parsing mimeogram content. '''
+class TextualMimetypeInvalidity( Omnierror ):
+    ''' Invalid textual MIME type for content at location. '''
+
+    def __init__( self, location: str | __.Path, mimetype: str ):
+        super( ).__init__(
+            f"Invalid MIME type '{mimetype}' for content at '{location}'." )
 
 
-class EditorFailure(Omnierror):
-    ''' Failure while running or reading from editor. '''
-
-
-class OperationCancelledFailure(Omnierror):
+class UserOperateCancellation( Omniexception ):
     ''' Operation cancelled by user. '''
+
+    def __init__( self, cause: BaseException ):
+        super( ).__init__( f"Operation cancelled by user. Cause: {cause}" )

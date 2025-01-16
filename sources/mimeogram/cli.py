@@ -23,43 +23,18 @@
 
 from __future__ import annotations
 
+import pyperclip as _pyperclip
+
 from . import __
 
 
-_scribe = __.produce_scribe(__name__)
-
-
-def setup_logging(verbose: bool) -> None:
-    """Configure logging based on verbosity."""
-    import logging
-
-    if verbose:
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format='%(levelname)s:%(name)s:%(message)s'
-        )
-    else:
-        logging.basicConfig(
-            level=logging.INFO,
-            format='%(levelname)s:%(message)s'
-        )
-
-
-def copy_to_clipboard(text: str) -> bool:
-    """Copy text to system clipboard."""
-    try:
-        import pyperclip
-        pyperclip.copy(text)
-        return True
-    except ImportError:
-        _scribe.warning('pyperclip not installed. Clipboard copy unavailable.')
-        return False
+_scribe = __.produce_scribe( __name__ )
 
 
 @__.dataclass
 class CreateCommand:
-    """Parameters for create command."""
-    sources: list[str]
+    ''' Parameters for create command. '''
+    sources: list[ str ]
     recursive: bool = False
     strict: bool = False
     clip: bool = False
@@ -68,206 +43,204 @@ class CreateCommand:
 
 @__.dataclass
 class ApplyCommand:
-    """Parameters for apply command."""
+    ''' Parameters for apply command. '''
     input: str
     clip: bool = False
-    base_path: __.typx.Optional[__.Path] = None
+    base_path: __.typx.Optional[ __.Path ] = None
     interactive: bool = False
     force: bool = False
     dry_run: bool = False
 
 
-async def read_input(cmd: ApplyCommand) -> __.typx.Optional[str]:
-    """Read input from clipboard, file, or stdin."""
-    if cmd.clip:
-        try:
-            import pyperclip
-            content = pyperclip.paste()
-            if not content:
-                _scribe.error('Clipboard is empty')
-                return None
-            _scribe.debug('Read %d characters from clipboard', len(content))
-            return content
-        except ImportError:
-            _scribe.error('pyperclip not installed. Clipboard access unavailable.')
-            return None
-    else:
-        if cmd.input == '-':
-            return __.sys.stdin.read()
-        else:
-            async with __.aiofiles.open(cmd.input, 'r') as f:
-                return await f.read()
-
-
-async def handle_create(cmd: CreateCommand) -> int:
-    """Handle create command."""
-    from .acquirers import ContentFetcher
+async def create( cmd: CreateCommand ) -> int:
+    ''' Creates mimeogram. '''
+    from .acquirers import Acquirer
     from .exceptions import Omnierror
     from .format import format_bundle
     if cmd.editor_message:
-        try:
-            from .editor import read_message
-            message = read_message()
+        from .editor import read_message
+        try: message = read_message( )
         except Omnierror as exc:
-            _scribe.error('Failed to capture message: %s', exc)
-            return 1
+            _scribe.exception( "Could not acquire user message." )
+            raise SystemExit( 1 ) from exc
     else: message = None
     try:
-        async with ContentFetcher(strict=cmd.strict) as fetcher:
-            parts = await fetcher.fetch_sources(
-                cmd.sources,
-                recursive=cmd.recursive
-            )
-            bundle = format_bundle(parts, message=message)
-            print(bundle)
-            if cmd.clip and not copy_to_clipboard(bundle): return 1
-            return 0
+        async with Acquirer( strict = cmd.strict ) as acquirer:
+            parts = await acquirer.acquire(
+                cmd.sources, recursive = cmd.recursive )
     except Omnierror as exc:
-        _scribe.error('Failed to create bundle: %s', exc)
-        return 1
+        _scribe.exception( "Could not acquire mimeogram parts." )
+        raise SystemExit( 1 ) from exc
+    mimeogram = format_bundle( parts, message = message )
+    if cmd.clip:
+        try: _pyperclip.copy( mimeogram )
+        except Exception as exc:
+            _scribe.exception( "Could not copy mimeogram to clipboard." )
+            raise SystemExit( 1 ) from exc
+        _scribe.info( "Copied mimeogram to clipboard." )
+    else: print( mimeogram )
+    raise SystemExit( 0 )
 
 
-async def handle_apply(cmd: ApplyCommand) -> int:
-    """Handle apply command."""
+async def apply( cmd: ApplyCommand ) -> int:
+    ''' Applies mimeogram. '''
     from .exceptions import Omnierror
-    from .parser import parse_bundle
+    from .parser import parse
     from .updater import Updater
-    try:
-        content = await read_input(cmd)
-        if not content: return 1
-        parts = parse_bundle(content)
-        updater = Updater(interactive=cmd.interactive)
-        await updater.update(
-            parts,
-            base_path=cmd.base_path,
-            force=cmd.force
-        )
-        _scribe.info('Successfully applied mimeogram')
-        return 0
+    try: content = await _acquire_content_to_parse( cmd )
     except Omnierror as exc:
-        _scribe.error('Failed to apply mimeogram: %s', exc)
-        return 1
+        _scribe.exception( "Could not acquire mimeogram to apply." )
+        raise SystemExit( 1 ) from exc
+    if not content:
+        _scribe.error( "Cannot apply empty mimeogram." )
+        raise SystemExit( 1 )
+    try: parts = parse( content )
+    except Omnierror as exc:
+        _scribe.exception( "Could not parse mimeogram." )
+        raise SystemExit( 1 ) from exc
+    updater = Updater( interactive = cmd.interactive )
+    try:
+        await updater.update(
+            parts, base_path = cmd.base_path, force = cmd.force )
+    except Omnierror as exc:
+        _scribe.exception( "Could not apply mimeogram." )
+        raise SystemExit( 1 ) from exc
+    _scribe.info( "Successfully applied mimeogram" )
+    raise SystemExit( 0 )
 
 
-def create_parser() -> __.typx.Any:
-    """Create argument parser."""
+def create_parser( ) -> __.typx.Any:
+    ''' Creates argument parser. '''
     import argparse
-
     parser = argparse.ArgumentParser(
-        description='Create and apply mimeogram bundles.'
-    )
+        description = "Creates and applies mimeograms." )
     parser.add_argument(
         '-v',
         '--verbose',
-        action='store_true',
-        help='Enable verbose logging'
-    )
-
+        action = 'store_true',
+        help = "Enables verbose logging" )
     subparsers = parser.add_subparsers(
-        title='commands',
-        dest='command',
-        required=True
-    )
+        title = 'commands',
+        dest = 'command',
+        required = True )
 
-    # Create command
     create_parser = subparsers.add_parser(
         'create',
-        help='Create a mimeogram bundle from files/URLs'
-    )
+        help = "Creates mimeogram from files/URLs" )
     create_parser.add_argument(
         'sources',
-        nargs='*',
-        help='File paths or URLs. If none provided, requires --editor-message.'
-    )
+        nargs = '*',
+        help = (
+            "File paths or URLs. "
+            "If none provided, requires --editor-message." ) )
     create_parser.add_argument(
         '-r',
         '--recursive',
-        action='store_true',
-        help='Recurse into directories'
+        action = 'store_true',
+        help = "Recurse into directories"
     )
     create_parser.add_argument(
         '-s',
         '--strict',
-        action='store_true',
-        help='Fail on first non-textual file or URL instead of skipping'
-    )
+        action = 'store_true',
+        help = "Fail on first non-textual content instead of skipping" )
     create_parser.add_argument(
         '--clip',
-        action='store_true',
-        help='Copy the final bundle to clipboard'
-    )
+        action = 'store_true',
+        help = "Copy mimeogram to clipboard" )
     create_parser.add_argument(
         '--editor-message',
-        action='store_true',
-        help='Spawn editor to capture an initial message part'
-    )
+        action = 'store_true',
+        help = "Spawn editor to capture an initial message part" )
 
-    # Apply command
     apply_parser = subparsers.add_parser(
         'apply',
-        help='Apply a mimeogram bundle to filesystem'
-    )
+        help = "Applies mimeogram to filesystem locations" )
     apply_parser.add_argument(
         'input',
-        nargs='?',
-        default='-',
-        help='Input file (default: stdin if --clip not specified)'
-    )
+        nargs = '?',
+        default = '-',
+        help = "Input file (default: stdin if --clip not specified)" )
     apply_parser.add_argument(
         '--clip',
-        action='store_true',
-        help='Read mimeogram from clipboard instead of file/stdin'
-    )
+        action = 'store_true',
+        help = 'Read mimeogram from clipboard instead of file/stdin' )
     apply_parser.add_argument(
         '--base-path',
-        type=__.Path,
-        help='Base path for relative locations'
-    )
+        type = __.Path,
+        help = 'Base path for relative locations' )
     apply_parser.add_argument(
         '--interactive',
-        action='store_true',
-        help='Prompt for action on each part'
-    )
+        action = 'store_true',
+        help = 'Prompt for action on each part' )
     apply_parser.add_argument(
         '--force',
-        action='store_true',
-        help='Override protected path checks'
-    )
+        action = 'store_true',
+        help = 'Override protected path checks' )
     apply_parser.add_argument(
         '--dry-run',
-        action='store_true',
-        help='Show what would be changed without making changes'
-    )
+        action = 'store_true',
+        help = 'Show what would be changed without making changes' )
 
     return parser
 
 
-async def main(args: __.typx.Optional[__.cabc.Sequence[str]] = None) -> int:
-    """CLI entry point."""
-    parser = create_parser()
-    parsed_args = parser.parse_args(args)
-    setup_logging(parsed_args.verbose)
+async def main( args: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
+    ''' CLI entry point. '''
+    parser = create_parser( )
+    parsed_args = parser.parse_args( args )
+    _setup_logging( parsed_args.verbose )
     match parsed_args.command:
         case 'create':
-            return await handle_create(CreateCommand(
-                sources=parsed_args.sources,
-                recursive=parsed_args.recursive,
-                strict=parsed_args.strict,
-                clip=parsed_args.clip,
-                editor_message=parsed_args.editor_message
-            ))
+            await create( CreateCommand(
+                sources = parsed_args.sources,
+                recursive = parsed_args.recursive,
+                strict = parsed_args.strict,
+                clip = parsed_args.clip,
+                editor_message = parsed_args.editor_message
+            ) )
         case 'apply':
-            return await handle_apply(ApplyCommand(
-                input=parsed_args.input,
-                clip=parsed_args.clip,
-                base_path=parsed_args.base_path,
-                interactive=parsed_args.interactive,
-                force=parsed_args.force,
-                dry_run=parsed_args.dry_run
-            ))
+            await apply( ApplyCommand(
+                input = parsed_args.input,
+                clip = parsed_args.clip,
+                base_path = parsed_args.base_path,
+                interactive = parsed_args.interactive,
+                force = parsed_args.force,
+                dry_run = parsed_args.dry_run
+            ) )
         case _:
-            parser.print_help()
-            return 1
+            parser.print_help( )
+            raise SystemExit( 1 )
 
 
-if __name__ == '__main__': __.sys.exit(__.asyncio.run(main()))
+async def _acquire_content_to_parse(
+    cmd: ApplyCommand
+) -> __.typx.Optional[ str ]:
+    ''' Acquires content to parse from clipboard, file, or stdin. '''
+    if cmd.clip:
+        content = _pyperclip.paste( )
+        if not content:
+            # TODO: Raise exception.
+            _scribe.error( 'Clipboard is empty' )
+            return None
+        _scribe.debug( 'Read %d characters from clipboard', len( content ) )
+        return content
+    if cmd.input == '-': return __.sys.stdin.read( )
+    async with __.aiofiles.open( cmd.input, 'r' ) as f:
+        return await f.read( )
+
+
+def _setup_logging( verbose: bool ) -> None:
+    ''' Configures logging based on verbosity. '''
+    import logging
+    if verbose:
+        logging.basicConfig(
+            level = logging.DEBUG,
+            format = '%(levelname)s:%(name)s:%(message)s' )
+    else:
+        logging.basicConfig(
+            level = logging.INFO,
+            format = '%(levelname)s:%(message)s' )
+
+
+if __name__ == '__main__': __.asyncio.run( main( ) )

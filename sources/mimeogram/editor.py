@@ -26,34 +26,37 @@ from __future__ import annotations
 from . import __
 
 
-_scribe = __.produce_scribe(__name__)
+_scribe = __.produce_scribe( __name__ )
 
 
-def read_message(initial_text: str = '', *, suffix: str = '.md') -> str:
-    """Spawn system editor to capture message."""
-    import subprocess
+def read_message( initial_text: str = '', *, suffix: str = '.md' ) -> str:
+    ''' Spawn system editor to capture message. '''
+    import subprocess # nosec: b404
     import tempfile
     from .exceptions import EditorFailure
-
-    editor = __.os.environ.get('VISUAL') or __.os.environ.get('EDITOR') or 'nano'
-
-    with tempfile.NamedTemporaryFile(delete=False, mode='w', suffix=suffix) as tmp:
+    editor = (
+            __.os.environ.get( 'VISUAL' )
+        or  __.os.environ.get( 'EDITOR' )
+        or  'nano' )
+    # TODO: Set 'delete' to True and operate inside of context manager.
+    with tempfile.NamedTemporaryFile(
+        delete = False, mode = 'w', suffix = suffix
+    ) as tmp:
         tmp_path = tmp.name
-        tmp.write(initial_text)
-
+        tmp.write( initial_text )
     try:
-        result = subprocess.run([editor, tmp_path], check=True)
+        result = subprocess.run( # nosec: b603
+            [ editor, tmp_path ], check=True )
         if result.returncode != 0:
-            raise EditorFailure(f'Editor exited with status {result.returncode}')
-
-        with open(tmp_path, 'r', encoding='utf-8') as f:
+            raise EditorFailure( f"Exited with status {result.returncode}" )
+        with open( tmp_path, 'r', encoding='utf-8' ) as f:
             return f.read()
     except subprocess.SubprocessError as exc:
-        raise EditorFailure('Editor process failed') from exc
+        raise EditorFailure( "Editor process failed" ) from exc
     except OSError as exc:
-        raise EditorFailure('Failed to read editor output') from exc
+        raise EditorFailure( "Failed to read editor output" ) from exc
     finally:
-        try: __.os.remove(tmp_path)
-        except Exception as exc:
-            # Log but don't fail if cleanup fails
-            _scribe.warning('Failed to remove temporary file %s: %s', tmp_path, exc)
+        try: __.os.remove( tmp_path )
+        except Exception:
+            # Log but do not fail if cleanup fails
+            _scribe.exception( "Failed to remove temporary file %s", tmp_path )

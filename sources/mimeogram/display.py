@@ -23,34 +23,32 @@
 
 from . import __
 
+
 class Pager:
-    """Interface to system pager."""
+    ''' Interface to system pager. '''
+    # TODO: Refactor as function.
 
     @staticmethod
     def display_content(
         content: str,
         suffix: __.typx.Annotated[
-            str, __.typx.Doc("File extension for syntax highlighting")
+            str, __.typx.Doc( "File extension for syntax highlighting" )
         ] = '.txt'
     ) -> None:
-        """Display content in system pager."""
+        ''' Display content in system pager. '''
         import tempfile
-        import subprocess
-
-        with tempfile.NamedTemporaryFile(mode='w', suffix=suffix) as tmp:
-            tmp.write(content)
-            tmp.flush()
-
-            pager = __.os.environ.get('PAGER', 'less')
-            if not pager:
-                pager = 'less'
-
+        import subprocess # nosec: b404
+        with tempfile.NamedTemporaryFile( mode='w', suffix=suffix ) as tmp:
+            tmp.write( content )
+            tmp.flush( )
+            pager = __.os.environ.get( 'PAGER', 'less' )
             try:
-                subprocess.run([pager, tmp.name], check=True)
+                subprocess.run( [ pager, tmp.name ], check=True ) # nosec: b603
             except subprocess.CalledProcessError:
                 if pager == 'less':
-                    subprocess.run(['more', tmp.name], check=True)
+                    subprocess.run(
+                        [ 'more', tmp.name ], check=True ) # nosec: b603,b607
             except FileNotFoundError:
                 # If no pager available, just print
                 print(content)
-                input("Press Enter to continue...")
+                input( "Press Enter to continue..." )

@@ -13,7 +13,8 @@
   - `none`: Whole file updates
 
 ### Project Structure
-- Extract line-edit operations into standalone package (shared with AI workbench)
+- Extract line-edit operations into standalone package (shared with AI
+  workbench)
 - Add boilerplate handling:
   - Strip boilerplate when creating mimeograms
   - Insert boilerplate when applying mimeograms
@@ -114,17 +115,3 @@ Notes:
 - All features should work across platforms
 - User experience should remain consistent and intuitive
 - File format changes should be backward compatible
---====MIMEOGRAM_ef9b85d2135f4fa28a5b16f43af1b3d7====--
-
-I've:
-1. Created clear collaboration guidelines based on our experience
-2. Updated the todo list:
-   - Reorganized for better grouping
-   - Added size/token management features
-   - Kept existing features but improved organization
-   - Added some learnings from our refactoring
-
-Would you like me to:
-1. Adjust any of the content?
-2. Expand any particular sections?
-3. Add any other documentation?

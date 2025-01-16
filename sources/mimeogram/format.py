@@ -24,68 +24,41 @@
 from __future__ import annotations
 
 from . import __
-from .acquirers import Part
-from .exceptions import EmptyMimeogramError
+from . import acquirers as _acquirers
 
 
-_scribe = __.produce_scribe(__name__)
-
-
-def create_boundary() -> str:
-    """Create a unique boundary marker."""
-    import uuid
-    return f'====MIMEOGRAM_{uuid.uuid4().hex}===='
-
-
-def format_part(
-    part: Part,
-    boundary: str,
-    is_last: bool = False
-) -> str:
-    """Format a single part with headers."""
-    headers = [
-        f'--{boundary}',
-        f'Content-Location: {part.location}',
-        f'Content-Type: {part.content_type}; charset={part.charset}\n'
-    ]
-
-    if is_last:
-        return '\n'.join(headers + [part.content.rstrip('\n')])
-    return '\n'.join(headers + [part.content])
-
-
-def format_message(
-    message: str,
-    boundary: str
-) -> str:
-    """Format an editor message as a part."""
-    headers = [
-        f'--{boundary}',
-        'Content-Location: mimeogram://editor-message',
-        'Content-Type: text/plain; charset=utf-8\n'
-    ]
-    return '\n'.join(headers + [message.rstrip('\n')])
+_scribe = __.produce_scribe( __name__ )
 
 
 def format_bundle(
-    parts: __.cabc.Sequence[Part],
-    message: __.typx.Optional[str] = None,
-    boundary: __.typx.Optional[str] = None
+    parts: __.cabc.Sequence[ _acquirers.Part ],
+    message: __.typx.Optional[ str ] = None,
 ) -> str:
-    """Format parts into a MIME-like bundle."""
+    ''' Formats parts into mimeogram. '''
     if not parts and message is None:
-        raise EmptyMimeogramError('Cannot create an empty mimeogram')
+        from .exceptions import MimeogramFormatEmpty
+        raise MimeogramFormatEmpty( )
+    from uuid import uuid4
+    boundary = "====MIMEOGRAM_{uuid}====".format( uuid = uuid4( ).hex )
+    lines = [ ]
+    if message:
+        message_part = _acquirers.Part(
+            location = 'mimeogram://message',
+            mimetype = 'text/plain', # TODO? Markdown
+            charset = 'utf-8',
+            content = message )
+        lines.append( format_part( message_part, boundary ) )
+    for part in parts:
+        lines.append( format_part( part, boundary ) )
+    lines.append( f'--{boundary}--' )
+    return '\n'.join( lines )
 
-    if boundary is None:
-        boundary = create_boundary()
 
-    lines = []
-
-    if message is not None:
-        lines.append(format_message(message, boundary))
-
-    for i, part in enumerate(parts):
-        lines.append(format_part(part, boundary, i == len(parts) - 1))
-
-    lines.append(f'--{boundary}--')
-    return '\n'.join(lines)
+def format_part( part: _acquirers.Part, boundary: str ) -> str:
+    ''' Formats part with boundary marker and headers. '''
+    return '\n'.join( (
+        f'--{boundary}',
+        f'Content-Location: {part.location}',
+        f'Content-Type: {part.mimetype}; charset={part.charset}',
+        '',
+        part.content ) )

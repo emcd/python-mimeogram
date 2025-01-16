@@ -20,7 +20,7 @@ are instructions on how to understand and process mimeograms.
 ### Headers
 Each part must include:
 1. `Content-Location`:
-   - For messages: `mimeogram://editor-message`
+   - For messages: `mimeogram://message`
    - For files: filesystem path or URL
 2. `Content-Type`: MIME type and charset
    - Example: `Content-Type: text/x-python; charset=utf-8`
@@ -34,7 +34,7 @@ Each part must include:
 ## Interpretation Guidelines
 
 ### Editor Messages
-- Parts with `Content-Location: mimeogram://editor-message` contain human messages
+- Parts with `Content-Location: mimeogram://message` contain human messages
 - These messages provide context about the other parts
 - Messages should be interpreted as instructions or explanations
 
@@ -60,7 +60,7 @@ Each part must include:
 - Respect project conventions visible in the files
 
 ### Design Discussions
-- Read editor message for context about design decisions
+- Read message for context about design decisions
 - Reference specific files/lines when discussing changes
 - Consider implications across all included files
 
@@ -73,7 +73,7 @@ Each part must include:
 
 ```
 --====MIMEOGRAM_123456====
-Content-Location: mimeogram://editor-message
+Content-Location: mimeogram://message
 Content-Type: text/plain; charset=utf-8
 
 Please review these Python modules for a logging system.
@@ -95,7 +95,7 @@ In this example:
 ## Processing Instructions
 
 When working with mimeograms:
-1. Read the editor message first to understand context
+1. Read the message first to understand context
 2. Examine file paths to understand project structure
 3. Process all parts as a cohesive unit
 4. Maintain the same format when responding with file changes
