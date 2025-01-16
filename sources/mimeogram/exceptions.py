@@ -40,51 +40,45 @@ class Omnierror( Omniexception, Exception ):
     ''' Base for error exceptions raised by package API. '''
 
 
-# TODO: MimeogramError is a useless base.
-#       Other error classes should inherit from Omnierror and not this.
 # TODO: Fix class names to comply with nomenclature standards.
 # TODO: Fix docstrings to comply with coding style.
 
 
-class MimeogramError( Omnierror ):
-    ''' Base for mimeogram-specific errors. '''
-
-
-class EmptyMimeogramError( MimeogramError ):
+class EmptyMimeogramError( Omnierror ):
     ''' Attempt to create an empty mimeogram. '''
 
 
-class ContentAcquisitionFailure(MimeogramError):
-    """Base class for content acquisition failures."""
+class ContentAcquisitionFailure( Omnierror ):
+    ''' Base class for content acquisition failures. '''
 
 
 class ContentReadFailure(ContentAcquisitionFailure):
-    """Failure while reading file content."""
+    ''' Failure while reading file content. '''
 
 
 class ContentFetchFailure(ContentAcquisitionFailure):
-    """Failure while fetching URL content."""
+    ''' Failure while fetching URL content. '''
 
 
-class FileOperationFailure(MimeogramError):
-    """Base class for file operation failures."""
+class FileOperationFailure(Omnierror):
+    ''' Base class for file operation failures. '''
 
 
 class WriteFailure(FileOperationFailure):
-    """Failure while writing file content."""
+    ''' Failure while writing file content. '''
 
 
 class ReadFailure(FileOperationFailure):
-    """Failure while reading file content."""
+    ''' Failure while reading file content. '''
 
 
-class ContentParsingFailure(MimeogramError):
-    """Failure while parsing mimeogram content."""
+class ContentParsingFailure(Omnierror):
+    ''' Failure while parsing mimeogram content. '''
 
 
-class EditorFailure(MimeogramError):
-    """Failure while running or reading from editor."""
+class EditorFailure(Omnierror):
+    ''' Failure while running or reading from editor. '''
 
 
-class OperationCancelledFailure(MimeogramError):
-    """Operation cancelled by user."""
+class OperationCancelledFailure(Omnierror):
+    ''' Operation cancelled by user. '''

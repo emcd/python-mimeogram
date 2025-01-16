@@ -102,13 +102,13 @@ async def read_input(cmd: ApplyCommand) -> __.typx.Optional[str]:
 async def handle_create(cmd: CreateCommand) -> int:
     """Handle create command."""
     from .acquirers import ContentFetcher
-    from .exceptions import MimeogramError
+    from .exceptions import Omnierror
     from .format import format_bundle
     if cmd.editor_message:
         try:
             from .editor import read_message
             message = read_message()
-        except MimeogramError as exc:
+        except Omnierror as exc:
             _scribe.error('Failed to capture message: %s', exc)
             return 1
     else: message = None
@@ -122,14 +122,14 @@ async def handle_create(cmd: CreateCommand) -> int:
             print(bundle)
             if cmd.clip and not copy_to_clipboard(bundle): return 1
             return 0
-    except MimeogramError as exc:
+    except Omnierror as exc:
         _scribe.error('Failed to create bundle: %s', exc)
         return 1
 
 
 async def handle_apply(cmd: ApplyCommand) -> int:
     """Handle apply command."""
-    from .exceptions import MimeogramError
+    from .exceptions import Omnierror
     from .parser import parse_bundle
     from .updater import Updater
     try:
@@ -144,7 +144,7 @@ async def handle_apply(cmd: ApplyCommand) -> int:
         )
         _scribe.info('Successfully applied mimeogram')
         return 0
-    except MimeogramError as exc:
+    except Omnierror as exc:
         _scribe.error('Failed to apply mimeogram: %s', exc)
         return 1
 
