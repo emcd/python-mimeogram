@@ -31,6 +31,7 @@ import asyncio
 import collections.abc as cabc
 import enum
 import os
+import re
 import sys
 import types
 

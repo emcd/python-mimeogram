@@ -29,10 +29,6 @@ from . import __
 _scribe = __.produce_scribe( __name__ )
 
 
-REQUIRED_HEADERS = frozenset( ( 'Content-Location', 'Content-Type' ) )
-BOUNDARY_PATTERN = r'^--====MIMEOGRAM_[0-9a-fA-F]{16,}====(?:--)?\s*$'
-
-
 @__.dataclass
 class Part:
     ''' Part parsed from mimeogram. '''
@@ -45,100 +41,22 @@ class Part:
     original_content: __.typx.Optional[ str ] = None
 
 
-def parse_mimetype( header: str ) -> tuple[ str, str ]:
-    ''' Extracts MIME type and charset from Content-Type header. '''
-    parts = [ p.strip() for p in header.split( ';' ) ]
-    mimetype = parts[ 0 ]
-    charset = 'utf-8'  # Default charset
-    for part in parts[ 1: ]:
-        if part.startswith( 'charset=' ):
-            charset = part[ 8: ].strip( '"\'' )
-    return mimetype, charset
-
-
-def parse_headers( content: str ) -> tuple[ __.cabc.Mapping[ str, str ], str ]:
-    ''' Parses headers and content from a part. '''
-    from .exceptions import MimeogramParseFailure
-    # TODO: Rewrite to use a single pass.
-    # TODO? Use 'split' instead of 'splitlines'.
-    # Split headers and content
-    try: headers_text, content = content.split( '\n\n', 1 )
-    except ValueError as exc:
-        # No blank line - try to parse anyway
-        _scribe.warning( "No blank line after headers" )
-        for i, line in enumerate( content.splitlines( ) ):
-            if ':' not in line:
-                headers_text = '\n'.join( content.splitlines( )[ :i ] )
-                content = '\n'.join( content.splitlines( )[ i: ] )
-                break
-        else:
-            raise MimeogramParseFailure(
-                reason = "Could not find end of headers" ) from exc
-    # Parse individual headers
-    headers = { }
-    for line in headers_text.splitlines( ):
-        if ':' not in line:
-            _scribe.warning( f"Malformed header line: {line}" )
-            continue
-        key, value = line.split( ':', 1 )
-        headers[ key.strip( ) ] = value.strip( )
-    # Check required headers
-    missing = REQUIRED_HEADERS - headers.keys( )
-    if missing:
-        raise MimeogramParseFailure(
-            reason = f"Missing required headers: {missing}" )
-    return headers, content.strip( )
-
-
-def extract_boundary( content: str ) -> str:
-    ''' Finds first mimeogram boundary in content. '''
-    import re
-    boundary_pattern = (
-        re.compile( BOUNDARY_PATTERN, re.MULTILINE | re.IGNORECASE ) )
-    match = boundary_pattern.search( content )
-    if match:
-        # Windows clipboard has CRLF newlines.
-        # Need to strip carriage returns and other whitespace from end.
-        boundary = match.group( ).rstrip( ).lstrip( '-' )
-        _scribe.debug( f"Found boundary: {boundary}" )
-        return boundary
-    from .exceptions import MimeogramParseFailure
-    raise MimeogramParseFailure( reason = "No mimeogram boundary found." )
-
-
-def split_parts( content: str, boundary: str ) -> list[ str ]:
-    ''' Splits content into parts using boundary. '''
-    regular_boundary = f"--{boundary}"
-    final_boundary = f"{regular_boundary}--"
-    # Detect final boundary and trailing text first.
-    final_parts = content.split( final_boundary )
-    if len( final_parts ) > 1:
-        _scribe.debug( "Found final boundary." )
-        content_with_parts = final_parts[ 0 ]
-        trailing_text = final_parts[ 1 ].strip( )
-        if trailing_text: _scribe.debug( "Found trailing text." )
-    else:
-        _scribe.warning( "No final boundary found." )
-        content_with_parts = content
-    # Split remaining content on regular boundary and skip leading text.
-    parts = content_with_parts.split( regular_boundary )[ 1: ]
-    _scribe.debug( "Found {} parts to parse.".format( len( parts ) ) )
-    return parts
-
-
 def parse( content: str ) -> __.cabc.Sequence[ Part ]:
     ''' Parses mimeogram. '''
+    # TODO? Accept 'strict' flag.
     from .exceptions import MimeogramParseFailure
     if not content.strip( ):
         raise MimeogramParseFailure( reason = "Empty content" )
-    boundary = extract_boundary( content )
-    parts_content = split_parts( content, boundary )
+    boundary = _extract_boundary( content )
+    parts_content = _separate_parts( content, boundary )
     if not parts_content:
         raise MimeogramParseFailure( reason = "No parts found" )
     parsed_parts = [ ]
     for i, part_content in enumerate( parts_content, 1 ):
-        headers, content = parse_headers( part_content.strip( ) )
-        content_type, charset = parse_mimetype( headers[ 'Content-Type' ] )
+        headers, content = _parse_descriptor_and_matter( part_content )
+        try: _validate_descriptor( headers )
+        except MimeogramParseFailure: continue
+        content_type, charset = _parse_mimetype( headers[ 'Content-Type' ] )
         parsed_parts.append( Part(
             location=headers[ 'Content-Location' ],
             mimetype=content_type,
@@ -153,3 +71,98 @@ def parse( content: str ) -> __.cabc.Sequence[ Part ]:
     _scribe.debug(
         "Successfully parsed {} parts".format( len( parsed_parts ) ) )
     return parsed_parts
+
+
+_BOUNDARY_REGEX = __.re.compile(
+    r'''^--====MIMEOGRAM_[0-9a-fA-F]{16,}====\s*$''',
+    __.re.IGNORECASE | __.re.MULTILINE )
+def _extract_boundary( content: str ) -> str:
+    ''' Extracts first mimeogram boundary. '''
+    mobject = _BOUNDARY_REGEX.search( content )
+    if mobject:
+        boundary = mobject.group( )
+        # Windows clipboard has CRLF newlines. Strip CR before display.
+        boundary_s = boundary.rstrip( '\r' )
+        _scribe.debug( f"Found boundary: {boundary_s}" )
+        # Return with trailing newline to ensure parts are properly split.
+        return f"{boundary}\n"
+    from .exceptions import MimeogramParseFailure
+    raise MimeogramParseFailure( reason = "No mimeogram boundary found." )
+
+
+_DESCRIPTOR_REGEX = __.re.compile(
+    r'''^(?P<name>[\w\-]+)\s*:\s*(?P<value>.*)$''' )
+def _parse_descriptor_and_matter(
+    content: str
+) -> tuple[ __.cabc.Mapping[ str, str ], str ]:
+    descriptor: __.cabc.Mapping[ str, str ] = { }
+    lines: list[ str ] = [ ]
+    in_matter = False
+    for line in content.splitlines( ):
+        if in_matter:
+            lines.append( line )
+            continue
+        line_s = line.strip( )
+        if not line_s:
+            in_matter = True
+            continue
+        mobject = _DESCRIPTOR_REGEX.fullmatch( line_s )
+        if not mobject:
+            _scribe.warning( "No blank line after headers." )
+            in_matter = True
+            lines.append( line )
+            continue
+        name = '-'.join( map(
+            str.capitalize, mobject.group( 'name' ).split( '-' ) ) )
+        value = mobject.group( 'value' )
+        # TODO: Detect duplicates.
+        descriptor[ name ] = value
+    _scribe.debug( f"Descriptor: {descriptor}" )
+    return descriptor, '\n'.join( lines )
+
+
+def _parse_mimetype( header: str ) -> tuple[ str, str ]:
+    ''' Extracts MIME type and charset from Content-Type header. '''
+    parts = [ p.strip( ) for p in header.split( ';' ) ]
+    mimetype = parts[ 0 ]
+    charset = 'utf-8'  # Default charset
+    for part in parts[ 1: ]:
+        if part.startswith( 'charset=' ):
+            charset = part[ 8: ].strip( '"\'' )
+    return mimetype, charset
+
+
+def _separate_parts( content: str, boundary: str ) -> list[ str ]:
+    ''' Splits content into parts using boundary. '''
+    boundary_s = boundary.rstrip( )
+    final_boundary = f"{boundary_s}--"
+    # Detect final boundary and trailing text first.
+    final_parts = content.split( final_boundary )
+    if len( final_parts ) > 1:
+        _scribe.debug( "Found final boundary." )
+        content_with_parts = final_parts[ 0 ]
+        trailing_text = final_parts[ 1 ].strip( )
+        if trailing_text: _scribe.debug( "Found trailing text." )
+    else:
+        _scribe.warning( "No final boundary found." )
+        content_with_parts = content
+    # Split remaining content on regular boundary and skip leading text.
+    parts = content_with_parts.split( boundary )[ 1: ]
+    _scribe.debug( "Found {} parts to parse.".format( len( parts ) ) )
+    return parts
+
+
+_DESCRIPTOR_INDICES_REQUISITE = frozenset( (
+    'Content-Location', 'Content-Type' ) )
+def _validate_descriptor(
+    descriptor: __.cabc.Mapping[ str, str ]
+) -> __.cabc.Mapping[ str, str ]:
+    from .exceptions import MimeogramParseFailure
+    names = _DESCRIPTOR_INDICES_REQUISITE - descriptor.keys( )
+    if names:
+        reason = (
+            "Missing required headers: {awol}".format(
+                awol = ', '.join( names ) ) )
+        _scribe.warning( reason )
+        raise MimeogramParseFailure( reason = reason )
+    return descriptor # TODO: Return immutable.
