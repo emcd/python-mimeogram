@@ -48,7 +48,7 @@ class ApplyCommand:
     clip: bool = False
     base_path: __.typx.Optional[ __.Path ] = None
     interactive: bool = False
-    force: bool = False
+    # force: bool = False
     dry_run: bool = False
 
 
@@ -99,9 +99,7 @@ async def apply( cmd: ApplyCommand ) -> int:
         _scribe.exception( "Could not parse mimeogram." )
         raise SystemExit( 1 ) from exc
     updater = Updater( interactive = cmd.interactive )
-    try:
-        await updater.update(
-            parts, base_path = cmd.base_path, force = cmd.force )
+    try: await updater.update( parts, base_path = cmd.base_path )
     except Omnierror as exc:
         _scribe.exception( "Could not apply mimeogram." )
         raise SystemExit( 1 ) from exc
@@ -173,10 +171,10 @@ def create_parser( ) -> __.typx.Any:
         '--interactive',
         action = 'store_true',
         help = 'Prompt for action on each part' )
-    apply_parser.add_argument(
-        '--force',
-        action = 'store_true',
-        help = 'Override protected path checks' )
+    # apply_parser.add_argument(
+    #     '--force',
+    #     action = 'store_true',
+    #     help = 'Override protected path checks' )
     apply_parser.add_argument(
         '--dry-run',
         action = 'store_true',
@@ -205,7 +203,7 @@ async def main( args: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
                 clip = parsed_args.clip,
                 base_path = parsed_args.base_path,
                 interactive = parsed_args.interactive,
-                force = parsed_args.force,
+                # force = parsed_args.force,
                 dry_run = parsed_args.dry_run
             ) )
         case _:

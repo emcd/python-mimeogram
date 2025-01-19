@@ -31,8 +31,8 @@ BOUNDARY_PATTERN = r'^--====MIMEOGRAM_[0-9a-fA-F]{16,}====(?:--)?\s*$'
 
 
 @__.dataclass
-class ParsedPart:
-    ''' A parsed part from a mimeogram bundle. '''
+class Part:
+    ''' Part parsed from mimeogram. '''
     location: str
     mimetype: str
     charset: str
@@ -114,7 +114,7 @@ def split_parts( content: str, boundary: str ) -> list[ str ]:
     return parts
 
 
-def parse( content: str ) -> __.cabc.Sequence[ ParsedPart ]:
+def parse( content: str ) -> __.cabc.Sequence[ Part ]:
     ''' Parse a mimeogram bundle into parts. '''
     from .exceptions import MimeogramParseFailure
     if not content.strip(): raise MimeogramParseFailure( 'Empty content' )
@@ -131,7 +131,7 @@ def parse( content: str ) -> __.cabc.Sequence[ ParsedPart ]:
     for i, part_content in enumerate( parts_content, 1 ):
         headers, content = parse_headers( part_content.strip( ) )
         content_type, charset = parse_mimetype( headers[ 'Content-Type' ] )
-        parsed_parts.append( ParsedPart(
+        parsed_parts.append( Part(
             location=headers[ 'Content-Location' ],
             mimetype=content_type,
             charset=charset,
