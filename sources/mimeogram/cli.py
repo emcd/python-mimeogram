@@ -122,63 +122,63 @@ def create_parser( ) -> __.typx.Any:
         dest = 'command',
         required = True )
 
-    create_parser = subparsers.add_parser(
+    parser_create = subparsers.add_parser(
         'create',
         help = "Creates mimeogram from files/URLs" )
-    create_parser.add_argument(
+    parser_create.add_argument(
         'sources',
         nargs = '*',
         help = (
             "File paths or URLs. "
             "If none provided, requires --editor-message." ) )
-    create_parser.add_argument(
+    parser_create.add_argument(
         '-r',
         '--recursive',
         action = 'store_true',
         help = "Recurse into directories"
     )
-    create_parser.add_argument(
+    parser_create.add_argument(
         '-s',
         '--strict',
         action = 'store_true',
         help = "Fail on first non-textual content instead of skipping" )
-    create_parser.add_argument(
+    parser_create.add_argument(
         '--clip',
         action = 'store_true',
         help = "Copy mimeogram to clipboard" )
-    create_parser.add_argument(
+    parser_create.add_argument(
         '--editor-message',
         action = 'store_true',
         help = "Spawn editor to capture an initial message part" )
 
-    apply_parser = subparsers.add_parser(
+    parser_apply = subparsers.add_parser(
         'apply',
         help = "Applies mimeogram to filesystem locations" )
-    apply_parser.add_argument(
+    parser_apply.add_argument(
         'input',
         nargs = '?',
         default = '-',
         help = "Input file (default: stdin if --clip not specified)" )
-    apply_parser.add_argument(
+    parser_apply.add_argument(
         '--clip',
         action = 'store_true',
-        help = 'Read mimeogram from clipboard instead of file/stdin' )
-    apply_parser.add_argument(
+        help = "Read mimeogram from clipboard instead of file/stdin" )
+    parser_apply.add_argument(
         '--base-path',
         type = __.Path,
-        help = 'Base path for relative locations' )
-    apply_parser.add_argument(
+        help = "Base path for relative locations" )
+    parser_apply.add_argument(
         '--interactive',
         action = 'store_true',
-        help = 'Prompt for action on each part' )
-    # apply_parser.add_argument(
+        help = "Prompt for action on each part" )
+    # parser_apply.add_argument(
     #     '--force',
     #     action = 'store_true',
     #     help = 'Override protected path checks' )
-    apply_parser.add_argument(
+    parser_apply.add_argument(
         '--dry-run',
         action = 'store_true',
-        help = 'Show what would be changed without making changes' )
+        help = "Show what would be changed without making changes" )
 
     return parser
 
@@ -219,13 +219,16 @@ async def _acquire_content_to_parse(
         content = _pyperclip.paste( )
         if not content:
             # TODO: Raise exception.
-            _scribe.error( 'Clipboard is empty' )
+            _scribe.error( "Clipboard is empty" )
             return None
-        _scribe.debug( 'Read %d characters from clipboard', len( content ) )
+        _scribe.debug(
+            "Read {} characters from clipboard.".format( len( content ) ) )
         return content
-    if cmd.input == '-': return __.sys.stdin.read( )
-    async with __.aiofiles.open( cmd.input, 'r' ) as f:
-        return await f.read( )
+    match cmd.input:
+        case '-': return __.sys.stdin.read( )
+        case _:
+            async with __.aiofiles.open( cmd.input, 'r' ) as f:
+                return await f.read( )
 
 
 def _setup_logging( verbose: bool ) -> None:
@@ -234,11 +237,11 @@ def _setup_logging( verbose: bool ) -> None:
     if verbose:
         logging.basicConfig(
             level = logging.DEBUG,
-            format = '%(levelname)s:%(name)s:%(message)s' )
+            format = "%(levelname)s:%(name)s:%(message)s" )
     else:
         logging.basicConfig(
             level = logging.INFO,
-            format = '%(levelname)s:%(message)s' )
+            format = "%(levelname)s:%(message)s" )
 
 
 if __name__ == '__main__': __.asyncio.run( main( ) )

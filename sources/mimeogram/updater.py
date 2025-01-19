@@ -48,14 +48,14 @@ class Reverter:
 
     async def restore( self ) -> None:
         ''' Restores files to original contents in reverse order. '''
-        from .exceptions import Omnierror
+        from .exceptions import ContentUpdateFailure
         for path in reversed( self.updated ):
             if path in self.originals:
                 try:
                     await _update_content_atomic(
                         path, self.originals[ path ] )
-                except Omnierror:
-                    _scribe.exception( 'Failed to restore %s', path )
+                except ContentUpdateFailure:
+                    _scribe.exception( "Failed to restore {path}" )
             else: path.unlink( )
 
 
@@ -71,24 +71,6 @@ class Updater:
         self.interactive = interactive
         self.reverter = reverter or Reverter()
 
-    def _get_path(
-        self,
-        location: __.typx.Annotated[
-            str, __.typx.Doc( "Part location (URL or path)" ) ],
-        base_path: __.typx.Annotated[
-            __.typx.Optional[ __.Path ],
-            __.typx.Doc( "Base path for relative locations" )
-        ] = None,
-    ) -> __.Path:
-        ''' Resolves part location to filesystem path. '''
-        from .exceptions import LocationInvalidity
-        if location.startswith( 'mimeogram://' ):
-            raise LocationInvalidity( location )
-        path = __.Path( location )
-        if not path.is_absolute( ) and base_path is not None:
-            path = base_path / path
-        return path
-
     async def _process_part(
         self,
         part: _parser.Part,
@@ -98,7 +80,7 @@ class Updater:
         # TODO: Work with various kinds of interactors.
         from .exceptions import ContentUpdateFailure
         if part.location.startswith( 'mimeogram://' ): return
-        target = self._get_path( part.location, base_path )
+        target = _get_path( part.location, base_path )
         if self.interactive:
             from .interactions import Action, prompt_action
             action, content = await prompt_action( part, target )
@@ -129,16 +111,34 @@ class Updater:
             raise
 
 
+def _get_path(
+    location: __.typx.Annotated[
+        str, __.typx.Doc( "Part location (URL or path)" ) ],
+    base_path: __.typx.Annotated[
+        __.typx.Optional[ __.Path ],
+        __.typx.Doc( "Base path for relative locations" )
+    ] = None,
+) -> __.Path:
+    ''' Resolves part location to filesystem path. '''
+    from .exceptions import LocationInvalidity
+    if location.startswith( 'mimeogram://' ):
+        raise LocationInvalidity( location )
+    path = __.Path( location )
+    if not path.is_absolute( ) and base_path is not None:
+        path = base_path / path
+    return path
+
+
 async def _update_content_atomic(
     path: __.Path,
     content: str,
     encoding: str = 'utf-8'
 ) -> None:
-    ''' Updates file content atomically. '''
+    ''' Updates file content atomically, if possible. '''
     # TODO: Develop safer way to produce temp file on same filesystem.
     from .exceptions import ContentUpdateFailure
     temp_path = path.with_suffix( f"{path.suffix}.tmp" )
-    try:
+    try: # pylint: disable=too-many-try-statements
         async with __.aiofiles.open(
             temp_path, 'w', encoding = encoding
         ) as f: await f.write( content )

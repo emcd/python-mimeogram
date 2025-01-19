@@ -23,6 +23,10 @@
 
 from . import __
 
+
+_scribe = __.produce_scribe( __name__ )
+
+
 def display_content(
     content: str,
     suffix: __.typx.Annotated[
@@ -30,17 +34,23 @@ def display_content(
     ] = '.txt'
 ) -> None:
     ''' Displays content in system pager. '''
+    from shutil import which
+    pager = __.os.environ.get( 'PAGER', 'less' )
+    # TODO: Platform-specific list.
+    for pager_ in ( pager, 'less', 'more' ):
+        if which( pager_ ):
+            pager = pager_
+            break
+    else:
+        print( content )
+        input( "Press Enter to continue..." )
+        return
     import tempfile
     import subprocess # nosec: b404
     with tempfile.NamedTemporaryFile( mode='w', suffix=suffix ) as tmp:
         tmp.write( content )
         tmp.flush( )
-        pager = __.os.environ.get( 'PAGER', 'less' )
         try: subprocess.run( [ pager, tmp.name ], check=True ) # nosec: b603
         except subprocess.CalledProcessError:
-            if pager == 'less':
-                subprocess.run(
-                    [ 'more', tmp.name ], check=True ) # nosec: b603,b607
-        except FileNotFoundError:
-            print(content)
-            input( "Press Enter to continue..." )
+            _scribe.exception( "Could not display content in pager." )
+            # TODO: Raise appropriate error.

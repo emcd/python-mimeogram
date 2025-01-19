@@ -38,10 +38,10 @@ class Action( __.enum.Enum ):
 
 async def display_content( part: _parser.Part ) -> None:
     ''' Displays part content in system pager. '''
-    from .display import display_content
+    from .display import display_content as display
     # Suffix from location for proper syntax highlighting.
     suffix = __.Path( part.location ).suffix or '.txt'
-    display_content( part.content, suffix = suffix )
+    display( part.content, suffix = suffix )
 
 
 async def display_differences(
@@ -59,8 +59,8 @@ async def display_differences(
     if not diff_lines:
         print( "No changes" )
         return
-    from .display import display_content
-    display_content( '\n'.join( diff_lines ), suffix = '.diff' )
+    from .display import display_content as display
+    display( '\n'.join( diff_lines ), suffix = '.diff' )
 
 
 async def edit_content( part: _parser.Part ) -> __.typx.Optional[ str ]:

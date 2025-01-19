@@ -18,6 +18,9 @@
 #============================================================================#
 
 
+''' Parsers for mimeograms and their constituents. '''
+
+
 from __future__ import annotations
 
 from . import __
@@ -75,7 +78,7 @@ def parse_headers( content: str ) -> tuple[ __.cabc.Mapping[ str, str ], str ]:
     headers = { }
     for line in headers_text.splitlines( ):
         if ':' not in line:
-            _scribe.warning( "Malformed header line: %s", line )
+            _scribe.warning( f"Malformed header line: {line}" )
             continue
         key, value = line.split( ':', 1 )
         headers[ key.strip( ) ] = value.strip( )
@@ -97,7 +100,7 @@ def extract_boundary( content: str ) -> str:
         # Windows clipboard has CRLF newlines.
         # Need to strip carriage returns and other whitespace from end.
         boundary = match.group( ).rstrip( ).lstrip( '-' )
-        _scribe.debug( 'Found boundary: %s', boundary )
+        _scribe.debug( f"Found boundary: {boundary}" )
         return boundary
     from .exceptions import MimeogramParseFailure
     raise MimeogramParseFailure( reason = "No mimeogram boundary found." )
@@ -119,7 +122,7 @@ def split_parts( content: str, boundary: str ) -> list[ str ]:
         content_with_parts = content
     # Split remaining content on regular boundary and skip leading text.
     parts = content_with_parts.split( regular_boundary )[ 1: ]
-    _scribe.debug( "Found %d parts to parse.", len( parts ) )
+    _scribe.debug( "Found {} parts to parse.".format( len( parts ) ) )
     return parts
 
 
@@ -145,7 +148,8 @@ def parse( content: str ) -> __.cabc.Sequence[ Part ]:
             boundary=boundary,
             original_content=part_content ) )
         _scribe.debug(
-            "Successfully parsed part %d with location: %s",
-            i, headers[ 'Content-Location' ] )
-    _scribe.debug( "Successfully parsed %d parts", len( parsed_parts ) )
+            "Successfully parsed part {i} with location: {location}".format(
+                i = i, location = headers[ 'Content-Location' ] ) )
+    _scribe.debug(
+        "Successfully parsed {} parts".format( len( parsed_parts ) ) )
     return parsed_parts

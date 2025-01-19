@@ -230,6 +230,8 @@ suggestion-mode = true
 const-rgx = '([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$'
 good-names = [ '_', '__' ]
 include-naming-hint = true
+[tool.pylint.broad_try_clause]
+max-try-statements = 2
 [tool.pylint.classes]
 defining-attr-methods = [ '__init__', '__new__', '__post_init__' ]
 exclude-protected = [ ]
@@ -291,6 +293,7 @@ disable = [
   'fixme',
   'f-string-without-interpolation',
   'import-outside-toplevel',
+  'logging-format-interpolation',
   'logging-fstring-interpolation',
   'multiple-statements',
   'reimported',

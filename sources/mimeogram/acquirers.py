@@ -77,7 +77,7 @@ async def acquire_content_from_file( path: __.Path ) -> Part:
         async with __.aiofiles.open( path, 'r', encoding = 'utf-8' ) as f:
             content = await f.read( )
     except Exception as exc: raise ContentAcquireFailure( path ) from exc
-    _scribe.debug( 'Read file: %s', path )
+    _scribe.debug( f"Read file: {path}" )
     return Part(
         location = str( path ), mimetype = mimetype, content = content )
 
@@ -115,7 +115,8 @@ class Acquirer:
                             self.async_client, source ) ) )
                 case '' | 'file':
                     path = (
-                        __.Path( source ) if isinstance( source, str ) else source )
+                        __.Path( source )
+                        if isinstance( source, str ) else source )
                     if path.is_dir():
                         paths = _collect_directory_files( path, recursive )
                         tasks.extend(
@@ -131,7 +132,7 @@ class Acquirer:
         for item in results:
             if isinstance( item, Exception ):
                 if self.strict: raise item
-                _scribe.error( 'Error processing source: %s', str( item ) )
+                _scribe.error( f"Error processing source: {item}" )
             elif item is not None: valid_parts.append( item )
         return valid_parts
 
@@ -150,7 +151,7 @@ async def _acquire_via_http(
     )
     try:
         response = await client.get( url )
-        response.raise_for_status()
+        response.raise_for_status( )
     except Exception as exc: raise ContentAcquireFailure( url ) from exc
     mimetype = (
         response.headers.get( 'content-type', 'application/octet-stream' )
@@ -166,7 +167,7 @@ async def _acquire_via_http(
     try: content = content_bytes.decode( charset )
     except Exception as exc:
         raise ContentDecodeFailure( url, charset ) from exc
-    _scribe.debug( 'Fetched URL: %s', url )
+    _scribe.debug( f"Fetched URL: {url}" )
     return Part(
         location = url,
         mimetype = mimetype,
@@ -183,12 +184,12 @@ def _collect_directory_files(
     paths = [ ]
     for entry in directory.iterdir( ):
         if entry.is_dir( ) and entry.name in VCS_DIRS:
-            _scribe.debug('Ignoring VCS directory: %s', entry)
+            _scribe.debug( f"Ignoring VCS directory: {entry}" )
             continue
         path = entry.resolve( )
         path_str = str( path )
         if cache( path_str ):
-            _scribe.debug( 'Ignoring path (matched by .gitignore): %s', entry )
+            _scribe.debug( f"Ignoring path (matched by .gitignore): {entry}" )
             continue
         if entry.is_dir( ) and recursive:
             paths.extend( _collect_directory_files( path, recursive ) )
