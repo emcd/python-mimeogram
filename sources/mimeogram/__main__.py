@@ -18,16 +18,14 @@
 #============================================================================#
 
 
-''' Entry point for python -m mimeogram '''
+''' Entrypoint. '''
 
 
 from __future__ import annotations
 
-from . import __
 from .cli import main
 
 
-if __name__ == '__main__':
+if '__main__' == __name__:
     import asyncio
-    import sys
-    sys.exit(asyncio.run(main()))
+    asyncio.run( main( ) )

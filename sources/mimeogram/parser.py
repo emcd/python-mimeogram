@@ -60,7 +60,7 @@ def parse_headers( content: str ) -> tuple[ __.cabc.Mapping[ str, str ], str ]:
     # TODO? Use 'split' instead of 'splitlines'.
     # Split headers and content
     try: headers_text, content = content.split( '\n\n', 1 )
-    except ValueError:
+    except ValueError as exc:
         # No blank line - try to parse anyway
         _scribe.warning( "No blank line after headers" )
         for i, line in enumerate( content.splitlines( ) ):
@@ -68,7 +68,9 @@ def parse_headers( content: str ) -> tuple[ __.cabc.Mapping[ str, str ], str ]:
                 headers_text = '\n'.join( content.splitlines( )[ :i ] )
                 content = '\n'.join( content.splitlines( )[ i: ] )
                 break
-        else: raise MimeogramParseFailure( "Could not find end of headers" )
+        else:
+            raise MimeogramParseFailure(
+                reason = "Could not find end of headers" ) from exc
     # Parse individual headers
     headers = { }
     for line in headers_text.splitlines( ):
@@ -80,7 +82,8 @@ def parse_headers( content: str ) -> tuple[ __.cabc.Mapping[ str, str ], str ]:
     # Check required headers
     missing = REQUIRED_HEADERS - headers.keys( )
     if missing:
-        raise MimeogramParseFailure( f"Missing required headers: {missing}" )
+        raise MimeogramParseFailure(
+            reason = f"Missing required headers: {missing}" )
     return headers, content.strip( )
 
 
@@ -101,31 +104,33 @@ def split_parts( content: str, boundary: str ) -> list[ str ]:
     # Try to split on final boundary first
     final_parts = content.split( final_boundary )
     if len( final_parts ) > 1:
-        _scribe.debug( 'Found final boundary' )
+        _scribe.debug( "Found final boundary" )
         content_with_parts = final_parts[ 0 ]
         trailing_text = final_parts[ 1 ].strip( )
-        if trailing_text: _scribe.debug( 'Found trailing text' )
+        if trailing_text: _scribe.debug( "Found trailing text" )
     else:
-        _scribe.warning( 'No final boundary found' )
+        _scribe.warning( "No final boundary found" )
         content_with_parts = content
     # Split remaining content on regular boundary and skip leading text.
     parts = content_with_parts.split( regular_boundary )[ 1: ]
-    _scribe.debug( 'Found %d parts to parse', len( parts ) )
+    _scribe.debug( "Found %d parts to parse", len( parts ) )
     return parts
 
 
 def parse( content: str ) -> __.cabc.Sequence[ Part ]:
     ''' Parse a mimeogram bundle into parts. '''
     from .exceptions import MimeogramParseFailure
-    if not content.strip(): raise MimeogramParseFailure( 'Empty content' )
+    if not content.strip():
+        raise MimeogramParseFailure( reason = "Empty content" )
     # Find first boundary
     boundary = extract_boundary( content )
     if not boundary:
-        raise MimeogramParseFailure( 'No mimeogram boundary found' )
+        raise MimeogramParseFailure( reason = "No mimeogram boundary found" )
     _scribe.debug( 'Found boundary: %s', boundary )
     # Split into parts
     parts_content = split_parts( content, boundary )
-    if not parts_content: raise MimeogramParseFailure( 'No parts found' )
+    if not parts_content:
+        raise MimeogramParseFailure( reason = "No parts found" )
     # Parse each part
     parsed_parts = [ ]
     for i, part_content in enumerate( parts_content, 1 ):
@@ -140,7 +145,7 @@ def parse( content: str ) -> __.cabc.Sequence[ Part ]:
             boundary=boundary,
             original_content=part_content ) )
         _scribe.debug(
-            'Successfully parsed part %d with location: %s',
+            "Successfully parsed part %d with location: %s",
             i, headers[ 'Content-Location' ] )
-    _scribe.debug( 'Successfully parsed %d parts', len( parsed_parts ) )
+    _scribe.debug( "Successfully parsed %d parts", len( parsed_parts ) )
     return parsed_parts

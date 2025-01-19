@@ -65,11 +65,11 @@ async def display_differences(
 
 async def edit_content( part: _parser.Part ) -> __.typx.Optional[ str ]:
     ''' Edits part content in system editor. '''
-    from .editor import read_message
+    from .editor import acquire_message
     from .exceptions import EditorFailure
     # Suffix from location for proper syntax highlighting.
     suffix = __.Path( part.location ).suffix or '.txt'
-    try: edited = read_message( part.content, suffix = suffix )
+    try: edited = acquire_message( part.content, suffix = suffix )
     except Exception as exc: raise EditorFailure( exc ) from exc
     if edited != part.content: return edited
     return

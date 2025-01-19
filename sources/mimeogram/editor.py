@@ -26,37 +26,31 @@ from __future__ import annotations
 from . import __
 
 
-_scribe = __.produce_scribe( __name__ )
-
-
-def read_message( initial_text: str = '', *, suffix: str = '.md' ) -> str:
-    ''' Spawn system editor to capture message. '''
+def acquire_message( initial_text: str = '', *, suffix: str = '.md' ) -> str:
+    ''' Acquires message via system editor. '''
     import subprocess # nosec: b404
     import tempfile
     from .exceptions import EditorFailure
+    # TODO: Refactor into editor finder.
     editor = (
             __.os.environ.get( 'VISUAL' )
         or  __.os.environ.get( 'EDITOR' )
+        # TODO: Better default for Windows.
         or  'nano' )
-    # TODO: Set 'delete' to True and operate inside of context manager.
-    with tempfile.NamedTemporaryFile(
-        delete = False, mode = 'w', suffix = suffix
-    ) as tmp:
+    with tempfile.NamedTemporaryFile( mode = 'r+', suffix = suffix ) as tmp:
         tmp_path = tmp.name
         tmp.write( initial_text )
-    try:
-        result = subprocess.run( # nosec: b603
-            [ editor, tmp_path ], check=True )
+        tmp.flush( )
+        # TODO: Refactor into helper functions.
+        try:
+            result = subprocess.run( # nosec: b603
+                [ editor, tmp_path ], check=True )
+        except subprocess.SubprocessError as exc:
+            raise EditorFailure( cause = exc ) from exc
         if result.returncode != 0:
-            raise EditorFailure( f"Exited with status {result.returncode}" )
-        with open( tmp_path, 'r', encoding='utf-8' ) as f:
-            return f.read()
-    except subprocess.SubprocessError as exc:
-        raise EditorFailure( "Editor process failed" ) from exc
-    except OSError as exc:
-        raise EditorFailure( "Failed to read editor output" ) from exc
-    finally:
-        try: __.os.remove( tmp_path )
-        except Exception:
-            # Log but do not fail if cleanup fails
-            _scribe.exception( "Failed to remove temporary file %s", tmp_path )
+            raise EditorFailure(
+                cause = f"Exited with status {result.returncode}" )
+        try: tmp.seek( 0 )
+        except Exception as exc: raise EditorFailure( cause = exc ) from exc
+        try: return tmp.read( )
+        except Exception as exc: raise EditorFailure( cause = exc ) from exc
