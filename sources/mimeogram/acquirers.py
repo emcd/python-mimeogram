@@ -38,117 +38,53 @@ class Part:
     charset: str = 'utf-8'
 
 
-# VCS directories to skip during traversal
-VCS_DIRS = frozenset( ( '.git', '.svn', '.hg', '.bzr' ) )
+async def acquire(
+    sources: __.cabc.Sequence[ str | __.Path ],
+    recursive: bool = False,
+    strict: bool = False,
+) -> __.cabc.Sequence[ Part ]:
+    ''' Acquires content from multiple sources. '''
+    from asyncio import gather
+    from urllib.parse import urlparse
+    tasks = [ ]
+    for source in sources:
+        url_parts = (
+            urlparse( source ) if isinstance( source, str )
+            else urlparse( str( source ) ) )
+        match url_parts.scheme:
+            case '' | 'file':
+                tasks.extend( _produce_fs_tasks( source, recursive ) )
+            case 'http' | 'https':
+                tasks.append( _produce_http_task( source ) )
+            case _:
+                pass # TODO: Raise exception for unsupported URL scheme.
+    # TODO: Factor out async processing.
+    results = await gather( *tasks, return_exceptions = True )
+    valid_parts = [ ]
+    for item in results:
+        if isinstance( item, Exception ):
+            if strict: raise item
+            _scribe.error( f"Error processing source: {item}" )
+        elif item is not None: valid_parts.append( item )
+    return valid_parts
 
 
-# MIME types that are considered textual beyond those starting with 'text/'
-TEXTUAL_MIME_TYPES = frozenset( (
-    'application/json',
-    'application/xml',
-    'application/xhtml+xml',
-    'application/javascript',
-    'image/svg+xml',
-) )
-
-
-def is_textual_mime( mimetype: str ) -> bool:
-    ''' Checks if MIME type represents textual content. '''
-    _scribe.debug( f"MIME type: {mimetype}" )
-    if mimetype.startswith( ( 'text/', 'application/x-', 'text/x-' ) ):
-        return True
-    return mimetype in TEXTUAL_MIME_TYPES
-
-
-async def acquire_content_from_file( path: __.Path ) -> Part:
+async def _acquire_from_file( path: __.Path ) -> Part:
     ''' Acquires content from text file. '''
-    # TODO: Factor out MIME check.
-    from magic import from_file
-    from .exceptions import (
-        ContentAcquireFailure,
-        MimetypeDetermineFailure,
-        TextualMimetypeInvalidity,
-    )
-    try: mimetype = from_file( path, mime = True )
-    except Exception as exc: raise MimetypeDetermineFailure( path ) from exc
-    if not is_textual_mime( mimetype ):
-        raise TextualMimetypeInvalidity( path, mimetype )
+    from .exceptions import ContentAcquireFailure
     try:
-        async with __.aiofiles.open( path, 'r', encoding = 'utf-8' ) as f:
+        async with __.aiofiles.open( path, 'r' ) as f:
             content = await f.read( )
     except Exception as exc: raise ContentAcquireFailure( path ) from exc
+    mimetype = _discover_mimetype( content.encode( ), path )
     _scribe.debug( f"Read file: {path}" )
     return Part(
         location = str( path ), mimetype = mimetype, content = content )
 
 
-class Acquirer:
-    ''' Acquires content from diverse locations. '''
-
-    def __init__( self, strict: bool = False ):
-        self.strict = strict
-        self.async_client = __.httpx.AsyncClient( follow_redirects = True )
-
-    async def __aenter__( self ):
-        return self
-
-    async def __aexit__( self, exc_type, exc_val, exc_tb ):
-        await self.async_client.aclose( )
-
-    async def acquire(
-        self,
-        sources: __.cabc.Sequence[ str | __.Path ],
-        recursive: bool = False
-    ) -> __.cabc.Sequence[ Part ]:
-        ''' Acquires content from multiple sources. '''
-        from asyncio import create_task, gather
-        from urllib.parse import urlparse
-        tasks = [ ]
-        for source in sources:
-            url_parts = (
-                urlparse( source ) if isinstance( source, str )
-                else urlparse( str( source ) ) )
-            match url_parts.scheme:
-                case 'http' | 'https':
-                    tasks.append( create_task(
-                        _acquire_via_http(
-                            self.async_client, source ) ) )
-                case '' | 'file':
-                    path = (
-                        __.Path( source )
-                        if isinstance( source, str ) else source )
-                    if path.is_dir():
-                        paths = _collect_directory_files( path, recursive )
-                        tasks.extend(
-                            create_task( acquire_content_from_file( p ) )
-                            for p in paths )
-                    else:
-                        tasks.append( create_task(
-                            acquire_content_from_file( path ) ) )
-                case _:
-                    pass # TODO: Raise exception for unsupported URL scheme.
-        results = await gather( *tasks, return_exceptions = True )
-        valid_parts = [ ]
-        for item in results:
-            if isinstance( item, Exception ):
-                if self.strict: raise item
-                _scribe.error( f"Error processing source: {item}" )
-            elif item is not None: valid_parts.append( item )
-        return valid_parts
-
-
-async def _acquire_via_http(
-    client: __.httpx.AsyncClient, url: str
-) -> Part:
+async def _acquire_via_http( client: __.httpx.AsyncClient, url: str ) -> Part:
     ''' Acquires content via HTTP/HTTPS. '''
-    # TODO: Factor out MIME check.
-    from magic import from_buffer
-    from .exceptions import (
-        ContentAcquireFailure,
-        ContentDecodeFailure,
-        MimetypeDetermineFailure,
-        TextualMimetypeInvalidity,
-    )
+    from .exceptions import ContentAcquireFailure, ContentDecodeFailure
     try:
         response = await client.get( url )
         response.raise_for_status( )
@@ -157,12 +93,8 @@ async def _acquire_via_http(
         response.headers.get( 'content-type', 'application/octet-stream' )
         .split( ';' )[ 0 ].strip( ) )
     content_bytes = response.content
-    if not is_textual_mime( mimetype ):
-        try: mimetype = from_buffer( content_bytes, mime = True )
-        except Exception as exc:
-            raise MimetypeDetermineFailure( url ) from exc
-    if not is_textual_mime( mimetype ):
-        raise TextualMimetypeInvalidity( url, mimetype )
+    if not _is_textual_mime( mimetype ):
+        mimetype = _discover_mimetype( content_bytes, url )
     charset = response.encoding or 'utf-8'
     try: content = content_bytes.decode( charset )
     except Exception as exc:
@@ -175,6 +107,8 @@ async def _acquire_via_http(
         charset = charset )
 
 
+# VCS directories to skip during traversal
+_VCS_DIRS = frozenset( ( '.git', '.svn', '.hg', '.bzr' ) )
 def _collect_directory_files(
     directory: __.Path, recursive: bool
 ) -> list[ __.Path ]:
@@ -183,7 +117,7 @@ def _collect_directory_files(
     cache = gitignorefile.Cache( )
     paths = [ ]
     for entry in directory.iterdir( ):
-        if entry.is_dir( ) and entry.name in VCS_DIRS:
+        if entry.is_dir( ) and entry.name in _VCS_DIRS:
             _scribe.debug( f"Ignoring VCS directory: {entry}" )
             continue
         path = entry.resolve( )
@@ -195,3 +129,52 @@ def _collect_directory_files(
             paths.extend( _collect_directory_files( path, recursive ) )
         elif entry.is_file( ): paths.append( path )
     return paths
+
+
+def _discover_mimetype( content: bytes, location: str | __.Path ) -> str:
+    from magic import from_buffer
+    from .exceptions import (
+        MimetypeDetermineFailure, TextualMimetypeInvalidity )
+    try: mimetype = from_buffer( content, mime = True )
+    except Exception as exc:
+        raise MimetypeDetermineFailure( location ) from exc
+    if not _is_textual_mime( mimetype ):
+        raise TextualMimetypeInvalidity( location, mimetype )
+    return mimetype
+
+
+# MIME types that are considered textual beyond those starting with 'text/'
+_TEXTUAL_MIME_TYPES = frozenset( (
+    'application/json',
+    'application/xml',
+    'application/xhtml+xml',
+    'application/javascript',
+    'image/svg+xml',
+) )
+def _is_textual_mime( mimetype: str ) -> bool:
+    ''' Checks if MIME type represents textual content. '''
+    _scribe.debug( f"MIME type: {mimetype}" )
+    if mimetype.startswith( ( 'text/', 'application/x-', 'text/x-' ) ):
+        return True
+    return mimetype in _TEXTUAL_MIME_TYPES
+
+
+def _produce_fs_tasks(
+    location: str | __.Path, recursive: bool = False
+): # TODO: Signature for return.
+    location_ = (
+        __.Path( location ) if isinstance( location, str ) else location )
+    if location_.is_file( ): return ( _acquire_from_file( location_ ), )
+    files = _collect_directory_files( location_, recursive )
+    return tuple( _acquire_from_file( f ) for f in files )
+
+
+def _produce_http_task( url: str ): # TODO: Signature for return.
+    # TODO: URL object rather than string.
+    # TODO: Reuse clients for common hosts.
+
+    async def _execute_session( ):
+        async with __.httpx.AsyncClient( follow_redirects = True ) as client:
+            return await _acquire_via_http( client, url )
+
+    return _execute_session( )

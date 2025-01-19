@@ -18,7 +18,10 @@
 #============================================================================#
 
 
-''' Command-line interface for mimeogram. '''
+''' Command-line interface. '''
+
+# TODO: Use BSD sysexits: os.EX_*.
+# TODO: Factor out _scribe.exception / SystemExit pattern.
 
 
 from __future__ import annotations
@@ -54,7 +57,7 @@ class ApplyCommand:
 
 async def create( cmd: CreateCommand ) -> int:
     ''' Creates mimeogram. '''
-    from .acquirers import Acquirer
+    from .acquirers import acquire
     from .exceptions import Omnierror
     from .format import format_bundle
     if cmd.editor_message:
@@ -65,9 +68,8 @@ async def create( cmd: CreateCommand ) -> int:
             raise SystemExit( 1 ) from exc
     else: message = None
     try:
-        async with Acquirer( strict = cmd.strict ) as acquirer:
-            parts = await acquirer.acquire(
-                cmd.sources, recursive = cmd.recursive )
+        parts = await acquire(
+            cmd.sources, recursive = cmd.recursive, strict = cmd.strict )
     except Omnierror as exc:
         _scribe.exception( "Could not acquire mimeogram parts." )
         raise SystemExit( 1 ) from exc
