@@ -87,51 +87,51 @@ def parse_headers( content: str ) -> tuple[ __.cabc.Mapping[ str, str ], str ]:
     return headers, content.strip( )
 
 
-def extract_boundary( content: str ) -> __.typx.Optional[ str ]:
-    ''' Find first mimeogram boundary in content. '''
+def extract_boundary( content: str ) -> str:
+    ''' Finds first mimeogram boundary in content. '''
     import re
     boundary_pattern = (
         re.compile( BOUNDARY_PATTERN, re.MULTILINE | re.IGNORECASE ) )
     match = boundary_pattern.search( content )
-    if match: return match.group().lstrip( '-' )  # Strip leading dashes
-    return None
+    if match:
+        # Windows clipboard has CRLF newlines.
+        # Need to strip carriage returns and other whitespace from end.
+        boundary = match.group( ).rstrip( ).lstrip( '-' )
+        _scribe.debug( 'Found boundary: %s', boundary )
+        return boundary
+    from .exceptions import MimeogramParseFailure
+    raise MimeogramParseFailure( reason = "No mimeogram boundary found." )
 
 
 def split_parts( content: str, boundary: str ) -> list[ str ]:
-    ''' Split content into parts using boundary. '''
-    final_boundary = f'--{boundary}--'
-    regular_boundary = f'--{boundary}'
-    # Try to split on final boundary first
+    ''' Splits content into parts using boundary. '''
+    regular_boundary = f"--{boundary}"
+    final_boundary = f"{regular_boundary}--"
+    # Detect final boundary and trailing text first.
     final_parts = content.split( final_boundary )
     if len( final_parts ) > 1:
-        _scribe.debug( "Found final boundary" )
+        _scribe.debug( "Found final boundary." )
         content_with_parts = final_parts[ 0 ]
         trailing_text = final_parts[ 1 ].strip( )
-        if trailing_text: _scribe.debug( "Found trailing text" )
+        if trailing_text: _scribe.debug( "Found trailing text." )
     else:
-        _scribe.warning( "No final boundary found" )
+        _scribe.warning( "No final boundary found." )
         content_with_parts = content
     # Split remaining content on regular boundary and skip leading text.
     parts = content_with_parts.split( regular_boundary )[ 1: ]
-    _scribe.debug( "Found %d parts to parse", len( parts ) )
+    _scribe.debug( "Found %d parts to parse.", len( parts ) )
     return parts
 
 
 def parse( content: str ) -> __.cabc.Sequence[ Part ]:
-    ''' Parse a mimeogram bundle into parts. '''
+    ''' Parses mimeogram. '''
     from .exceptions import MimeogramParseFailure
-    if not content.strip():
+    if not content.strip( ):
         raise MimeogramParseFailure( reason = "Empty content" )
-    # Find first boundary
     boundary = extract_boundary( content )
-    if not boundary:
-        raise MimeogramParseFailure( reason = "No mimeogram boundary found" )
-    _scribe.debug( 'Found boundary: %s', boundary )
-    # Split into parts
     parts_content = split_parts( content, boundary )
     if not parts_content:
         raise MimeogramParseFailure( reason = "No parts found" )
-    # Parse each part
     parsed_parts = [ ]
     for i, part_content in enumerate( parts_content, 1 ):
         headers, content = parse_headers( part_content.strip( ) )

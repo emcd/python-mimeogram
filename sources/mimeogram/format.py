@@ -50,15 +50,15 @@ def format_bundle(
         lines.append( format_part( message_part, boundary ) )
     for part in parts:
         lines.append( format_part( part, boundary ) )
-    lines.append( f'--{boundary}--' )
+    lines.append( f"--{boundary}--" )
     return '\n'.join( lines )
 
 
 def format_part( part: _acquirers.Part, boundary: str ) -> str:
     ''' Formats part with boundary marker and headers. '''
     return '\n'.join( (
-        f'--{boundary}',
-        f'Content-Location: {part.location}',
-        f'Content-Type: {part.mimetype}; charset={part.charset}',
+        f"--{boundary}",
+        f"Content-Location: {part.location}",
+        f"Content-Type: {part.mimetype}; charset={part.charset}",
         '',
         part.content ) )
