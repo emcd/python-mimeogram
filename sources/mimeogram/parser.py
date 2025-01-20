@@ -51,13 +51,13 @@ def parse( content: str ) -> __.cabc.Sequence[ Part ]:
     parts_content = _separate_parts( content, boundary )
     if not parts_content:
         raise MimeogramParseFailure( reason = "No parts found" )
-    parsed_parts = [ ]
+    parts: list[ Part ] = [ ]
     for i, part_content in enumerate( parts_content, 1 ):
         headers, content = _parse_descriptor_and_matter( part_content )
         try: _validate_descriptor( headers )
         except MimeogramParseFailure: continue
         content_type, charset = _parse_mimetype( headers[ 'Content-Type' ] )
-        parsed_parts.append( Part(
+        parts.append( Part(
             location=headers[ 'Content-Location' ],
             mimetype=content_type,
             charset=charset,
@@ -69,8 +69,8 @@ def parse( content: str ) -> __.cabc.Sequence[ Part ]:
             "Successfully parsed part {i} with location: {location}".format(
                 i = i, location = headers[ 'Content-Location' ] ) )
     _scribe.debug(
-        "Successfully parsed {} parts".format( len( parsed_parts ) ) )
-    return parsed_parts
+        "Successfully parsed {} parts".format( len( parts ) ) )
+    return parts
 
 
 _BOUNDARY_REGEX = __.re.compile(

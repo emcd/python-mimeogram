@@ -103,7 +103,7 @@ async def prompt_action(
                 edited = await edit_content( part )
                 if edited is not None:
                     content = edited
-            case 'i' | 'ignore': return Action.IGNORE, None
+            case 'i' | 'ignore': return Action.IGNORE, ''
             case 'v' | 'view': await display_content( part )
             case _: print( f"Invalid choice: {choice}" )
         continue

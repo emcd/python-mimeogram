@@ -27,9 +27,6 @@ from . import __
 from . import acquirers as _acquirers
 
 
-_scribe = __.produce_scribe( __name__ )
-
-
 def format_bundle(
     parts: __.cabc.Sequence[ _acquirers.Part ],
     message: __.typx.Optional[ str ] = None,
@@ -40,7 +37,7 @@ def format_bundle(
         raise MimeogramFormatEmpty( )
     from uuid import uuid4
     boundary = "====MIMEOGRAM_{uuid}====".format( uuid = uuid4( ).hex )
-    lines = [ ]
+    lines: list[ str ] = [ ]
     if message:
         message_part = _acquirers.Part(
             location = 'mimeogram://message',
