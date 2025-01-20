@@ -41,12 +41,11 @@ class Part:
 async def acquire(
     sources: __.cabc.Sequence[ str | __.Path ],
     recursive: bool = False,
-    strict: bool = False,
+    # strict: bool = False,
 ) -> __.cabc.Sequence[ Part ]:
     ''' Acquires content from multiple sources. '''
-    from asyncio import gather
     from urllib.parse import urlparse
-    tasks = [ ]
+    tasks: list[ __.cabc.Coroutine[ None, None, Part ] ] = [ ]
     for source in sources:
         url_parts = (
             urlparse( source ) if isinstance( source, str )
@@ -55,18 +54,10 @@ async def acquire(
             case '' | 'file':
                 tasks.extend( _produce_fs_tasks( source, recursive ) )
             case 'http' | 'https':
-                tasks.append( _produce_http_task( source ) )
+                tasks.append( _produce_http_task( str( source ) ) )
             case _:
                 pass # TODO: Raise exception for unsupported URL scheme.
-    # TODO: Factor out async processing.
-    results = await gather( *tasks, return_exceptions = True )
-    valid_parts = [ ]
-    for item in results:
-        if isinstance( item, Exception ):
-            if strict: raise item
-            _scribe.error( f"Error processing source: {item}" )
-        elif item is not None: valid_parts.append( item )
-    return valid_parts
+    return await __.gather_async( *tasks )
 
 
 async def _acquire_from_file( path: __.Path ) -> Part:
@@ -115,7 +106,7 @@ def _collect_directory_files(
     ''' Collects and filters files from directory hierarchy. '''
     import gitignorefile
     cache = gitignorefile.Cache( )
-    paths = [ ]
+    paths: list[ __.Path ] = [ ]
     for entry in directory.iterdir( ):
         if entry.is_dir( ) and entry.name in _VCS_DIRS:
             _scribe.debug( f"Ignoring VCS directory: {entry}" )
@@ -161,7 +152,7 @@ def _is_textual_mime( mimetype: str ) -> bool:
 
 def _produce_fs_tasks(
     location: str | __.Path, recursive: bool = False
-): # TODO: Signature for return.
+) -> tuple[ __.cabc.Coroutine[ None, None, Part ], ...]:
     location_ = (
         __.Path( location ) if isinstance( location, str ) else location )
     if location_.is_file( ): return ( _acquire_from_file( location_ ), )
@@ -169,11 +160,11 @@ def _produce_fs_tasks(
     return tuple( _acquire_from_file( f ) for f in files )
 
 
-def _produce_http_task( url: str ): # TODO: Signature for return.
+def _produce_http_task( url: str ) -> __.cabc.Coroutine[ None, None, Part ]:
     # TODO: URL object rather than string.
     # TODO: Reuse clients for common hosts.
 
-    async def _execute_session( ):
+    async def _execute_session( ) -> Part:
         async with __.httpx.AsyncClient( follow_redirects = True ) as client:
             return await _acquire_via_http( client, url )
 

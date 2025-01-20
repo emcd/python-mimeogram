@@ -31,7 +31,7 @@ U = __.typx.TypeVar( 'U' ) # generic
 E = __.typx.TypeVar( 'E', bound = Exception ) # error
 
 
-class Result( __.typx.Generic[ T ] ):
+class Result( __.typx.Generic[ T, E ] ):
     ''' Either a value or an error. '''
     # TODO: Enforce class and instance immutability.
 
@@ -54,7 +54,7 @@ class Result( __.typx.Generic[ T ] ):
     @__.abc.abstractmethod
     def transform(
         self, function: __.typx.Callable[ [ T ], U ]
-    ) -> __.typx.Self | Result[ U ]:
+    ) -> __.typx.Self | Result[ U, E ]:
         ''' Transforms value in value result. Ignores error result.
 
             Similar to Result.map in Rust.
@@ -62,7 +62,7 @@ class Result( __.typx.Generic[ T ] ):
         raise NotImplementedError
 
 
-class Value( Result[ T ] ):
+class Value( Result[ T, E ] ):
     ''' Result of successful computation. '''
 
     __match_args__ = ( 'value', )
@@ -76,10 +76,10 @@ class Value( Result[ T ] ):
 
     def transform(
         self, function: __.typx.Callable[ [ T ], U ]
-    ) -> Result[ U ]: return Value( function( self.value ) )
+    ) -> Result[ U, E ]: return Value( function( self.value ) )
 
 
-class Error( Result[ E ] ):
+class Error( Result[ T, E ] ):
     ''' Result of failed computation. '''
 
     __match_args__ = ( 'error', )

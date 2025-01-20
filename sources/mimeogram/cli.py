@@ -68,8 +68,8 @@ async def create( cmd: CreateCommand ) -> int:
             raise SystemExit( 1 ) from exc
     else: message = None
     try:
-        parts = await acquire(
-            cmd.sources, recursive = cmd.recursive, strict = cmd.strict )
+        # TODO: Handle cmd.strict.
+        parts = await acquire( cmd.sources, recursive = cmd.recursive )
     except Omnierror as exc:
         _scribe.exception( "Could not acquire mimeogram parts." )
         raise SystemExit( 1 ) from exc
