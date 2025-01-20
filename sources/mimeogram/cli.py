@@ -59,9 +59,9 @@ async def create( cmd: CreateCommand ) -> int:
     ''' Creates mimeogram. '''
     from .acquirers import acquire
     from .exceptions import Omnierror
-    from .format import format_bundle
+    from .formatters import format_bundle
     if cmd.editor_message:
-        from .editor import acquire_message
+        from .edit import acquire_message
         try: message = acquire_message( )
         except Omnierror as exc:
             _scribe.exception( "Could not acquire user message." )
@@ -87,8 +87,8 @@ async def create( cmd: CreateCommand ) -> int:
 async def apply( cmd: ApplyCommand ) -> int:
     ''' Applies mimeogram. '''
     from .exceptions import Omnierror
-    from .parser import parse
-    from .updater import Updater
+    from .parsers import parse
+    from .updaters import Updater
     try: content = await _acquire_content_to_parse( cmd )
     except Omnierror as exc:
         _scribe.exception( "Could not acquire mimeogram to apply." )

@@ -24,7 +24,7 @@
 from __future__ import annotations
 
 from . import __
-from . import parser as _parser
+from . import parsers as _parsers
 
 
 _scribe = __.produce_scribe( __name__ )
@@ -73,7 +73,7 @@ class Updater:
 
     async def _process_part(
         self,
-        part: _parser.Part,
+        part: _parsers.Part,
         base_path: __.typx.Optional[ __.Path ]
     ) -> __.typx.Optional[ __.Path ]:
         ''' Updates file from part content. '''
@@ -99,7 +99,7 @@ class Updater:
 
     async def update(
         self,
-        parts: __.cabc.Sequence[ _parser.Part ],
+        parts: __.cabc.Sequence[ _parsers.Part ],
         base_path: __.typx.Optional[ __.Path ] = None,
     ) -> None:
         ''' Update filesystem with content from parts. '''
