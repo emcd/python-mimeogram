@@ -35,8 +35,7 @@ def format_bundle(
     if not parts and message is None:
         from .exceptions import MimeogramFormatEmpty
         raise MimeogramFormatEmpty( )
-    from uuid import uuid4
-    boundary = "====MIMEOGRAM_{uuid}====".format( uuid = uuid4( ).hex )
+    boundary = "====MIMEOGRAM_{uuid}====".format( uuid = __.uuid4( ).hex )
     lines: list[ str ] = [ ]
     if message:
         message_part = _acquirers.Part(

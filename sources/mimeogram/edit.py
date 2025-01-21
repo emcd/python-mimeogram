@@ -28,7 +28,7 @@ from . import __
 
 def acquire_message( initial_text: str = '', *, suffix: str = '.md' ) -> str:
     ''' Acquires message via system editor. '''
-    import subprocess # nosec: b404
+    import subprocess # nosec B404
     import tempfile
     from .exceptions import EditorFailure
     # TODO: Refactor into editor finder.
@@ -43,7 +43,7 @@ def acquire_message( initial_text: str = '', *, suffix: str = '.md' ) -> str:
         tmp.flush( )
         # TODO: Refactor into helper functions.
         try:
-            result = subprocess.run( # nosec: b603
+            result = subprocess.run( # nosec B603
                 [ editor, tmp_path ], check=True )
         except subprocess.SubprocessError as exc:
             raise EditorFailure( cause = exc ) from exc

@@ -38,11 +38,21 @@ import types
 from dataclasses import dataclass
 from logging import getLogger as produce_scribe
 from pathlib import Path
+from uuid import uuid4
 
 import aiofiles
 import httpx
 import magic
 import typing_extensions as typx
 
+from absence import Absential, absent, is_absent
+from accretive.qaliases import AccretiveDictionary
+from frigid.qaliases import ImmutableClass
+from platformdirs import PlatformDirs
+
 
 ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
+
+
+package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]
+standard_dataclass = dataclass( frozen = True, kw_only = True, slots = True )

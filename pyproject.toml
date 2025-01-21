@@ -13,10 +13,12 @@ readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
 requires-python = '>= 3.10'
 dependencies = [
   'absence',
+  'accretive',
   'aiofiles',
   'gitignorefile',
   'frigid',
   'httpx',
+  'platformdirs',
   'pyperclip',
   'python-magic',
   'typing-extensions',
@@ -293,6 +295,7 @@ disable = [
   'fixme',
   'f-string-without-interpolation',
   'import-outside-toplevel',
+  'invalid-name',
   'logging-format-interpolation',
   'logging-fstring-interpolation',
   'multiple-statements',
@@ -357,8 +360,9 @@ reportMatchNotExhaustive = true
 reportMissingImports = true
 reportMissingTypeStubs = true
 reportMissingTypeArgument = true
-reportPrivateUsage = false # Covered by Pylint.
-reportSelfClsParameterName = false
+reportPrivateImportUsage = false      # Covered by other linters.
+reportPrivateUsage = false            # Covered by other linters.
+reportSelfClsParameterName = false    # Too opinionated.
 reportUnknownArgumentType = true
 reportUnknownLambdaType = true
 reportUnknownMemberType = true
@@ -371,6 +375,8 @@ reportUntypedClassDecorator = true
 reportUntypedFunctionDecorator = true
 reportUntypedNamedTuple = true
 reportUnusedExpression = true
+reportUnusedImport = false            # Covered by other linters.
+reportUnusedVariable = false          # Covered by other linters.
 #strict = [ 'sources' ]
 stubPath = 'sources/mimeogram/_typedecls'
 

@@ -46,11 +46,11 @@ def display_content(
         input( "Press Enter to continue..." )
         return
     import tempfile
-    import subprocess # nosec: b404
+    import subprocess # nosec B404
     with tempfile.NamedTemporaryFile( mode='w', suffix=suffix ) as tmp:
         tmp.write( content )
         tmp.flush( )
-        try: subprocess.run( [ pager, tmp.name ], check=True ) # nosec: b603
+        try: subprocess.run( [ pager, tmp.name ], check=True ) # nosec B603
         except subprocess.CalledProcessError:
             _scribe.exception( "Could not display content in pager." )
             # TODO: Raise appropriate error.

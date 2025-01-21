@@ -23,9 +23,8 @@
 
 from __future__ import annotations
 
+from . import __
 from .cli import main
 
 
-if '__main__' == __name__:
-    import asyncio
-    asyncio.run( main( ) )
+if '__main__' == __name__: __.asyncio.run( main( ) )

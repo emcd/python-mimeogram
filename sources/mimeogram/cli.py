@@ -59,7 +59,7 @@ async def main( args: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
     from .create import Command as CommandCreate, create
     parser = create_parser( )
     parsed_args = parser.parse_args( args )
-    _setup_logging( parsed_args.verbose )
+    await _prepare( parsed_args.verbose )
     match parsed_args.command:
         case 'create':
             await create( CommandCreate(
@@ -83,18 +83,46 @@ async def main( args: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
             raise SystemExit( 1 )
 
 
-def _setup_logging( verbose: bool ) -> None:
+def _discover_inscription_level_name(
+    application: __.ApplicationInformation,
+    control: __.InscriptionControl,
+) -> str:
+    if control.level is None:
+        from os import environ
+        for envvar_name_base in ( 'INSCRIPTION', 'LOG' ):
+            envvar_name = (
+                "{name}_{base}_LEVEL".format(
+                    base = envvar_name_base,
+                    name = application.name.upper( ) ) )
+            if envvar_name not in environ: continue
+            return environ[ envvar_name ]
+        return 'INFO'
+    return control.level
+
+
+async def _prepare( verbose: bool ) -> None:
     ''' Configures logging based on verbosity. '''
-    # TODO: Move to configuration module.
+    # TODO: Move to preparation module.
+    application = __.ApplicationInformation( )
+    inscription = __.InscriptionControl(
+        level = 'debug' if verbose else None, # type: ignore
+        mode = __.InscriptionModes.Rich ) # type: ignore
+    await __.prepare( # type: ignore
+        application = application, inscription = inscription )
     import logging
-    if verbose:
-        logging.basicConfig(
-            level = logging.DEBUG,
-            format = "%(levelname)s:%(name)s:%(message)s" )
-    else:
-        logging.basicConfig(
-            level = logging.INFO,
-            format = "%(levelname)s:%(message)s" )
+    from rich.console import Console
+    from rich.logging import RichHandler
+    level_name = _discover_inscription_level_name( application, inscription )
+    level = getattr( logging, level_name.upper( ) )
+    handler = RichHandler(
+        console = Console( stderr = True ),
+        rich_tracebacks = True,
+        show_time = False )
+    logging.basicConfig(
+        format = '%(name)s: %(message)s',
+        level = level,
+        handlers = [ handler ] )
+    logging.captureWarnings( True )
 
 
-if __name__ == '__main__': __.asyncio.run( main( ) )
+if '__main__' == __name__: __.asyncio.run( main( ) )
