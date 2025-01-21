@@ -44,13 +44,13 @@ class Control:
     # TODO? Support capture file and stream choice.
 
 
-def prepare( control: Control ):
+def prepare( control: Control ) -> None:
     ''' Prepares various scribes in a sensible manner. '''
     prepare_scribe_icecream( control = control )
     prepare_scribe_logging( control = control )
 
 
-def prepare_scribe_icecream( control: Control ):
+def prepare_scribe_icecream( control: Control ) -> None:
     ''' Prepares Icecream debug printing. '''
     from icecream import ic, install
     nomargs: dict[ str, __.typx.Any ] = dict(
@@ -67,7 +67,7 @@ def prepare_scribe_icecream( control: Control ):
     install( )
 
 
-def prepare_scribe_logging( control: Control ):
+def prepare_scribe_logging( control: Control ) -> None:
     ''' Prepares standard Python logging. '''
     # https://docs.python.org/3/howto/logging.html#configuring-logging-for-a-library
     import logging

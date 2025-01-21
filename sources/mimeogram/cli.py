@@ -53,30 +53,30 @@ def create_parser( ) -> __.typx.Any:
     return parser
 
 
-async def main( args: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
+async def main( argv: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
     ''' CLI entry point. '''
     from .apply import Command as CommandApply, apply
     from .create import Command as CommandCreate, create
     parser = create_parser( )
-    parsed_args = parser.parse_args( args )
-    await _prepare( parsed_args.verbose )
-    match parsed_args.command:
+    arguments = parser.parse_args( argv )
+    await _prepare( arguments.verbose )
+    match arguments.command:
         case 'create':
             await create( CommandCreate(
-                sources = parsed_args.sources,
-                recursive = parsed_args.recursive,
-                strict = parsed_args.strict,
-                clip = parsed_args.clip,
-                editor_message = parsed_args.editor_message
+                sources = arguments.sources,
+                recursive = arguments.recursive,
+                strict = arguments.strict,
+                clip = arguments.clip,
+                editor_message = arguments.editor_message
             ) )
         case 'apply':
             await apply( CommandApply(
-                input = parsed_args.input,
-                clip = parsed_args.clip,
-                base_path = parsed_args.base_path,
-                interactive = parsed_args.interactive,
+                input = arguments.input,
+                clip = arguments.clip,
+                base_path = arguments.base_path,
+                interactive = arguments.interactive,
                 # force = parsed_args.force,
-                dry_run = parsed_args.dry_run
+                dry_run = arguments.dry_run
             ) )
         case _:
             parser.print_help( )
@@ -102,11 +102,10 @@ def _discover_inscription_level_name(
 
 async def _prepare( verbose: bool ) -> None:
     ''' Configures logging based on verbosity. '''
-    # TODO: Move to preparation module.
     application = __.ApplicationInformation( )
     inscription = __.InscriptionControl(
-        level = 'debug' if verbose else None, # type: ignore
-        mode = __.InscriptionModes.Rich ) # type: ignore
+        level = 'debug' if verbose else None,
+        mode = __.InscriptionModes.Rich )
     await __.prepare( # type: ignore
         application = application, inscription = inscription )
     import logging

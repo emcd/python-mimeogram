@@ -64,7 +64,7 @@ async def prepare(
     #         edits = configedits,
     #         file = configfile ) )
     auxdata = _state.Globals(
-        application = application, directories = directories ) # type: ignore
+        application = application, directories = directories )
     # if environment: await _environment.update( auxdata )
     if __.is_absent( inscription ): # type: ignore
         inscription: _inscription.Control = _inscription.Control( )
