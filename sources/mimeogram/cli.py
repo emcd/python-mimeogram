@@ -106,8 +106,7 @@ async def _prepare( verbose: bool ) -> None:
     inscription = __.InscriptionControl(
         level = 'debug' if verbose else None,
         mode = __.InscriptionModes.Rich )
-    await __.prepare( # type: ignore
-        application = application, inscription = inscription )
+    await __.prepare( application = application, inscription = inscription )
     import logging
     from rich.console import Console
     from rich.logging import RichHandler

@@ -39,8 +39,7 @@ async def prepare(
     # configedits: _dictedits.Edits = ( ),
     # configfile: __.Absential[ _locations.Url ] = __.absent,
     # environment: bool = False,
-    inscription: __.Absential[ # type: ignore
-        _inscription.Control ] = __.absent,
+    inscription: __.Absential[ _inscription.Control ] = __.absent,
 ) -> _state.Globals:
     ''' Prepares globals DTO for use with library functions.
 
@@ -66,22 +65,23 @@ async def prepare(
     auxdata = _state.Globals(
         application = application, directories = directories )
     # if environment: await _environment.update( auxdata )
-    if __.is_absent( inscription ): # type: ignore
-        inscription: _inscription.Control = _inscription.Control( )
-    _inscription.prepare( control = inscription ) # type: ignore
+    if __.is_absent( inscription ):
+        inscription_: _inscription.Control = _inscription.Control( )
+    else: inscription_ = inscription
+    _inscription.prepare( control = inscription_ )
     _inscribe_preparation_report( auxdata )
     return auxdata
 
 
 def _inscribe_preparation_report( auxdata: _state.Globals ):
     scribe = __.produce_scribe( __.package_name )
-    scribe.info( f"Application Name: {auxdata.application.name}" )
-    scribe.info( f"Execution ID: {auxdata.application.execution_id}" )
-    scribe.info( "Application Cache Location: {}".format(
+    scribe.debug( f"Application Name: {auxdata.application.name}" )
+    scribe.debug( f"Execution ID: {auxdata.application.execution_id}" )
+    scribe.debug( "Application Cache Location: {}".format(
         auxdata.provide_cache_location( ) ) )
-    scribe.info( "Application Data Location: {}".format(
+    scribe.debug( "Application Data Location: {}".format(
         auxdata.provide_data_location( ) ) )
-    scribe.info( "Application State Location: {}".format(
+    scribe.debug( "Application State Location: {}".format(
         auxdata.provide_state_location( ) ) )
-    # scribe.info( "Package Data Location: {}".format(
+    # scribe.debug( "Package Data Location: {}".format(
     #     auxdata.distribution.provide_data_location( ) ) )

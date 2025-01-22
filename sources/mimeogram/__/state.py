@@ -39,6 +39,10 @@ class Globals(
     decorators = ( __.standard_dataclass, ),
 ):
     ''' Immutable global data. Required by some library functions. '''
+    # TODO: Decorate with PEP 681 'dataclass_transform' once
+    #       'frigid.ImmutableClass' can accept mutable class attributes,
+    #       so that we can mark '__dataclass_transform__' as such.
+    #       Decoration will, in principle, allow us to ditch the stubs file.
 
     application: _application.Information
     # configuration: __.AccretiveDictionary
