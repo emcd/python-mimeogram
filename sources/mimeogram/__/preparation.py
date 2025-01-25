@@ -23,7 +23,7 @@
 
 from . import imports as __
 from . import application as _application
-# from . import configuration as _configuration
+from . import configuration as _configuration
 # from . import dictedits as _dictedits
 from . import distribution as _distribution
 # from . import environment as _environment
@@ -35,7 +35,7 @@ async def prepare(
     exits: __.ExitsAsync,
     application: _application.Information = _application.Information( ),
     # configedits: _dictedits.Edits = ( ),
-    # configfile: __.Absential[ _locations.Url ] = __.absent,
+    configfile: __.Absential[ __.Path ] = __.absent,
     # environment: bool = False,
     inscription: __.Absential[ _inscription.Control ] = __.absent,
 ) -> _state.Globals:
@@ -53,15 +53,16 @@ async def prepare(
     distribution = (
         await _distribution.Information.prepare(
             package = __.package_name, exits = exits ) )
-    # configuration = (
-    #     await _configuration.acquire(
-    #         application_name = application.name,
-    #         directories = directories,
-    #         distribution = distribution,
-    #         edits = configedits,
-    #         file = configfile ) )
+    configuration = (
+        await _configuration.acquire(
+            application_name = application.name,
+            directories = directories,
+            distribution = distribution,
+            # edits = configedits,
+            file = configfile ) )
     auxdata = _state.Globals(
         application = application,
+        configuration = configuration,
         directories = directories,
         distribution = distribution,
         exits = exits )

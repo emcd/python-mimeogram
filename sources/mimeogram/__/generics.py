@@ -94,3 +94,6 @@ class Error( Result[ T, E ] ):
     def transform(
         self, function: __.typx.Callable[ [ T ], U ]
     ) -> __.typx.Self: return self
+
+
+GenericResult: __.typx.TypeAlias = Result[ __.typx.Any, Exception ]

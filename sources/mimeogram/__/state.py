@@ -41,7 +41,7 @@ class Globals(
     ''' Immutable global data. Required by some library functions. '''
 
     application: _application.Information
-    # configuration: __.AccretiveDictionary
+    configuration: __.AccretiveDictionary[ str, __.typx.Any ]
     directories: __.PlatformDirs
     distribution: _distribution.Information
     exits: __.ExitsAsync
@@ -71,12 +71,12 @@ class Globals(
         ''' Provides particular species of location from configuration. '''
         species_name = species.value
         base = getattr( self.directories, f"user_{species_name}_path" )
-        # if spec := self.configuration.get( 'locations', { } ).get( species ):
-        #     args = {
-        #         f"user_{species}": base,
-        #         'user_home': __.Path.home( ),
-        #         'application_name': self.application.name,
-        #     }
-        #     base = __.Path( spec.format( **args ) )
+        if spec := self.configuration.get( 'locations', { } ).get( species ):
+            args: dict[ str, str | __.Path ] = {
+                f"user_{species}": base,
+                'user_home': __.Path.home( ),
+                'application_name': self.application.name,
+            }
+            base = __.Path( spec.format( **args ) )
         if appendages: return base.joinpath( *appendages )
         return base

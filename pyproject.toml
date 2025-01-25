@@ -364,6 +364,7 @@ reportMatchNotExhaustive = true
 reportMissingImports = true
 reportMissingTypeStubs = true
 reportMissingTypeArgument = true
+reportPossiblyUnboundVariable = false # Covered by other linters.
 reportPrivateImportUsage = false      # Covered by other linters.
 reportPrivateUsage = false            # Covered by other linters.
 reportSelfClsParameterName = false    # Too opinionated.

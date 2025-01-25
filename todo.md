@@ -11,6 +11,7 @@
   - `edits-by-context`: Context-based insertions, replacements, deletions
   - `unified-diff`: Direct unified diff from LLM
   - `none`: Whole file updates
+- Add indicator for original newline type to `Content-Type` header.
 
 ### Project Structure
 - Extract line-edit operations into standalone package (shared with AI
@@ -52,7 +53,6 @@
   - Progress tracking
 
 ### Configuration System
-- Add configuration file support
 - Support environment variables for configuration
 - Make protected paths configurable
 - Special handling for XDG directories
@@ -109,7 +109,8 @@
 - Profile and optimize common operations
 - Optimize async fanout for batch operations
 
-Notes:
+## Notes
+
 - Priority is given to stability and correctness
 - New features should maintain the simple, composable design
 - All features should work across platforms
