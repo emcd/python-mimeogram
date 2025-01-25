@@ -54,5 +54,10 @@ from platformdirs import PlatformDirs
 ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
 
 
+@typx.dataclass_transform( frozen_default = True, kw_only_default = True )
+class ImmutableStandardDataclass( ImmutableClass ):
+    ''' Metaclass for immutable standard dataclasses. (Typechecker hack.) '''
+
+
 package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]
 standard_dataclass = dataclass( frozen = True, kw_only = True, slots = True )

@@ -32,13 +32,11 @@ class Modes( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     Rich = 'rich' # print rich library logs to stderr
 
 
-@__.standard_dataclass
-class Control:
+class Control(
+    metaclass = __.ImmutableStandardDataclass,
+    decorators = ( __.standard_dataclass, ),
+):
     ''' Logging and debug printing behavior. '''
-    # TODO: Decorate with PEP 681 'dataclass_transform' once
-    #       'frigid.ImmutableClass' can accept mutable class attributes,
-    #       so that we can mark '__dataclass_transform__' as such.
-    #       Decoration will, in principle, allow us to ditch the stubs file.
 
     mode: Modes = Modes.Null
     level: __.typx.Optional[ __.typx.Literal[

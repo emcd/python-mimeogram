@@ -35,14 +35,10 @@ class DirectorySpecies( __.enum.Enum ): # TODO: Python 3.11: StrEnum
 
 
 class Globals(
-    metaclass = __.ImmutableClass,
+    metaclass = __.ImmutableStandardDataclass,
     decorators = ( __.standard_dataclass, ),
 ):
     ''' Immutable global data. Required by some library functions. '''
-    # TODO: Decorate with PEP 681 'dataclass_transform' once
-    #       'frigid.ImmutableClass' can accept mutable class attributes,
-    #       so that we can mark '__dataclass_transform__' as such.
-    #       Decoration will, in principle, allow us to ditch the stubs file.
 
     application: _application.Information
     # configuration: __.AccretiveDictionary
@@ -54,7 +50,7 @@ class Globals(
         from dataclasses import fields
         return {
             field.name: getattr( self, field.name )
-            for field in fields( self ) } # type: ignore
+            for field in fields( self ) }
 
     def provide_cache_location( self, *appendages: str ) -> __.Path:
         ''' Provides cache location from configuration. '''

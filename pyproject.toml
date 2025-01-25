@@ -15,12 +15,14 @@ dependencies = [
   'absence',
   'accretive',
   'aiofiles',
-  'gitignorefile',
   'frigid',
+  'gitignorefile',
   'httpx',
+  'icecream', # TODO: Should only be in development environment.
   'platformdirs',
   'pyperclip',
   'python-magic',
+  'rich',
   'typing-extensions',
 ]
 classifiers = [ # https://pypi.org/classifiers
