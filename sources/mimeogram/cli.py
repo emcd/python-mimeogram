@@ -76,7 +76,7 @@ async def main( argv: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
                     clip = arguments.clip,
                     base_path = arguments.base_path,
                     interactive = arguments.interactive,
-                    # force = parsed_args.force,
+                    # force = arguments.force,
                     dry_run = arguments.dry_run
                 ) )
             case _:
@@ -108,7 +108,10 @@ async def _prepare( exits: __.ExitsAsync, verbose: bool ) -> None:
         level = 'debug' if verbose else None,
         mode = __.InscriptionModes.Rich )
     await __.prepare(
-        application = application, exits = exits, inscription = inscription )
+        application = application,
+        environment = True,
+        exits = exits,
+        inscription = inscription )
     import logging
     from rich.console import Console
     from rich.logging import RichHandler

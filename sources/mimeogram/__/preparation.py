@@ -26,7 +26,7 @@ from . import application as _application
 from . import configuration as _configuration
 # from . import dictedits as _dictedits
 from . import distribution as _distribution
-# from . import environment as _environment
+from . import environment as _environment
 from . import inscription as _inscription
 from . import state as _state
 
@@ -36,7 +36,7 @@ async def prepare(
     application: _application.Information = _application.Information( ),
     # configedits: _dictedits.Edits = ( ),
     configfile: __.Absential[ __.Path ] = __.absent,
-    # environment: bool = False,
+    environment: bool = False,
     inscription: __.Absential[ _inscription.Control ] = __.absent,
 ) -> _state.Globals:
     ''' Prepares globals DTO for use with library functions.
@@ -66,7 +66,7 @@ async def prepare(
         directories = directories,
         distribution = distribution,
         exits = exits )
-    # if environment: await _environment.update( auxdata )
+    if environment: await _environment.update( auxdata )
     if __.is_absent( inscription ):
         inscription_: _inscription.Control = _inscription.Control( )
     else: inscription_ = inscription
@@ -85,5 +85,5 @@ def _inscribe_preparation_report( auxdata: _state.Globals ):
         auxdata.provide_data_location( ) ) )
     scribe.debug( "Application State Location: {}".format(
         auxdata.provide_state_location( ) ) )
-    # scribe.debug( "Package Data Location: {}".format(
-    #     auxdata.distribution.provide_data_location( ) ) )
+    scribe.debug( "Package Data Location: {}".format(
+        auxdata.distribution.provide_data_location( ) ) )

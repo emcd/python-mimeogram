@@ -22,6 +22,7 @@ dependencies = [
   'importlib-resources',
   'platformdirs',
   'pyperclip',
+  'python-dotenv',
   'python-magic',
   'rich',
   'tomli',
