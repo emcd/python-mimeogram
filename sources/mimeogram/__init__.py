@@ -22,10 +22,20 @@
 
 
 from . import __
+from . import acquirers
+from . import apply
+from . import cli
+from . import create
+from . import display
+from . import edit
 from . import exceptions
+from . import formatters
+from . import interactions
+from . import parsers
+from . import updaters
 
 
 __version__ = '1.0a0'
 
 
-# TODO: Reclassify package modules as immutable and concealed.
+__.reclassify_modules_as_immutable( __name__ )

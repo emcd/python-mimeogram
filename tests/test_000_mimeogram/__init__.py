@@ -49,7 +49,8 @@ def _discover_module_names( package_name ):
     return tuple(
         path.stem
         for path in Path( package.__file__ ).parent.glob( '*.py' )
-        if '__init__.py' != path.name and path.is_file( ) )
+        if      path.name not in ( '__init__.py', '__main__.py' )
+            and path.is_file( ) )
 
 
 MODULES_NAMES_BY_PACKAGE_NAME = DictionaryProxy( {

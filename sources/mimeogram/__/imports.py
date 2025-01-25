@@ -47,7 +47,7 @@ import typing_extensions as typx
 
 from absence import Absential, absent, is_absent
 from accretive.qaliases import AccretiveDictionary
-from frigid.qaliases import ImmutableClass
+from frigid.qaliases import ImmutableClass, reclassify_modules_as_immutable
 from platformdirs import PlatformDirs
 
 
