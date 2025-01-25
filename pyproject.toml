@@ -19,6 +19,7 @@ dependencies = [
   'gitignorefile',
   'httpx',
   'icecream', # TODO: Should only be in development environment.
+  'importlib-resources',
   'platformdirs',
   'pyperclip',
   'python-magic',

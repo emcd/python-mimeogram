@@ -59,28 +59,29 @@ async def main( argv: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
     from .create import Command as CommandCreate, create
     parser = create_parser( )
     arguments = parser.parse_args( argv )
-    await _prepare( arguments.verbose )
-    match arguments.command:
-        case 'create':
-            await create( CommandCreate(
-                sources = arguments.sources,
-                recursive = arguments.recursive,
-                strict = arguments.strict,
-                clip = arguments.clip,
-                editor_message = arguments.editor_message
-            ) )
-        case 'apply':
-            await apply( CommandApply(
-                input = arguments.input,
-                clip = arguments.clip,
-                base_path = arguments.base_path,
-                interactive = arguments.interactive,
-                # force = parsed_args.force,
-                dry_run = arguments.dry_run
-            ) )
-        case _:
-            parser.print_help( )
-            raise SystemExit( 1 )
+    async with __.ExitsAsync( ) as exits:
+        await _prepare( exits = exits, verbose = arguments.verbose )
+        match arguments.command:
+            case 'create':
+                await create( CommandCreate(
+                    sources = arguments.sources,
+                    recursive = arguments.recursive,
+                    strict = arguments.strict,
+                    clip = arguments.clip,
+                    editor_message = arguments.editor_message
+                ) )
+            case 'apply':
+                await apply( CommandApply(
+                    input = arguments.input,
+                    clip = arguments.clip,
+                    base_path = arguments.base_path,
+                    interactive = arguments.interactive,
+                    # force = parsed_args.force,
+                    dry_run = arguments.dry_run
+                ) )
+            case _:
+                parser.print_help( )
+                raise SystemExit( 1 )
 
 
 def _discover_inscription_level_name(
@@ -100,13 +101,14 @@ def _discover_inscription_level_name(
     return control.level
 
 
-async def _prepare( verbose: bool ) -> None:
+async def _prepare( exits: __.ExitsAsync, verbose: bool ) -> None:
     ''' Configures logging based on verbosity. '''
     application = __.ApplicationInformation( )
     inscription = __.InscriptionControl(
         level = 'debug' if verbose else None,
         mode = __.InscriptionModes.Rich )
-    await __.prepare( application = application, inscription = inscription )
+    await __.prepare(
+        application = application, exits = exits, inscription = inscription )
     import logging
     from rich.console import Console
     from rich.logging import RichHandler

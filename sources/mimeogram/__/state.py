@@ -23,7 +23,7 @@
 
 from . import imports as __
 from . import application as _application
-# from . import distribution as _distribution
+from . import distribution as _distribution
 
 
 class DirectorySpecies( __.enum.Enum ): # TODO: Python 3.11: StrEnum
@@ -43,7 +43,8 @@ class Globals(
     application: _application.Information
     # configuration: __.AccretiveDictionary
     directories: __.PlatformDirs
-    # distribution: _distribution.Information
+    distribution: _distribution.Information
+    exits: __.ExitsAsync
 
     def as_dictionary( self ) -> __.cabc.Mapping[ str, __.typx.Any ]:
         ''' Returns shallow copy of state. '''

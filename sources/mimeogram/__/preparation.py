@@ -20,21 +20,19 @@
 
 ''' Preparation of the library core. '''
 
-# TODO: Drop type ignores for absence sentinel once package figures out
-#       a way to appease the obnoxious type checker stupidity.
-
 
 from . import imports as __
 from . import application as _application
 # from . import configuration as _configuration
 # from . import dictedits as _dictedits
-# from . import distribution as _distribution
+from . import distribution as _distribution
 # from . import environment as _environment
 from . import inscription as _inscription
 from . import state as _state
 
 
 async def prepare(
+    exits: __.ExitsAsync,
     application: _application.Information = _application.Information( ),
     # configedits: _dictedits.Edits = ( ),
     # configfile: __.Absential[ _locations.Url ] = __.absent,
@@ -52,9 +50,9 @@ async def prepare(
         though the library initialization, itself, is inherently sequential.
     '''
     directories = application.produce_platform_directories( )
-    # distribution = (
-    #     await _distribution.Information.prepare(
-    #         package = __.package_name, exits = exits ) )
+    distribution = (
+        await _distribution.Information.prepare(
+            package = __.package_name, exits = exits ) )
     # configuration = (
     #     await _configuration.acquire(
     #         application_name = application.name,
@@ -63,7 +61,10 @@ async def prepare(
     #         edits = configedits,
     #         file = configfile ) )
     auxdata = _state.Globals(
-        application = application, directories = directories )
+        application = application,
+        directories = directories,
+        distribution = distribution,
+        exits = exits )
     # if environment: await _environment.update( auxdata )
     if __.is_absent( inscription ):
         inscription_: _inscription.Control = _inscription.Control( )

@@ -35,6 +35,7 @@ import re
 import sys
 import types
 
+from contextlib import AsyncExitStack as ExitsAsync
 from dataclasses import dataclass
 from logging import getLogger as produce_scribe
 from pathlib import Path
