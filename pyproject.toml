@@ -24,6 +24,7 @@ dependencies = [
   'pyperclip',
   'python-magic',
   'rich',
+  'tomli',
   'typing-extensions',
 ]
 classifiers = [ # https://pypi.org/classifiers

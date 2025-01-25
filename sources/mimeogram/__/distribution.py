@@ -70,7 +70,7 @@ async def _acquire_development_information( ) -> tuple[ __.Path, str ]:
     from aiofiles import open as open_
     from tomli import loads
     location = (
-        __.Path( __file__ ).parents[ 2 ].resolve( strict = True ) )
+        __.Path( __file__ ).parents[ 3 ].resolve( strict = True ) )
     async with open_( location / 'pyproject.toml' ) as file:
         pyproject = loads( await file.read( ) )
     name = pyproject[ 'project' ][ 'name' ]

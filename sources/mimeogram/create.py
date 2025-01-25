@@ -40,7 +40,7 @@ class Command:
     recursive: bool = False
     strict: bool = False
     clip: bool = False
-    editor_message: bool = False
+    edit_message: bool = False
 
 
 def add_cli_subparser(
@@ -49,32 +49,33 @@ def add_cli_subparser(
     ''' Adds subparser for command. '''
     parser = subparsers.add_parser(
         'create',
-        help = "Creates mimeogram from files/URLs" )
+        help = "Creates mimeogram from filesystem locations or URLs." )
     parser.add_argument(
         'sources',
         nargs = '*',
         help = (
             "File paths or URLs. "
-            "If none provided, requires --editor-message." ) )
+            "If none provided, requires '--edit-message' argument." ) )
     parser.add_argument(
         '-r',
         '--recursive',
         action = 'store_true',
-        help = "Recurse into directories"
+        help = "Recurse into directories."
     )
     parser.add_argument(
         '-s',
         '--strict',
         action = 'store_true',
-        help = "Fail on first non-textual content instead of skipping" )
+        help = "Fail on first non-textual content instead of skipping." )
     parser.add_argument(
-        '--clip',
+        '--clip', '--clipboard', '--to-clipboard',
         action = 'store_true',
-        help = "Copy mimeogram to clipboard" )
+        help = "Copy mimeogram to clipboard." )
     parser.add_argument(
-        '--editor-message',
+        '--edit-message',
         action = 'store_true',
-        help = "Spawn editor to capture an initial message part" )
+        help = "Spawn editor to capture an introductory message." )
+    # TODO: '-m'/'--message': message string, similar to 'git-commit'.
 
 
 async def create( cmd: Command ) -> int:
@@ -82,7 +83,7 @@ async def create( cmd: Command ) -> int:
     from .acquirers import acquire
     from .exceptions import Omnierror
     from .formatters import format_bundle
-    if cmd.editor_message:
+    if cmd.edit_message:
         from .edit import acquire_message
         try: message = acquire_message( )
         except Omnierror as exc:

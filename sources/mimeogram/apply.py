@@ -50,24 +50,24 @@ def add_cli_subparser(
     ''' Adds subparser for command. '''
     parser_apply = subparsers.add_parser(
         'apply',
-        help = "Applies mimeogram to filesystem locations" )
+        help = "Applies mimeogram to filesystem locations." )
     parser_apply.add_argument(
         'input',
         nargs = '?',
         default = '-',
-        help = "Input file (default: stdin if --clip not specified)" )
+        help = "Input file (default: stdin if '--clip' not specified)." )
     parser_apply.add_argument(
-        '--clip',
+        '--clip', '--clipboard', '--from-clipboard',
         action = 'store_true',
         help = "Read mimeogram from clipboard instead of file/stdin" )
     parser_apply.add_argument(
         '--base-path',
         type = __.Path,
-        help = "Base path for relative locations" )
+        help = "Base path for relative locations." )
     parser_apply.add_argument(
         '--interactive',
         action = 'store_true',
-        help = "Prompt for action on each part" )
+        help = "Prompt for action on each part." )
     # parser_apply.add_argument(
     #     '--force',
     #     action = 'store_true',
@@ -75,7 +75,7 @@ def add_cli_subparser(
     parser_apply.add_argument(
         '--dry-run',
         action = 'store_true',
-        help = "Show what would be changed without making changes" )
+        help = "Show what would be changed without making changes." )
 
 
 async def apply( cmd: Command ) -> int:

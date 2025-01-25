@@ -68,7 +68,7 @@ async def main( argv: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
                     recursive = arguments.recursive,
                     strict = arguments.strict,
                     clip = arguments.clip,
-                    editor_message = arguments.editor_message
+                    edit_message = arguments.edit_message
                 ) )
             case 'apply':
                 await apply( CommandApply(
