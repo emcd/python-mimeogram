@@ -20,6 +20,7 @@ dependencies = [
   'httpx',
   'icecream', # TODO: Should only be in development environment.
   'importlib-resources',
+  # 'importlib-resources @ git+https://github.com/emcd/importlib_resources@as-file-traversable',
   'platformdirs',
   'pyperclip',
   'python-dotenv',
@@ -158,6 +159,8 @@ python = [
     '3.13',
     'pypy3.10',
 ]
+[tool.hatch.metadata]
+allow-direct-references = true
 [tool.hatch.version]
 path = 'sources/mimeogram/__init__.py'
 
