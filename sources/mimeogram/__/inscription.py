@@ -54,6 +54,13 @@ def prepare( control: Control ) -> None:
 
 def prepare_scribe_icecream( control: Control ) -> None:
     ''' Prepares Icecream debug printing. '''
+    from os import environ
+    match environ.get( '_DEVELOPMENT_MODE_', 'FALSE' ).upper( ):
+        case '1' | 'ON' | 'T' | 'TRUE' | 'Y' | 'YES': pass
+        case _:
+            import builtins
+            setattr( builtins, 'ic', _passthrough )
+            return
     from icecream import ic, install
     nomargs: dict[ str, __.typx.Any ] = dict(
         includeContext = True, prefix = 'DEBUG    ' )
@@ -108,3 +115,7 @@ def _discover_inscription_level_name( control: Control ) -> str:
             return environ[ envvar_name ]
         return 'INFO'
     return control.level
+
+
+def _passthrough( *args: __.typx.Any ) -> __.cabc.Sequence[ __.typx.Any ]:
+    return args

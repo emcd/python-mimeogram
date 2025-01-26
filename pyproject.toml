@@ -18,7 +18,6 @@ dependencies = [
   'frigid',
   'gitignorefile',
   'httpx',
-  'icecream', # TODO: Should only be in development environment.
   'importlib-resources',
   # 'importlib-resources @ git+https://github.com/emcd/importlib_resources@as-file-traversable',
   'platformdirs',
@@ -28,6 +27,7 @@ dependencies = [
   'rich',
   'tomli',
   'typing-extensions',
+  'tyro',
 ]
 classifiers = [ # https://pypi.org/classifiers
   'Development Status :: 3 - Alpha',
@@ -111,6 +111,7 @@ dependencies = [
 post-install-commands = [
 ]
 [tool.hatch.envs.develop.env-vars]
+_DEVELOPMENT_MODE_ = 'TRUE'
 PYTHONUNBUFFERED = 'TRUE' # TODO: Only for coverage/pytest.
 [tool.hatch.envs.develop.scripts]
 docsgen = [
