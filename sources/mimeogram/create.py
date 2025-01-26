@@ -77,8 +77,8 @@ async def create( cmd: Command ) -> int:
     from .exceptions import Omnierror
     from .formatters import format_bundle
     if cmd.edit:
-        from .edit import acquire_message
-        try: message = acquire_message( )
+        from .edit import edit_content
+        try: message = edit_content( )
         except Omnierror as exc:
             _scribe.exception( "Could not acquire user message." )
             raise SystemExit( 1 ) from exc

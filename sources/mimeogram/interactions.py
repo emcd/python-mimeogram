@@ -65,14 +65,15 @@ async def display_differences(
 
 async def edit_content( part: _parsers.Part ) -> __.typx.Optional[ str ]:
     ''' Edits part content in system editor. '''
-    from .edit import acquire_message
+    from .edit import edit_content as edit
     from .exceptions import EditorFailure
     # Suffix from location for proper syntax highlighting.
     suffix = __.Path( part.location ).suffix or '.txt'
-    try: edited = acquire_message( part.content, suffix = suffix )
+    try: edited = edit( part.content, suffix = suffix )
     except Exception as exc: raise EditorFailure( exc ) from exc
     if edited != part.content: return edited
     return
+
 
 async def prompt_action(
     part: _parsers.Part, target: __.Path
@@ -101,8 +102,7 @@ async def prompt_action(
             case 'd' | 'diff': await display_differences( part, target )
             case 'e' | 'edit':
                 edited = await edit_content( part )
-                if edited is not None:
-                    content = edited
+                if edited is not None: content = edited
             case 'i' | 'ignore': return Action.IGNORE, ''
             case 'v' | 'view': await display_content( part )
             case _: print( f"Invalid choice: {choice}" )

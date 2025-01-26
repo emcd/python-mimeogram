@@ -26,30 +26,39 @@ from __future__ import annotations
 from . import __
 
 
-def acquire_message( initial_text: str = '', *, suffix: str = '.md' ) -> str:
-    ''' Acquires message via system editor. '''
-    import subprocess # nosec B404
-    import tempfile
-    from .exceptions import EditorFailure
-    # TODO: Refactor into editor finder.
+_scribe = __.produce_scribe( __name__ )
+
+
+def discover_editor( ) -> str:
+    ''' Discovers editor from environment and other places. '''
+    from shutil import which
     editor = (
             __.os.environ.get( 'VISUAL' )
         or  __.os.environ.get( 'EDITOR' )
         # TODO: Better default for Windows.
         or  'nano' )
+    # TODO: Platform-specific list.
+    for editor_ in ( editor, 'nano' ):
+        if which( editor_ ): return editor_
+    from .exceptions import ProgramAbsenceError
+    raise ProgramAbsenceError( 'editor' )
+
+
+def edit_content( content: str = '', *, suffix: str = '.md' ) -> str:
+    ''' Edits content via system editor. '''
+    from .exceptions import EditorFailure, ProgramAbsenceError
+    try: editor = discover_editor( )
+    except ProgramAbsenceError:
+        _scribe.exception( "Could not find editor program." )
+        return content
+    import subprocess # nosec B404
+    import tempfile
     with tempfile.NamedTemporaryFile( mode = 'r+', suffix = suffix ) as tmp:
-        tmp_path = tmp.name
-        tmp.write( initial_text )
+        tmp.write( content )
         tmp.flush( )
-        # TODO: Refactor into helper functions.
-        try:
-            result = subprocess.run( # nosec B603
-                [ editor, tmp_path ], check=True )
+        try: __.subprocess_execute( editor, tmp.name )
         except subprocess.SubprocessError as exc:
             raise EditorFailure( cause = exc ) from exc
-        if result.returncode != 0:
-            raise EditorFailure(
-                cause = f"Exited with status {result.returncode}" )
         try: tmp.seek( 0 )
         except Exception as exc: raise EditorFailure( cause = exc ) from exc
         try: return tmp.read( )

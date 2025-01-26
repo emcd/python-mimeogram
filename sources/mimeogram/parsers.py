@@ -29,48 +29,49 @@ from . import __
 _scribe = __.produce_scribe( __name__ )
 
 
-@__.dataclass
-class Part:
-    ''' Part parsed from mimeogram. '''
+class Part(
+    metaclass = __.ImmutableStandardDataclass,
+    decorators = ( __.standard_dataclass, ),
+):
+    ''' Part of mimeogram. '''
     location: str
     mimetype: str
     charset: str
+    linesep: str
     content: str
-    raw_headers: __.cabc.Mapping[ str, str ]
-    boundary: str
-    original_content: __.typx.Optional[ str ] = None
 
 
-def parse( content: str ) -> __.cabc.Sequence[ Part ]:
+def parse( mgtext: str ) -> __.cabc.Sequence[ Part ]:
     ''' Parses mimeogram. '''
     # TODO? Accept 'strict' flag.
     from .exceptions import MimeogramParseFailure
-    if not content.strip( ):
-        raise MimeogramParseFailure( reason = "Empty content" )
-    boundary = _extract_boundary( content )
-    parts_content = _separate_parts( content, boundary )
-    if not parts_content:
-        raise MimeogramParseFailure( reason = "No parts found" )
+    if not mgtext.strip( ):
+        raise MimeogramParseFailure( reason = "Empty mimeogram." )
+    boundary = _extract_boundary( mgtext )
+    ptexts = _separate_parts( mgtext, boundary )
+    if not ptexts: raise MimeogramParseFailure( reason = "No parts found." )
     parts: list[ Part ] = [ ]
-    for i, part_content in enumerate( parts_content, 1 ):
-        headers, content = _parse_descriptor_and_matter( part_content )
-        try: _validate_descriptor( headers )
-        except MimeogramParseFailure: continue
-        content_type, charset = _parse_mimetype( headers[ 'Content-Type' ] )
-        parts.append( Part(
-            location=headers[ 'Content-Location' ],
-            mimetype=content_type,
-            charset=charset,
-            content=content,
-            raw_headers=headers,
-            boundary=boundary,
-            original_content=part_content ) )
-        _scribe.debug(
-            "Successfully parsed part {i} with location: {location}".format(
-                i = i, location = headers[ 'Content-Location' ] ) )
-    _scribe.debug(
-        "Successfully parsed {} parts".format( len( parts ) ) )
+    for i, ptext in enumerate( ptexts, 1 ):
+        try: part = parse_part( ptext )
+        except MimeogramParseFailure:
+            _scribe.exception( f"Parse failure on part {i}." )
+            continue
+        parts.append( part )
+        _scribe.debug( f"Parsed part {i} with location '{part.location}'." )
+    _scribe.debug( "Parsed {} parts.".format( len( parts ) ) )
     return parts
+
+
+def parse_part( ptext: str ) -> Part:
+    ''' Parses mimeogram part. '''
+    descriptor, content = _parse_descriptor_and_content( ptext )
+    _validate_descriptor( descriptor )
+    mimetype, charset, linesep = (
+        _parse_mimetype( descriptor[ 'Content-Type' ] ) )
+    return Part(
+        location = descriptor[ 'Content-Location' ],
+        mimetype = mimetype, charset = charset, linesep = linesep,
+        content = content )
 
 
 _BOUNDARY_REGEX = __.re.compile(
@@ -92,7 +93,7 @@ def _extract_boundary( content: str ) -> str:
 
 _DESCRIPTOR_REGEX = __.re.compile(
     r'''^(?P<name>[\w\-]+)\s*:\s*(?P<value>.*)$''' )
-def _parse_descriptor_and_matter(
+def _parse_descriptor_and_content(
     content: str
 ) -> tuple[ __.cabc.Mapping[ str, str ], str ]:
     descriptor: __.cabc.Mapping[ str, str ] = { }
@@ -121,15 +122,19 @@ def _parse_descriptor_and_matter(
     return descriptor, '\n'.join( lines )
 
 
-def _parse_mimetype( header: str ) -> tuple[ str, str ]:
+_QUOTES = '"\''
+def _parse_mimetype( header: str ) -> tuple[ str, str, str ]:
     ''' Extracts MIME type and charset from Content-Type header. '''
     parts = [ p.strip( ) for p in header.split( ';' ) ]
     mimetype = parts[ 0 ]
-    charset = 'utf-8'  # Default charset
+    charset = 'utf-8'
+    linesep = 'lf'
     for part in parts[ 1: ]:
         if part.startswith( 'charset=' ):
-            charset = part[ 8: ].strip( '"\'' )
-    return mimetype, charset
+            charset = part[ 8: ].strip( _QUOTES )
+        if part.startswith( 'linesep=' ):
+            linesep = part[ 8: ].strip( _QUOTES ).lower( )
+    return mimetype, charset, linesep
 
 
 def _separate_parts( content: str, boundary: str ) -> list[ str ]:

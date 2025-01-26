@@ -80,17 +80,18 @@ class Updater:
         # TODO: Work with various kinds of interactors.
         from .exceptions import ContentUpdateFailure
         if part.location.startswith( 'mimeogram://' ): return
+        content = part.content
         target = _get_path( part.location, base_path )
         if self.interactive:
             from .interactions import Action, prompt_action
-            action, content = await prompt_action( part, target )
+            action, content_ = await prompt_action( part, target )
             if action == Action.IGNORE: return
-            if content: part.content = content
+            if content_: content = content_
         target.parent.mkdir( parents = True, exist_ok = True )
         await self.reverter.save( target )
         try:
             await _update_content_atomic(
-                target, part.content, encoding = part.charset )
+                target, content, encoding = part.charset )
         except ContentUpdateFailure:
             await self.reverter.restore( )
             raise

@@ -99,6 +99,20 @@ class MimetypeDetermineFailure( Omnierror ):
             f"Could not determine MIME type for content at '{location}'." )
 
 
+class PagerFailure( Omnierror ):
+    ''' Failure while operating pager. '''
+
+    def __init__( self, cause: str | Exception ):
+        super( ).__init__( f"Could not display content. Cause: {cause}" )
+
+
+class ProgramAbsenceError( Omnierror ):
+    ''' Could not discover valid editor. '''
+
+    def __init__( self, species: str ):
+        super( ).__init__( f"Could not discover valid {species}." )
+
+
 class TextualMimetypeInvalidity( Omnierror ):
     ''' Invalid textual MIME type for content at location. '''
 

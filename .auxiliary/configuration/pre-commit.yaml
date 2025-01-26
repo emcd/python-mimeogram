@@ -62,7 +62,7 @@ repos:
   - id: tryceratops
     name: 'Lint: Tryceratops'
     #stages: [ 'pre-push' ]
-    # fail_fast: true
+    fail_fast: true
 
 - repo: https://github.com/semgrep/semgrep
   rev: 'v1.89.0'
@@ -72,7 +72,7 @@ repos:
     # https://semgrep.dev/explore
     args: [ '--config', 'p/python', '--error', '--skip-unknown-extensions' ]
     stages: [ 'pre-push' ]
-    # fail_fast: true
+    fail_fast: true
 
 - repo: local
   hooks:
@@ -80,7 +80,7 @@ repos:
   - id: hatch-pyright
     name: 'Lint: Pyright'
     stages: [ 'pre-push' ]
-    # fail_fast: true
+    fail_fast: true
     language: system
     always_run: true
     pass_filenames: false
@@ -89,7 +89,7 @@ repos:
   - id: hatch-pylint
     name: 'Lint: Pylint'
     stages: [ 'pre-push' ]
-    # fail_fast: true
+    fail_fast: true
     language: system
     always_run: true
     pass_filenames: false
@@ -98,7 +98,7 @@ repos:
   - id: hatch-coverage
     name: 'Coverage: Pytest'
     stages: [ 'pre-push' ]
-    # fail_fast: true
+    fail_fast: true
     language: system
     always_run: true
     pass_filenames: false
@@ -107,7 +107,7 @@ repos:
   - id: document-python
     name: 'Document (Python)'
     stages: [ 'pre-push' ]
-    # fail_fast: true
+    fail_fast: true
     language: system
     always_run: true
     pass_filenames: false
@@ -116,7 +116,7 @@ repos:
   - id: package-python
     name: 'Package (Python)'
     stages: [ 'pre-push' ]
-    # fail_fast: true
+    fail_fast: true
     language: system
     always_run: true
     pass_filenames: false
