@@ -99,10 +99,22 @@
 - Profile and optimize common operations
 - Optimize async fanout for batch operations
 
-## Notes
+# Notes
 
 - Priority is given to stability and correctness
 - New features should maintain the simple, composable design
 - All features should work across platforms
 - User experience should remain consistent and intuitive
 - File format changes should be backward compatible
+
+# Release 1.0 Checklist
+
+[ ] Represent original newline marker for textual `Content-Type`.
+[ ] Ensure correct charset and newlines during applies.
+[ ] Single keystroke actions. (I.e., no ENTER key to act.)
+[ ] Ability to queue applies. (Hit IDE/LS with all changes at once.)
+[ ] Ability to choose hunks to apply.
+[ ] Protect against changes to unsafe paths + override mechanism.
+[ ] Build standalone executables (PyOxidizer or PyInstaller + StaticX).
+[ ] Tests.
+[ ] Documentation.
