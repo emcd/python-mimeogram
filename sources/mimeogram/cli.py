@@ -33,7 +33,7 @@ _scribe = __.produce_scribe( __name__ )
 
 class Cli(
     metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, __.standard_tyro_class ),
+    decorators = ( __.standard_dataclass, __.simple_tyro_class ),
 ):
     ''' Mimeogram: hierarchical data exchange between humans and LLMs. '''
 

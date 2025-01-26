@@ -49,16 +49,16 @@ class Command(
             aliases = ( '--clipboard', '--to-clipboard' ),
             help = "Copy mimeogram to clipboard." ),
     ] = False
-    edit_message: __.typx.Annotated[ # TODO: Make '--edit' primary.
+    edit: __.typx.Annotated[
         bool,
         __.tyro.conf.arg( # pyright: ignore
-            aliases = ( '-e', '--edit' ),
+            aliases = ( '-e', '--edit-message' ),
             help = "Spawn editor to capture an introductory message." ),
     ] = False
-    recursive: __.typx.Annotated[ # TODO: Make '--recurse' primary.
+    recurse: __.typx.Annotated[
         bool,
         __.tyro.conf.arg( # pyright: ignore
-            aliases = ( '-r', '--recurse-directories' ),
+            aliases = ( '-r', '--recurse-directories', '--recursive' ),
             help = "Recurse into directories." ),
     ] = False
     strict: __.typx.Annotated[
@@ -76,7 +76,7 @@ async def create( cmd: Command ) -> int:
     from .acquirers import acquire
     from .exceptions import Omnierror
     from .formatters import format_bundle
-    if cmd.edit_message:
+    if cmd.edit:
         from .edit import acquire_message
         try: message = acquire_message( )
         except Omnierror as exc:
@@ -85,7 +85,7 @@ async def create( cmd: Command ) -> int:
     else: message = None
     try:
         # TODO: Handle cmd.strict.
-        parts = await acquire( cmd.sources, recursive = cmd.recursive )
+        parts = await acquire( cmd.sources, recursive = cmd.recurse )
     except Omnierror as exc:
         _scribe.exception( "Could not acquire mimeogram parts." )
         raise SystemExit( 1 ) from exc

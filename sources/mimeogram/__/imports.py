@@ -62,5 +62,6 @@ class ImmutableStandardDataclass( ImmutableClass ):
 
 
 package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]
+simple_tyro_class = tyro.conf.configure( )
 standard_dataclass = dataclass( frozen = True, kw_only = True, slots = True )
 standard_tyro_class = tyro.conf.configure( tyro.conf.OmitArgPrefixes )

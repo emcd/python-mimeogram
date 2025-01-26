@@ -24,16 +24,18 @@
 from . import imports as __
 
 
-# Note: We reuse a fixed execution ID across instances of this class
-#       which are default arguments to various preparation functions.
-#       This is done to improve import times with the understanding
-#       that not more than one execution ID should be needed during
-#       the lifetime of the process importing the library.
-_execution_id = __.uuid4( ).urn
+# # Note: We reuse a fixed execution ID across instances of this class
+# #       which are default arguments to various preparation functions.
+# #       This is done to improve import times with the understanding
+# #       that not more than one execution ID should be needed during
+# #       the lifetime of the process importing the library.
+# _execution_id = __.uuid4( ).urn
 
 
-@__.standard_dataclass
-class Information:
+class Information(
+    metaclass = __.ImmutableStandardDataclass,
+    decorators = ( __.standard_dataclass, )
+):
     ''' Information about an application. '''
 
     name: __.typx.Annotated[
@@ -43,15 +45,17 @@ class Information:
     publisher: __.typx.Annotated[
         __.typx.Optional[ str ],
         __.typx.Doc( "For derivation of platform directories." ),
+        __.tyro.conf.Suppress,
     ] = None
     version: __.typx.Annotated[
         __.typx.Optional[ str ],
         __.typx.Doc( "For derivation of platform directories." ),
+        __.tyro.conf.Suppress,
     ] = None
-    execution_id: __.typx.Annotated[
-        __.typx.Optional[ str ],
-        __.typx.Doc( "For telemetry, etc..." ),
-    ] = _execution_id
+    # execution_id: __.typx.Annotated[
+    #     __.typx.Optional[ str ],
+    #     __.typx.Doc( "For telemetry, etc..." ),
+    # ] = _execution_id
 
     def produce_platform_directories( self ) -> __.PlatformDirs:
         ''' Produces platform directories object for application. '''

@@ -37,7 +37,7 @@ class Command(
 ):
     ''' Applies mimeogram to filesystem locations. '''
 
-    input: __.typx.Annotated[ # TODO: Rename to 'source'.
+    source: __.typx.Annotated[
         str, # TODO: str | Path
         __.tyro.conf.arg( # pyright: ignore
             help = (
@@ -55,12 +55,12 @@ class Command(
         __.tyro.conf.arg( # pyright: ignore
             help = "Prompt for action on each part." ),
     ] = False
-    base_path: __.typx.Annotated[ # TODO: Rename to 'base'.
+    base: __.typx.Annotated[
         __.typx.Optional[ __.Path ],
         __.tyro.conf.arg( # pyright: ignore
             aliases = ( '--base-directory', ),
             help = (
-                "Base directory for relative locations."
+                "Base directory for relative locations. "
                 "Defaults to current working directory." ) ),
     ] = None
     dry_run: __.typx.Annotated[
@@ -95,7 +95,7 @@ async def apply( cmd: Command ) -> int:
         _scribe.exception( "Could not parse mimeogram." )
         raise SystemExit( 1 ) from exc
     updater = Updater( interactive = cmd.interactive )
-    try: await updater.update( parts, base_path = cmd.base_path )
+    try: await updater.update( parts, base_path = cmd.base )
     except Omnierror as exc:
         _scribe.exception( "Could not apply mimeogram." )
         raise SystemExit( 1 ) from exc
@@ -116,8 +116,8 @@ async def _acquire_content_to_parse(
         _scribe.debug(
             "Read {} characters from clipboard.".format( len( content ) ) )
         return content
-    match cmd.input:
+    match cmd.source:
         case '-': return __.sys.stdin.read( )
         case _:
-            async with __.aiofiles.open( cmd.input, 'r' ) as f:
+            async with __.aiofiles.open( cmd.source, 'r' ) as f:
                 return await f.read( )
