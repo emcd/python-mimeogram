@@ -23,8 +23,6 @@
 
 from __future__ import annotations
 
-import argparse as _argparse
-
 import pyperclip as _pyperclip
 
 from . import __
@@ -33,49 +31,51 @@ from . import __
 _scribe = __.produce_scribe( __name__ )
 
 
-@__.dataclass
-class Command:
-    ''' CLI arguments. '''
-    input: str
-    clip: bool = False
-    base_path: __.typx.Optional[ __.Path ] = None
-    interactive: bool = False
-    # force: bool = False
-    dry_run: bool = False
+class Command(
+    metaclass = __.ImmutableStandardDataclass,
+    decorators = ( __.standard_dataclass, __.standard_tyro_class ),
+):
+    ''' Applies mimeogram to filesystem locations. '''
 
+    input: __.typx.Annotated[ # TODO: Rename to 'source'.
+        str, # TODO: str | Path
+        __.tyro.conf.arg( # pyright: ignore
+            help = (
+                "Source file for mimeogram. "
+                "Defaults to stdin if '--clip' not specified." ) ),
+    ] = '-'
+    clip: __.typx.Annotated[
+        bool,
+        __.tyro.conf.arg( # pyright: ignore
+            aliases = ( '--clipboard', '--from-clipboard' ),
+            help = "Read mimeogram from clipboard instead of file or stdin." ),
+    ] = False
+    interactive: __.typx.Annotated[
+        bool,
+        __.tyro.conf.arg( # pyright: ignore
+            help = "Prompt for action on each part." ),
+    ] = False
+    base_path: __.typx.Annotated[ # TODO: Rename to 'base'.
+        __.typx.Optional[ __.Path ],
+        __.tyro.conf.arg( # pyright: ignore
+            aliases = ( '--base-directory', ),
+            help = (
+                "Base directory for relative locations."
+                "Defaults to current working directory." ) ),
+    ] = None
+    dry_run: __.typx.Annotated[
+        bool,
+        __.tyro.conf.arg( # pyright: ignore
+            help = "Show what would be changed without making changes." ),
+    ] = False
+    force: __.typx.Annotated[
+        bool,
+        __.tyro.conf.arg( # pyright: ignore
+            help = 'Override protected path checks' ),
+    ] = False
 
-def add_cli_subparser(
-    subparsers: _argparse._SubParsersAction[ __.typx.Any ]
-) -> None:
-    ''' Adds subparser for command. '''
-    parser_apply = subparsers.add_parser(
-        'apply',
-        help = "Applies mimeogram to filesystem locations." )
-    parser_apply.add_argument(
-        'input',
-        nargs = '?',
-        default = '-',
-        help = "Input file (default: stdin if '--clip' not specified)." )
-    parser_apply.add_argument(
-        '--clip', '--clipboard', '--from-clipboard',
-        action = 'store_true',
-        help = "Read mimeogram from clipboard instead of file/stdin" )
-    parser_apply.add_argument(
-        '--base-path',
-        type = __.Path,
-        help = "Base path for relative locations." )
-    parser_apply.add_argument(
-        '--interactive',
-        action = 'store_true',
-        help = "Prompt for action on each part." )
-    # parser_apply.add_argument(
-    #     '--force',
-    #     action = 'store_true',
-    #     help = 'Override protected path checks' )
-    parser_apply.add_argument(
-        '--dry-run',
-        action = 'store_true',
-        help = "Show what would be changed without making changes." )
+    async def __call__( self, auxdata: __.Globals ) -> None:
+        await apply( self )
 
 
 async def apply( cmd: Command ) -> int:

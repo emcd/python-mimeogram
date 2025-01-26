@@ -20,68 +20,77 @@
 
 ''' Command-line interface. '''
 
-# TODO: Use BSD sysexits: os.EX_*.
-# TODO: Factor out _scribe.exception / SystemExit pattern.
-
 
 from __future__ import annotations
 
 from . import __
+from . import apply as _apply
+from . import create as _create
 
 
-# _scribe = __.produce_scribe( __name__ )
+_scribe = __.produce_scribe( __name__ )
 
 
-def create_parser( ) -> __.typx.Any:
-    ''' Creates argument parser. '''
-    import argparse
-    from .apply import add_cli_subparser as add_apply_command_parser
-    from .create import add_cli_subparser as add_create_command_parser
-    parser = argparse.ArgumentParser(
-        description = "Creates and applies mimeograms." )
-    parser.add_argument(
-        '-v',
-        '--verbose',
-        action = 'store_true',
-        help = "Enables verbose logging" )
-    subparsers = parser.add_subparsers(
-        title = 'commands',
-        dest = 'command',
-        required = True )
-    add_create_command_parser( subparsers )
-    add_apply_command_parser( subparsers )
-    return parser
+class Cli(
+    metaclass = __.ImmutableStandardDataclass,
+    decorators = ( __.standard_dataclass, __.standard_tyro_class ),
+):
+    ''' Mimeogram: hierarchical data exchange between humans and LLMs. '''
+
+    application: __.ApplicationInformation
+    configfile: __.typx.Optional[ str ] = None
+    # display: ConsoleDisplay
+    inscription: __.InscriptionControl = (
+        __.InscriptionControl( mode = __.InscriptionModes.Rich ) )
+    command: __.typx.Union[
+        __.typx.Annotated[
+            _create.Command,
+            __.tyro.conf.subcommand( # pyright: ignore
+                'create', prefix_name = False ),
+        ],
+        __.typx.Annotated[
+            _apply.Command,
+            __.tyro.conf.subcommand( # pyright: ignore
+                'apply', prefix_name = False ),
+        ],
+    ]
+
+    async def __call__( self ):
+        ''' Invokes command after library preparation. '''
+        nomargs = self.prepare_invocation_args( )
+        async with __.ExitsAsync( ) as exits:
+            auxdata = await _prepare( exits = exits, **nomargs )
+            await self.command( auxdata = auxdata )
+            # await self.command( auxdata = auxdata, display = self.display )
+
+    def prepare_invocation_args(
+        self,
+    ) -> __.cabc.Mapping[ str, __.typx.Any ]:
+        ''' Prepares arguments for initial configuration. '''
+        args: dict[ str, __.typx.Any ] = dict(
+            application = self.application,
+            environment = True,
+            inscription = self.inscription,
+        )
+        if self.configfile: args[ 'configfile' ] = self.configfile
+        return args
 
 
-async def main( argv: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
+# async def main( argv: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
+async def main( ):
     ''' CLI entry point. '''
-    from .apply import Command as CommandApply, apply
-    from .create import Command as CommandCreate, create
-    parser = create_parser( )
-    arguments = parser.parse_args( argv )
-    async with __.ExitsAsync( ) as exits:
-        await _prepare( exits = exits, verbose = arguments.verbose )
-        match arguments.command:
-            case 'create':
-                await create( CommandCreate(
-                    sources = arguments.sources,
-                    recursive = arguments.recursive,
-                    strict = arguments.strict,
-                    clip = arguments.clip,
-                    edit_message = arguments.edit_message
-                ) )
-            case 'apply':
-                await apply( CommandApply(
-                    input = arguments.input,
-                    clip = arguments.clip,
-                    base_path = arguments.base_path,
-                    interactive = arguments.interactive,
-                    # force = arguments.force,
-                    dry_run = arguments.dry_run
-                ) )
-            case _:
-                parser.print_help( )
-                raise SystemExit( 1 )
+    config = (
+        #__.tyro.conf.OmitSubcommandPrefixes,
+        __.tyro.conf.EnumChoicesFromValues,
+    )
+    # default = Cli(
+    #     application = _application.Information( ),
+    #     display = ConsoleDisplay( ),
+    #     inscription = _inscription.Control( mode = _inscription.Modes.Rich ),
+    #     command = InspectCommand( ),
+    # )
+    # __.tyro.cli( Cli, config = config, default = default )( )
+    await __.tyro.cli( Cli, config = config )( )
 
 
 def _discover_inscription_level_name(
@@ -101,17 +110,26 @@ def _discover_inscription_level_name(
     return control.level
 
 
-async def _prepare( exits: __.ExitsAsync, verbose: bool ) -> None:
+async def _prepare(
+    application: __.ApplicationInformation,
+    environment: bool,
+    exits: __.ExitsAsync,
+    inscription: __.InscriptionControl,
+) -> __.Globals:
     ''' Configures logging based on verbosity. '''
-    application = __.ApplicationInformation( )
-    inscription = __.InscriptionControl(
-        level = 'debug' if verbose else None,
-        mode = __.InscriptionModes.Rich )
-    await __.prepare(
+    auxdata = await __.prepare(
         application = application,
-        environment = True,
+        environment = environment,
         exits = exits,
         inscription = inscription )
+    _prepare_scribes( application, inscription )
+    return auxdata
+
+
+def _prepare_scribes(
+    application: __.ApplicationInformation,
+    inscription: __.InscriptionControl,
+) -> None:
     import logging
     from rich.console import Console
     from rich.logging import RichHandler

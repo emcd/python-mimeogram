@@ -61,16 +61,6 @@
 
 ## Code Quality
 
-### Architecture
-- Replace argparse with tyro:
-  - Define command and options objects
-  - Add default command support
-  - Improve CLI ergonomics
-- Improve modularity:
-  - Consider functional core with OO shell
-  - Clean separation of concerns
-  - Better dependency injection
-
 ### Documentation and Testing
 - Add comprehensive type hints
 - Improve error handling

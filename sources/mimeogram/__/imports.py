@@ -41,10 +41,11 @@ from logging import getLogger as produce_scribe
 from pathlib import Path
 from uuid import uuid4
 
-import aiofiles
-import httpx
-import magic
+import aiofiles # TODO: Localize import.
+import httpx    # TODO: Localize import.
+import magic    # TODO: Localize import.
 import typing_extensions as typx
+import tyro
 
 from absence import Absential, absent, is_absent
 from accretive.qaliases import AccretiveDictionary
@@ -62,3 +63,4 @@ class ImmutableStandardDataclass( ImmutableClass ):
 
 package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]
 standard_dataclass = dataclass( frozen = True, kw_only = True, slots = True )
+standard_tyro_class = tyro.conf.configure( tyro.conf.OmitArgPrefixes )

@@ -23,8 +23,6 @@
 
 from __future__ import annotations
 
-import argparse as _argparse
-
 import pyperclip as _pyperclip
 
 from . import __
@@ -33,49 +31,44 @@ from . import __
 _scribe = __.produce_scribe( __name__ )
 
 
-@__.dataclass
-class Command:
-    ''' CLI arguments. '''
-    sources: list[ str ]
-    recursive: bool = False
-    strict: bool = False
-    clip: bool = False
-    edit_message: bool = False
+class Command(
+    metaclass = __.ImmutableStandardDataclass,
+    decorators = ( __.standard_dataclass, __.standard_tyro_class ),
+):
+    ''' Creates mimeogram from filesystem locations or URLs. '''
 
+    sources: __.typx.Annotated[
+        __.tyro.conf.Positional[ list[ str ] ],
+        __.tyro.conf.arg( # pyright: ignore
+            help = "Filesystem locations or URLs.",
+            prefix_name = False ),
+    ]
+    clip: __.typx.Annotated[
+        bool,
+        __.tyro.conf.arg( # pyright: ignore
+            aliases = ( '--clipboard', '--to-clipboard' ),
+            help = "Copy mimeogram to clipboard." ),
+    ] = False
+    edit_message: __.typx.Annotated[ # TODO: Make '--edit' primary.
+        bool,
+        __.tyro.conf.arg( # pyright: ignore
+            aliases = ( '-e', '--edit' ),
+            help = "Spawn editor to capture an introductory message." ),
+    ] = False
+    recursive: __.typx.Annotated[ # TODO: Make '--recurse' primary.
+        bool,
+        __.tyro.conf.arg( # pyright: ignore
+            aliases = ( '-r', '--recurse-directories' ),
+            help = "Recurse into directories." ),
+    ] = False
+    strict: __.typx.Annotated[
+        bool,
+        __.tyro.conf.arg( # pyright: ignore
+            help = "Fail on invalid contents instead of skipping them." ),
+    ] = False
 
-def add_cli_subparser(
-    subparsers: _argparse._SubParsersAction[ __.typx.Any ]
-) -> None:
-    ''' Adds subparser for command. '''
-    parser = subparsers.add_parser(
-        'create',
-        help = "Creates mimeogram from filesystem locations or URLs." )
-    parser.add_argument(
-        'sources',
-        nargs = '*',
-        help = (
-            "File paths or URLs. "
-            "If none provided, requires '--edit-message' argument." ) )
-    parser.add_argument(
-        '-r',
-        '--recursive',
-        action = 'store_true',
-        help = "Recurse into directories."
-    )
-    parser.add_argument(
-        '-s',
-        '--strict',
-        action = 'store_true',
-        help = "Fail on first non-textual content instead of skipping." )
-    parser.add_argument(
-        '--clip', '--clipboard', '--to-clipboard',
-        action = 'store_true',
-        help = "Copy mimeogram to clipboard." )
-    parser.add_argument(
-        '--edit-message',
-        action = 'store_true',
-        help = "Spawn editor to capture an introductory message." )
-    # TODO: '-m'/'--message': message string, similar to 'git-commit'.
+    async def __call__( self, auxdata: __.Globals ) -> None:
+        await create( self )
 
 
 async def create( cmd: Command ) -> int:
