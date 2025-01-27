@@ -29,13 +29,17 @@ from . import __
 _scribe = __.produce_scribe( __name__ )
 
 
-@__.dataclass
-class Part:
+class Part(
+    metaclass = __.ImmutableStandardDataclass,
+    decorators = ( __.standard_dataclass, ),
+):
     ''' Part of mimeogram. '''
+    # TODO? Merge definition with parsers.Part.
     location: str
-    content: str
     mimetype: str
-    charset: str = 'utf-8'
+    charset: str
+    linesep: str
+    content: str
 
 
 async def acquire(
@@ -70,7 +74,11 @@ async def _acquire_from_file( path: __.Path ) -> Part:
     mimetype = _discover_mimetype( content.encode( ), path )
     _scribe.debug( f"Read file: {path}" )
     return Part(
-        location = str( path ), mimetype = mimetype, content = content )
+        location = str( path ),
+        mimetype = mimetype,
+        charset = 'utf-8', # TODO: Discover charset.
+        linesep = 'lf', # TODO: Discover linesep.
+        content = content )
 
 
 async def _acquire_via_http( client: __.httpx.AsyncClient, url: str ) -> Part:
@@ -86,7 +94,7 @@ async def _acquire_via_http( client: __.httpx.AsyncClient, url: str ) -> Part:
     content_bytes = response.content
     if not _is_textual_mime( mimetype ):
         mimetype = _discover_mimetype( content_bytes, url )
-    charset = response.encoding or 'utf-8'
+    charset = response.encoding or 'utf-8' # TODO? Default encoding.
     try: content = content_bytes.decode( charset )
     except Exception as exc:
         raise ContentDecodeFailure( url, charset ) from exc
@@ -94,8 +102,9 @@ async def _acquire_via_http( client: __.httpx.AsyncClient, url: str ) -> Part:
     return Part(
         location = url,
         mimetype = mimetype,
-        content = content,
-        charset = charset )
+        charset = charset,
+        linesep = 'lf', # TODO: Discover linesep.
+        content = content )
 
 
 # VCS directories to skip during traversal

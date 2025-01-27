@@ -75,7 +75,7 @@ async def create( cmd: Command ) -> int:
     ''' Creates mimeogram. '''
     from .acquirers import acquire
     from .exceptions import Omnierror
-    from .formatters import format_bundle
+    from .formatters import format_mimeogram
     if cmd.edit:
         from .edit import edit_content
         try: message = edit_content( )
@@ -89,7 +89,7 @@ async def create( cmd: Command ) -> int:
     except Omnierror as exc:
         _scribe.exception( "Could not acquire mimeogram parts." )
         raise SystemExit( 1 ) from exc
-    mimeogram = format_bundle( parts, message = message )
+    mimeogram = format_mimeogram( parts, message = message )
     if cmd.clip:
         try: _pyperclip.copy( mimeogram )
         except Exception as exc:

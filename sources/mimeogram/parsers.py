@@ -34,6 +34,7 @@ class Part(
     decorators = ( __.standard_dataclass, ),
 ):
     ''' Part of mimeogram. '''
+    # TODO? Merge definition with acquirers.Part.
     location: str
     mimetype: str
     charset: str

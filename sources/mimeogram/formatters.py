@@ -27,7 +27,7 @@ from . import __
 from . import acquirers as _acquirers
 
 
-def format_bundle(
+def format_mimeogram(
     parts: __.cabc.Sequence[ _acquirers.Part ],
     message: __.typx.Optional[ str ] = None,
 ) -> str:
@@ -42,6 +42,7 @@ def format_bundle(
             location = 'mimeogram://message',
             mimetype = 'text/plain', # TODO? Markdown
             charset = 'utf-8',
+            linesep = 'lf',
             content = message )
         lines.append( format_part( message_part, boundary ) )
     for part in parts:
@@ -55,6 +56,8 @@ def format_part( part: _acquirers.Part, boundary: str ) -> str:
     return '\n'.join( (
         f"--{boundary}",
         f"Content-Location: {part.location}",
-        f"Content-Type: {part.mimetype}; charset={part.charset}",
+        f"Content-Type: {part.mimetype}; "
+        f"charset={part.charset}; "
+        f"linesep={part.linesep}",
         '',
         part.content ) )
