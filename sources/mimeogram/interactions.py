@@ -24,7 +24,7 @@
 from __future__ import annotations
 
 from . import __
-from . import parsers as _parsers
+from . import parts as _parts
 
 
 class Action( __.enum.Enum ):
@@ -36,7 +36,7 @@ class Action( __.enum.Enum ):
     VIEW =      'view'      # Display in $PAGER
 
 
-async def display_content( part: _parsers.Part ) -> None:
+async def display_content( part: _parts.Part ) -> None:
     ''' Displays part content in system pager. '''
     from .display import display_content as display
     # Suffix from location for proper syntax highlighting.
@@ -45,17 +45,15 @@ async def display_content( part: _parsers.Part ) -> None:
 
 
 async def display_differences(
-    part: _parsers.Part,
+    part: _parts.Part,
     target: __.Path
 ) -> None:
     ''' Displays differences between part content and target file. '''
     current_content = None
-    if target.exists():
+    if target.exists( ):
         current_content = await _acquire_content( target, part.charset )
     diff_lines = _calculate_differences(
-        part.content,
-        current_content,
-        target )
+        part.content, current_content, target )
     if not diff_lines:
         print( "No changes" )
         return
@@ -63,7 +61,7 @@ async def display_differences(
     display( '\n'.join( diff_lines ), suffix = '.diff' )
 
 
-async def edit_content( part: _parsers.Part ) -> __.typx.Optional[ str ]:
+async def edit_content( part: _parts.Part ) -> __.typx.Optional[ str ]:
     ''' Edits part content in system editor. '''
     from .edit import edit_content as edit
     from .exceptions import EditorFailure
@@ -76,7 +74,7 @@ async def edit_content( part: _parsers.Part ) -> __.typx.Optional[ str ]:
 
 
 async def prompt_action(
-    part: _parsers.Part, target: __.Path
+    part: _parts.Part, target: __.Path
 ) -> tuple[ Action, str ]:
     ''' Prompts user for action on current part. '''
     # TODO: Support queuing of applies for parallel async update.

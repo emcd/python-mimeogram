@@ -24,25 +24,13 @@
 from __future__ import annotations
 
 from . import __
+from . import parts as _parts
 
 
 _scribe = __.produce_scribe( __name__ )
 
 
-class Part(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
-    ''' Part of mimeogram. '''
-    # TODO? Merge definition with acquirers.Part.
-    location: str
-    mimetype: str
-    charset: str
-    linesep: str
-    content: str
-
-
-def parse( mgtext: str ) -> __.cabc.Sequence[ Part ]:
+def parse( mgtext: str ) -> __.cabc.Sequence[ _parts.Part ]:
     ''' Parses mimeogram. '''
     # TODO? Accept 'strict' flag.
     from .exceptions import MimeogramParseFailure
@@ -51,7 +39,7 @@ def parse( mgtext: str ) -> __.cabc.Sequence[ Part ]:
     boundary = _extract_boundary( mgtext )
     ptexts = _separate_parts( mgtext, boundary )
     if not ptexts: raise MimeogramParseFailure( reason = "No parts found." )
-    parts: list[ Part ] = [ ]
+    parts: list[ _parts.Part ] = [ ]
     for i, ptext in enumerate( ptexts, 1 ):
         try: part = parse_part( ptext )
         except MimeogramParseFailure:
@@ -63,13 +51,13 @@ def parse( mgtext: str ) -> __.cabc.Sequence[ Part ]:
     return parts
 
 
-def parse_part( ptext: str ) -> Part:
+def parse_part( ptext: str ) -> _parts.Part:
     ''' Parses mimeogram part. '''
     descriptor, content = _parse_descriptor_and_content( ptext )
     _validate_descriptor( descriptor )
     mimetype, charset, linesep = (
         _parse_mimetype( descriptor[ 'Content-Type' ] ) )
-    return Part(
+    return _parts.Part(
         location = descriptor[ 'Content-Location' ],
         mimetype = mimetype, charset = charset, linesep = linesep,
         content = content )
@@ -124,17 +112,18 @@ def _parse_descriptor_and_content(
 
 
 _QUOTES = '"\''
-def _parse_mimetype( header: str ) -> tuple[ str, str, str ]:
+def _parse_mimetype( header: str ) -> tuple[ str, str, _parts.LineSeparators ]:
     ''' Extracts MIME type and charset from Content-Type header. '''
     parts = [ p.strip( ) for p in header.split( ';' ) ]
     mimetype = parts[ 0 ]
     charset = 'utf-8'
-    linesep = 'lf'
+    linesep = _parts.LineSeparators.LF
     for part in parts[ 1: ]:
         if part.startswith( 'charset=' ):
             charset = part[ 8: ].strip( _QUOTES )
         if part.startswith( 'linesep=' ):
-            linesep = part[ 8: ].strip( _QUOTES ).lower( )
+            linesep = _parts.LineSeparators[
+                part[ 8: ].strip( _QUOTES ).upper( ) ]
     return mimetype, charset, linesep
 
 

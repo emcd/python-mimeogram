@@ -24,7 +24,7 @@
 from __future__ import annotations
 
 from . import __
-from . import parsers as _parsers
+from . import parts as _parts
 
 
 _scribe = __.produce_scribe( __name__ )
@@ -34,14 +34,15 @@ class Reverter:
     ''' Backup and restore filesystem state. '''
 
     def __init__( self ):
-        self.originals: dict[ __.Path, str ] = {}
-        self.updated: list[ __.Path ] = []
+        self.originals: dict[ __.Path, str ] = { }
+        self.updated: list[ __.Path ] = [ ]
 
     async def save( self, path: __.Path ) -> None:
         ''' Saves original file content if it exists. '''
         from .exceptions import ContentAcquireFailure
         if not path.exists( ): return
         try:
+            # TODO: Do not assume UTF-8 charset.
             async with __.aiofiles.open( path, 'r', encoding = 'utf-8' ) as f:
                 self.originals[ path ] = await f.read()
         except Exception as exc: raise ContentAcquireFailure( path ) from exc
@@ -61,6 +62,7 @@ class Reverter:
 
 class Updater:
     ''' Updates filesystem with mimeogram part contents. '''
+    # TODO: Dissolve into functions.
 
     def __init__(
         self,
@@ -73,7 +75,7 @@ class Updater:
 
     async def _process_part(
         self,
-        part: _parsers.Part,
+        part: _parts.Part,
         base_path: __.typx.Optional[ __.Path ]
     ) -> __.typx.Optional[ __.Path ]:
         ''' Updates file from part content. '''
@@ -91,7 +93,7 @@ class Updater:
         await self.reverter.save( target )
         try:
             await _update_content_atomic(
-                target, content, encoding = part.charset )
+                target, content, charset = part.charset )
         except ContentUpdateFailure:
             await self.reverter.restore( )
             raise
@@ -100,7 +102,7 @@ class Updater:
 
     async def update(
         self,
-        parts: __.cabc.Sequence[ _parsers.Part ],
+        parts: __.cabc.Sequence[ _parts.Part ],
         base_path: __.typx.Optional[ __.Path ] = None,
     ) -> None:
         ''' Update filesystem with content from parts. '''
@@ -131,19 +133,21 @@ def _get_path(
 
 
 async def _update_content_atomic(
-    path: __.Path,
+    location: __.Path,
     content: str,
-    encoding: str = 'utf-8'
+    charset: str = 'utf-8',
+    linesep: _parts.LineSeparators = _parts.LineSeparators.LF
 ) -> None:
     ''' Updates file content atomically, if possible. '''
     # TODO: Develop safer way to produce temp file on same filesystem.
     from .exceptions import ContentUpdateFailure
-    temp_path = path.with_suffix( f"{path.suffix}.tmp" )
+    tmp = location.with_suffix( f"{location.suffix}.tmp" )
+    content = linesep.nativize( content )
+    content_bytes = content.encode( charset )
     try: # pylint: disable=too-many-try-statements
-        async with __.aiofiles.open(
-            temp_path, 'w', encoding = encoding
-        ) as f: await f.write( content )
-        __.os.replace( str( temp_path ), str( path ) )
-    except Exception as exc: raise ContentUpdateFailure( path ) from exc
+        async with __.aiofiles.open( tmp, 'wb' ) as stream:
+            await stream.write( content_bytes )
+        __.os.replace( str( tmp ), str( location ) )
+    except Exception as exc: raise ContentUpdateFailure( location ) from exc
     finally:
-        if temp_path.exists( ): temp_path.unlink( )
+        if tmp.exists( ): tmp.unlink( )

@@ -24,32 +24,20 @@
 from __future__ import annotations
 
 from . import __
+from . import parts as _parts
 
 
 _scribe = __.produce_scribe( __name__ )
-
-
-class Part(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
-    ''' Part of mimeogram. '''
-    # TODO? Merge definition with parsers.Part.
-    location: str
-    mimetype: str
-    charset: str
-    linesep: str
-    content: str
 
 
 async def acquire(
     sources: __.cabc.Sequence[ str | __.Path ],
     recursive: bool = False,
     # strict: bool = False,
-) -> __.cabc.Sequence[ Part ]:
+) -> __.cabc.Sequence[ _parts.Part ]:
     ''' Acquires content from multiple sources. '''
     from urllib.parse import urlparse
-    tasks: list[ __.cabc.Coroutine[ None, None, Part ] ] = [ ]
+    tasks: list[ __.cabc.Coroutine[ None, None, _parts.Part ] ] = [ ]
     for source in sources:
         url_parts = (
             urlparse( source ) if isinstance( source, str )
@@ -64,24 +52,34 @@ async def acquire(
     return await __.gather_async( *tasks )
 
 
-async def _acquire_from_file( path: __.Path ) -> Part:
+async def _acquire_from_file( location: __.Path ) -> _parts.Part:
     ''' Acquires content from text file. '''
-    from .exceptions import ContentAcquireFailure
+    from .exceptions import ContentAcquireFailure, ContentDecodeFailure
     try:
-        async with __.aiofiles.open( path, 'r' ) as f:
-            content = await f.read( )
-    except Exception as exc: raise ContentAcquireFailure( path ) from exc
-    mimetype = _discover_mimetype( content.encode( ), path )
-    _scribe.debug( f"Read file: {path}" )
-    return Part(
-        location = str( path ),
+        async with __.aiofiles.open( location, 'rb' ) as f:
+            content_bytes = await f.read( )
+    except Exception as exc: raise ContentAcquireFailure( location ) from exc
+    mimetype = _detect_mimetype( content_bytes, location )
+    charset = _detect_charset( content_bytes )
+    if charset is None: raise ContentDecodeFailure( location, '???' )
+    linesep = _parts.LineSeparators.detect_bytes( content_bytes )
+    # TODO? Separate error for newline issues.
+    if linesep is None: raise ContentDecodeFailure( location, charset )
+    try: content = content_bytes.decode( charset )
+    except Exception as exc:
+        raise ContentDecodeFailure( location, charset ) from exc
+    _scribe.debug( f"Read file: {location}" )
+    return _parts.Part(
+        location = str( location ),
         mimetype = mimetype,
-        charset = 'utf-8', # TODO: Discover charset.
-        linesep = 'lf', # TODO: Discover linesep.
-        content = content )
+        charset = charset,
+        linesep = linesep,
+        content = linesep.normalize( content ) )
 
 
-async def _acquire_via_http( client: __.httpx.AsyncClient, url: str ) -> Part:
+async def _acquire_via_http( # pylint: disable=too-many-locals
+    client: __.httpx.AsyncClient, url: str
+) -> _parts.Part:
     ''' Acquires content via HTTP/HTTPS. '''
     from .exceptions import ContentAcquireFailure, ContentDecodeFailure
     try:
@@ -93,18 +91,21 @@ async def _acquire_via_http( client: __.httpx.AsyncClient, url: str ) -> Part:
         .split( ';' )[ 0 ].strip( ) )
     content_bytes = response.content
     if not _is_textual_mime( mimetype ):
-        mimetype = _discover_mimetype( content_bytes, url )
-    charset = response.encoding or 'utf-8' # TODO? Default encoding.
+        mimetype = _detect_mimetype( content_bytes, url )
+    charset = response.encoding or 'utf-8' # TODO: Detect charset if missing.
+    linesep = _parts.LineSeparators.detect_bytes( content_bytes )
+    # TODO? Separate error for newline issues.
+    if linesep is None: raise ContentDecodeFailure( url, charset )
     try: content = content_bytes.decode( charset )
     except Exception as exc:
         raise ContentDecodeFailure( url, charset ) from exc
     _scribe.debug( f"Fetched URL: {url}" )
-    return Part(
+    return _parts.Part(
         location = url,
         mimetype = mimetype,
         charset = charset,
-        linesep = 'lf', # TODO: Discover linesep.
-        content = content )
+        linesep = linesep,
+        content = linesep.normalize( content ) )
 
 
 # VCS directories to skip during traversal
@@ -131,7 +132,7 @@ def _collect_directory_files(
     return paths
 
 
-def _discover_mimetype( content: bytes, location: str | __.Path ) -> str:
+def _detect_mimetype( content: bytes, location: str | __.Path ) -> str:
     from magic import from_buffer
     from .exceptions import (
         MimetypeDetermineFailure, TextualMimetypeInvalidity )
@@ -141,6 +142,21 @@ def _discover_mimetype( content: bytes, location: str | __.Path ) -> str:
     if not _is_textual_mime( mimetype ):
         raise TextualMimetypeInvalidity( location, mimetype )
     return mimetype
+
+
+def _detect_charset( content: bytes ) -> str | None:
+    # TODO: Pyright bug: `None is charset` != `charset is None`
+    from chardet import detect
+    charset = detect( content )[ 'encoding' ]
+    if charset is None: return charset
+    if charset.startswith( 'utf' ): return charset
+    match charset:
+        case 'ascii': return 'utf-8' # Assume superset.
+        case _: pass
+    # Shake out false positives, like 'MacRoman'.
+    try: content.decode( 'utf-8' )
+    except UnicodeDecodeError: return charset
+    return 'utf-8'
 
 
 # MIME types that are considered textual beyond those starting with 'text/'
@@ -161,7 +177,7 @@ def _is_textual_mime( mimetype: str ) -> bool:
 
 def _produce_fs_tasks(
     location: str | __.Path, recursive: bool = False
-) -> tuple[ __.cabc.Coroutine[ None, None, Part ], ...]:
+) -> tuple[ __.cabc.Coroutine[ None, None, _parts.Part ], ...]:
     location_ = (
         __.Path( location ) if isinstance( location, str ) else location )
     if location_.is_file( ): return ( _acquire_from_file( location_ ), )
@@ -169,11 +185,13 @@ def _produce_fs_tasks(
     return tuple( _acquire_from_file( f ) for f in files )
 
 
-def _produce_http_task( url: str ) -> __.cabc.Coroutine[ None, None, Part ]:
+def _produce_http_task(
+    url: str
+) -> __.cabc.Coroutine[ None, None, _parts.Part ]:
     # TODO: URL object rather than string.
     # TODO: Reuse clients for common hosts.
 
-    async def _execute_session( ) -> Part:
+    async def _execute_session( ) -> _parts.Part:
         async with __.httpx.AsyncClient( follow_redirects = True ) as client:
             return await _acquire_via_http( client, url )
 

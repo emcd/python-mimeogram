@@ -15,6 +15,7 @@ dependencies = [
   'absence',
   'accretive',
   'aiofiles',
+  'chardet',
   'frigid',
   'gitignorefile',
   'httpx',

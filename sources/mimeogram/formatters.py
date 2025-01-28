@@ -24,11 +24,11 @@
 from __future__ import annotations
 
 from . import __
-from . import acquirers as _acquirers
+from . import parts as _parts
 
 
 def format_mimeogram(
-    parts: __.cabc.Sequence[ _acquirers.Part ],
+    parts: __.cabc.Sequence[ _parts.Part ],
     message: __.typx.Optional[ str ] = None,
 ) -> str:
     ''' Formats parts into mimeogram. '''
@@ -38,11 +38,11 @@ def format_mimeogram(
     boundary = "====MIMEOGRAM_{uuid}====".format( uuid = __.uuid4( ).hex )
     lines: list[ str ] = [ ]
     if message:
-        message_part = _acquirers.Part(
+        message_part = _parts.Part(
             location = 'mimeogram://message',
             mimetype = 'text/plain', # TODO? Markdown
             charset = 'utf-8',
-            linesep = 'lf',
+            linesep = _parts.LineSeparators.LF,
             content = message )
         lines.append( format_part( message_part, boundary ) )
     for part in parts:
@@ -51,13 +51,13 @@ def format_mimeogram(
     return '\n'.join( lines )
 
 
-def format_part( part: _acquirers.Part, boundary: str ) -> str:
+def format_part( part: _parts.Part, boundary: str ) -> str:
     ''' Formats part with boundary marker and headers. '''
     return '\n'.join( (
         f"--{boundary}",
         f"Content-Location: {part.location}",
         f"Content-Type: {part.mimetype}; "
         f"charset={part.charset}; "
-        f"linesep={part.linesep}",
+        f"linesep={part.linesep.name}",
         '',
         part.content ) )
