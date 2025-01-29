@@ -135,16 +135,21 @@ async def _update_content_atomic(
     linesep: _parts.LineSeparators = _parts.LineSeparators.LF
 ) -> None:
     ''' Updates file content atomically, if possible. '''
-    # TODO: Develop safer way to produce temp file on same filesystem.
-    #       Probably tempfile with 'dir' argument.
-    from .exceptions import ContentUpdateFailure
-    tmp = location.with_suffix( f"{location.suffix}.tmp" )
+    import aiofiles.os as os # pylint: disable=consider-using-from-import
+    from aiofiles.tempfile import NamedTemporaryFile
     content = linesep.nativize( content )
-    content_bytes = content.encode( charset )
-    try: # pylint: disable=too-many-try-statements
-        async with __.aiofiles.open( tmp, 'wb' ) as stream:
-            await stream.write( content_bytes )
-        __.os.replace( str( tmp ), str( location ) )
-    except Exception as exc: raise ContentUpdateFailure( location ) from exc
-    finally:
-        if tmp.exists( ): tmp.unlink( )
+    async with NamedTemporaryFile(
+        delete = False,
+        dir = location.parent,
+        suffix = f"{location.suffix}.tmp",
+    ) as stream:
+        filename = str( stream.name )
+        try:
+            await stream.write( content.encode( charset ) )
+            await os.replace( filename, str( location ) )
+        except Exception as exc:
+            from .exceptions import ContentUpdateFailure
+            raise ContentUpdateFailure( location ) from exc
+        finally:
+            if await os.path.exists( filename ):
+                await os.remove( filename )
