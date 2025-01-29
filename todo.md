@@ -109,12 +109,14 @@
 
 # Release 1.0 Checklist
 
-[ ] Represent original newline marker for textual `Content-Type`.
-[ ] Ensure correct charset and newlines during applies.
+[X] Represent original newline marker for textual `Content-Type`.
+[X] Ensure correct charset and newlines during applies.
 [ ] Single keystroke actions. (I.e., no ENTER key to act.)
 [ ] Ability to queue applies. (Hit IDE/LS with all changes at once.)
 [ ] Ability to choose hunks to apply.
 [ ] Protect against changes to unsafe paths + override mechanism.
+[ ] Command to produce prompt to give to LLM.
+[ ] Creation option to prepend prompt with Mimeogram instructions.
 [ ] Build standalone executables (PyOxidizer or PyInstaller + StaticX).
 [ ] Tests.
 [ ] Documentation.

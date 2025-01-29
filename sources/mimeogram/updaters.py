@@ -49,6 +49,7 @@ class Reverter:
 
     async def restore( self ) -> None:
         ''' Restores files to original contents in reverse order. '''
+        # TODO: async parallel fanout
         from .exceptions import ContentUpdateFailure
         for path in reversed( self.updated ):
             if path in self.originals:
@@ -60,76 +61,71 @@ class Reverter:
             else: path.unlink( )
 
 
-class Updater:
-    ''' Updates filesystem with mimeogram part contents. '''
-    # TODO: Dissolve into functions.
-
-    def __init__(
-        self,
-        *,
-        interactive: bool = True,
-        reverter: __.typx.Optional[ Reverter ] = None,
-    ):
-        self.interactive = interactive
-        self.reverter = reverter or Reverter()
-
-    async def _process_part(
-        self,
-        part: _parts.Part,
-        base_path: __.typx.Optional[ __.Path ]
-    ) -> __.typx.Optional[ __.Path ]:
-        ''' Updates file from part content. '''
-        # TODO: Work with various kinds of interactors.
-        from .exceptions import ContentUpdateFailure
-        if part.location.startswith( 'mimeogram://' ): return
-        content = part.content
-        target = _get_path( part.location, base_path )
-        if self.interactive:
-            from .interactions import Action, prompt_action
-            action, content_ = await prompt_action( part, target )
-            if action == Action.IGNORE: return
-            if content_: content = content_
-        target.parent.mkdir( parents = True, exist_ok = True )
-        await self.reverter.save( target )
+async def update(
+    parts: __.cabc.Sequence[ _parts.Part ],
+    # TODO: Use command object as DTO.
+    base: __.Absential[ __.Path ] = __.absent,
+    interactive: bool = False,
+    # TODO: collect/queue
+    reverter: __.Absential[ Reverter ] = __.absent,
+) -> None:
+    ''' Updates filesystem locations from mimeogram. '''
+    if __.is_absent( base ): base = __.Path( )
+    if __.is_absent( reverter ): reverter = Reverter( )
+    for part in parts:
+        if part.location.startswith( 'mimeogram://' ): continue
         try:
-            await _update_content_atomic(
-                target, content, charset = part.charset )
-        except ContentUpdateFailure:
-            await self.reverter.restore( )
-            raise
-        self.reverter.updated.append( target )
-        return target
-
-    async def update(
-        self,
-        parts: __.cabc.Sequence[ _parts.Part ],
-        base_path: __.typx.Optional[ __.Path ] = None,
-    ) -> None:
-        ''' Update filesystem with content from parts. '''
-        try:
-            for part in parts:
-                await self._process_part( part, base_path )
+            await update_part( # TODO: Collect actions for queue.
+                part,
+                target = _derive_location( part.location, base = base ),
+                interactive = interactive,
+                reverter = reverter )
         except Exception:
-            await self.reverter.restore( )
+            await reverter.restore( )
             raise
 
 
-def _get_path(
+async def update_part(
+    part: _parts.Part,
+    target: __.Path,
+    interactive: bool,
+    reverter: Reverter,
+) -> None:
+    ''' Updates filesystem location from mimeogram part. '''
+    content = part.content
+    if interactive:
+        from .interactions import Action, prompt_action
+        action, content_ = await prompt_action( part, target )
+        if action == Action.IGNORE: return
+        if content_: content = content_
+    target.parent.mkdir( parents = True, exist_ok = True )
+    await reverter.save( target ) # TODO: Pass part metadata.
+    await _update_content_atomic( target, content, charset = part.charset )
+    reverter.updated.append( target )
+
+
+def _derive_location(
     location: __.typx.Annotated[
-        str, __.typx.Doc( "Part location (URL or path)" ) ],
-    base_path: __.typx.Annotated[
-        __.typx.Optional[ __.Path ],
-        __.typx.Doc( "Base path for relative locations" )
-    ] = None,
+        str, __.typx.Doc( "Part location (URL or filesystem path)." ) ],
+    base: __.typx.Annotated[
+        __.Absential[ __.Path ],
+        __.typx.Doc(
+            "Base path for relative locations. "
+            "Defaults to current directory." )
+    ] = __.absent,
 ) -> __.Path:
     ''' Resolves part location to filesystem path. '''
+    from urllib.parse import urlparse
     from .exceptions import LocationInvalidity
-    if location.startswith( 'mimeogram://' ):
-        raise LocationInvalidity( location )
-    path = __.Path( location )
-    if not path.is_absolute( ) and base_path is not None:
-        path = base_path / path
-    return path
+    try: url = urlparse( location )
+    except Exception as exc: raise LocationInvalidity( location ) from exc
+    match url.scheme:
+        case '' | 'file': pass
+        case _: raise LocationInvalidity( location )
+    location_ = __.Path( url.path )
+    if location_.is_absolute( ): return location_
+    if not __.is_absent( base ): return base / location_
+    return location_
 
 
 async def _update_content_atomic(
@@ -140,6 +136,7 @@ async def _update_content_atomic(
 ) -> None:
     ''' Updates file content atomically, if possible. '''
     # TODO: Develop safer way to produce temp file on same filesystem.
+    #       Probably tempfile with 'dir' argument.
     from .exceptions import ContentUpdateFailure
     tmp = location.with_suffix( f"{location.suffix}.tmp" )
     content = linesep.nativize( content )

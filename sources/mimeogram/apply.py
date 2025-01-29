@@ -80,30 +80,32 @@ class Command(
 
 async def apply( cmd: Command ) -> int:
     ''' Applies mimeogram. '''
-    from .exceptions import Omnierror
+    # TODO? Use BSD sysexits.
     from .parsers import parse
-    from .updaters import Updater
-    try: content = await _acquire_content_to_parse( cmd )
-    except Omnierror as exc:
+    from .updaters import update
+    try: mgtext = await _acquire( cmd )
+    except Exception as exc:
         _scribe.exception( "Could not acquire mimeogram to apply." )
         raise SystemExit( 1 ) from exc
-    if not content:
+    if not mgtext:
         _scribe.error( "Cannot apply empty mimeogram." )
         raise SystemExit( 1 )
-    try: parts = parse( content )
-    except Omnierror as exc:
+    try: parts = parse( mgtext )
+    except Exception as exc:
         _scribe.exception( "Could not parse mimeogram." )
         raise SystemExit( 1 ) from exc
-    updater = Updater( interactive = cmd.interactive )
-    try: await updater.update( parts, base_path = cmd.base )
-    except Omnierror as exc:
+    # TODO: Pass command object.
+    nomargs: dict[ str, __.typx.Any ] = dict( interactive = cmd.interactive )
+    if cmd.base: nomargs[ 'base' ] = cmd.base
+    try: await update( parts, **nomargs )
+    except Exception as exc:
         _scribe.exception( "Could not apply mimeogram." )
         raise SystemExit( 1 ) from exc
     _scribe.info( "Successfully applied mimeogram" )
     raise SystemExit( 0 )
 
 
-async def _acquire_content_to_parse(
+async def _acquire(
     cmd: Command
 ) -> __.typx.Optional[ str ]:
     ''' Acquires content to parse from clipboard, file, or stdin. '''
