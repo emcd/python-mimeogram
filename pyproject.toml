@@ -313,7 +313,9 @@ disable = [
   'multiple-statements',
   'reimported',
   'too-few-public-methods',
+  'too-many-positional-arguments',  # 'too-many-arguments' is good enough
   'ungrouped-imports',
+  'unused-wildcard-import',
   'use-dict-literal',
   'using-exception-groups-in-unsupported-version',
   'wrong-import-order',

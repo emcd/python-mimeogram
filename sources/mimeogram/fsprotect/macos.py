@@ -18,16 +18,34 @@
 #============================================================================#
 
 
-''' Common constants, imports, and utilities. '''
+''' Sensitive filesystem locations on macOS. '''
 
 
-# Expose everything from internal modules.
-from .application import Information as ApplicationInformation
-from .asyncf import *
-from .generics import *
-from .imports import *
-from .inscription import (
-    Control as InscriptionControl, Modes as InscriptionModes )
-from .preparation import *
-from .processes import *
-from .state import Globals
+from __future__ import annotations
+
+from . import __
+
+
+_scribe = __.produce_scribe( __name__ )
+
+
+def discover_system_paths( ) -> frozenset[ __.Path ]:
+    ''' Discovers system paths. '''
+    return frozenset( (
+        __.Path( '/System' ),
+        __.Path( '/Library' ),
+        __.Path( '/usr/bin' ),
+        __.Path( '/usr/local/bin' ),
+    ) )
+
+
+def discover_user_paths( ) -> frozenset[ __.Path ]:
+    ''' Discovers user-specific paths. '''
+    home = __.Path.home( )
+    return frozenset( (
+        home / 'Library',
+        home / 'Library/Application Support',
+        home / 'Library/Preferences',
+        home / 'Library/Keychains',
+        home / 'Library/Containers',
+    ) )

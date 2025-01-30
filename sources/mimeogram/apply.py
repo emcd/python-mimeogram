@@ -75,10 +75,10 @@ class Command(
     ] = False
 
     async def __call__( self, auxdata: __.Globals ) -> None:
-        await apply( self )
+        await apply( auxdata, self )
 
 
-async def apply( cmd: Command ) -> int:
+async def apply( auxdata: __.Globals, cmd: Command ) -> int:
     ''' Applies mimeogram. '''
     # TODO? Use BSD sysexits.
     from .parsers import parse
@@ -95,9 +95,10 @@ async def apply( cmd: Command ) -> int:
         _scribe.exception( "Could not parse mimeogram." )
         raise SystemExit( 1 ) from exc
     # TODO: Pass command object.
-    nomargs: dict[ str, __.typx.Any ] = dict( interactive = cmd.interactive )
+    nomargs: dict[ str, __.typx.Any ] = dict(
+        force = cmd.force, interactive = cmd.interactive )
     if cmd.base: nomargs[ 'base' ] = cmd.base
-    try: await update( parts, **nomargs )
+    try: await update( auxdata, parts, **nomargs )
     except Exception as exc:
         _scribe.exception( "Could not apply mimeogram." )
         raise SystemExit( 1 ) from exc

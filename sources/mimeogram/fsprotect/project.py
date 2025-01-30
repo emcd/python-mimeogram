@@ -18,16 +18,28 @@
 #============================================================================#
 
 
-''' Common constants, imports, and utilities. '''
+''' Sensitive filesystem locations relative to project directory. '''
 
 
-# Expose everything from internal modules.
-from .application import Information as ApplicationInformation
-from .asyncf import *
-from .generics import *
-from .imports import *
-from .inscription import (
-    Control as InscriptionControl, Modes as InscriptionModes )
-from .preparation import *
-from .processes import *
-from .state import Globals
+from __future__ import annotations
+
+from . import __
+
+
+_scribe = __.produce_scribe( __name__ )
+
+
+def discover_sensitive_locations( ) -> frozenset[ str ]:
+    ''' Discovers sensitive directories in project context. '''
+    return frozenset( (
+        # Version Control
+        '.git', '.svn', '.hg', '.bzr',
+        # Project Config
+        '.idea', '.vscode', '.eclipse',
+        # Build and Dependencies
+        'node_modules', '.virtualenv', '.env',
+        # Infrastructure
+        '.terraform', '.ansible',
+        # Secrets
+        '.secrets', '.env',
+    ) )

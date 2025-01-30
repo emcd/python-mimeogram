@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 from . import __
+from . import fsprotect as _fsprotect
 from . import parts as _parts
 
 
@@ -61,43 +62,59 @@ class Reverter:
             else: path.unlink( )
 
 
-async def update(
+async def update( # pylint: disable=too-many-arguments,too-many-locals
+    auxdata: __.Globals,
     parts: __.cabc.Sequence[ _parts.Part ],
-    # TODO: Use command object as DTO.
     base: __.Absential[ __.Path ] = __.absent,
+    force: bool = False,
     interactive: bool = False,
     # TODO: collect/queue
     reverter: __.Absential[ Reverter ] = __.absent,
 ) -> None:
     ''' Updates filesystem locations from mimeogram. '''
+    # TODO: DTO for behavior options.
     if __.is_absent( base ): base = __.Path( )
     if __.is_absent( reverter ): reverter = Reverter( )
+    protector = _fsprotect.Cache.from_configuration( auxdata = auxdata )
     for part in parts:
         if part.location.startswith( 'mimeogram://' ): continue
+        target = _derive_location( part.location, base = base )
+        protection = protector.verify( target )
         try:
             await update_part( # TODO: Collect actions for queue.
                 part,
-                target = _derive_location( part.location, base = base ),
+                target = target,
+                force = force,
                 interactive = interactive,
+                protection = protection,
                 reverter = reverter )
         except Exception:
             await reverter.restore( )
             raise
 
 
-async def update_part(
+async def update_part( # pylint: disable=too-many-arguments,too-many-locals
     part: _parts.Part,
     target: __.Path,
+    force: bool,
     interactive: bool,
+    protection: _fsprotect.Status,
     reverter: Reverter,
 ) -> None:
     ''' Updates filesystem location from mimeogram part. '''
     content = part.content
     if interactive:
         from .interactions import Action, prompt_action
-        action, content_ = await prompt_action( part, target )
-        if action == Action.IGNORE: return
+        # TODO: Pass protection to 'prompt_action'.
+        action, content_ = await prompt_action( part, target, protection )
+        if action is Action.IGNORE: return
         if content_: content = content_
+    elif protection: # pylint: disable=confusing-consecutive-elif
+        if not force:
+            _scribe.warning(
+                f"Skipping protected path: {target} "
+                f"Reason: {protection.description}" )
+            return
     target.parent.mkdir( parents = True, exist_ok = True )
     await reverter.save( target ) # TODO: Pass part metadata.
     await _update_content_atomic( target, content, charset = part.charset )
@@ -115,6 +132,7 @@ def _derive_location(
     ] = __.absent,
 ) -> __.Path:
     ''' Resolves part location to filesystem path. '''
+    import os.path as ospath
     from urllib.parse import urlparse
     from .exceptions import LocationInvalidity
     try: url = urlparse( location )
@@ -122,10 +140,10 @@ def _derive_location(
     match url.scheme:
         case '' | 'file': pass
         case _: raise LocationInvalidity( location )
-    location_ = __.Path( url.path )
+    location_ = __.Path( ospath.expanduser( ospath.expandvars( url.path ) ) )
     if location_.is_absolute( ): return location_
-    if not __.is_absent( base ): return base / location_
-    return location_
+    if not __.is_absent( base ): return ( base / location_ ).resolve( )
+    return __.Path( ) / location_
 
 
 async def _update_content_atomic(

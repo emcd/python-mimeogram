@@ -18,16 +18,42 @@
 #============================================================================#
 
 
-''' Common constants, imports, and utilities. '''
+''' Core entities for filesystem protection. '''
 
 
-# Expose everything from internal modules.
-from .application import Information as ApplicationInformation
-from .asyncf import *
-from .generics import *
-from .imports import *
-from .inscription import (
-    Control as InscriptionControl, Modes as InscriptionModes )
-from .preparation import *
-from .processes import *
-from .state import Globals
+from __future__ import annotations
+
+from .. import __
+
+
+class Reasons( __.enum.Enum ):
+    ''' Reasons why location may be protected. '''
+
+    Concealment =       'Hidden file or directory'
+    Credentials =       'Credentials or secrets location'
+    CustomAddition =    'User-specified custom location'
+    OsDirectory =       'Operating system directory'
+    PlatformSensitive = 'Platform-sensitive location'
+    UserConfiguration = 'User configuration directory'
+    VersionControl =    'Version control internals'
+
+
+class Status(
+    metaclass = __.ImmutableStandardDataclass,
+    decorators = ( __.standard_dataclass, ),
+):
+    ''' Protection status for location. '''
+
+    path: __.Path
+    reason: __.typx.Optional[ Reasons ] = None
+    active: bool = False
+
+    def __bool__( self ): return self.active
+
+    @property
+    def description( self ) -> str:
+        ''' Human-readable description of protection. '''
+        if not self.active: return 'Not protected'
+        return (
+            f"Protected: {self.reason.value}"
+            if self.reason else 'Protected' )

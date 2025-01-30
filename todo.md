@@ -99,6 +99,47 @@
 - Profile and optimize common operations
 - Optimize async fanout for batch operations
 
+## Path Protection
+
+### Path Protection Enhancements
+- Optimize path verification:
+  - Add trie-like structure for path matching
+  - Implement LRU cache for path expansions
+  - Add separate caches for absolute and pattern-based rules
+  - Consider stat cache for high-frequency checks
+- Enhance WSL/MinGW support:
+  - Improve path detection and translation
+  - Handle custom mount points
+  - Support non-standard WSL configurations
+- Add configuration features:
+  - Per-directory protection rules
+  - Custom protection reason definitions
+  - Path pattern exclusions
+
+### Performance Improvements
+- Cache expansions of home and environment variables
+- Optimize pattern matching for frequently checked paths
+- Cache directory traversal results
+- Implement pattern matching short-circuits
+- Add benchmarking for protection checks
+
+### Usability Enhancements
+- Improve protection reason messages
+- Add detailed logging for protection decisions
+- Support for temporary protection overrides
+- Tools for analyzing protection rules
+- Documentation for common protection scenarios
+
+### Testing and Validation
+- Add comprehensive test suite for protection rules
+- Create test mimeograms for various scenarios:
+  - System directory access
+  - Hidden file operations
+  - Configuration directory writes
+  - WSL/MinGW paths
+  - Pattern-based protections
+- Add protection rule validation
+
 # Notes
 
 - Priority is given to stability and correctness
@@ -114,7 +155,7 @@
 [ ] Single keystroke actions. (I.e., no ENTER key to act.)
 [ ] Ability to queue applies. (Hit IDE/LS with all changes at once.)
 [ ] Ability to choose hunks to apply.
-[ ] Protect against changes to unsafe paths + override mechanism.
+[X] Protect against changes to unsafe paths + override mechanism.
 [ ] Command to produce prompt to give to LLM.
 [ ] Creation option to prepend prompt with Mimeogram instructions.
 [ ] Build standalone executables (PyOxidizer or PyInstaller + StaticX).

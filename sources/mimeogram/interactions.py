@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 from . import __
+from . import fsprotect as _fsprotect
 from . import parts as _parts
 
 
@@ -74,7 +75,7 @@ async def edit_content( part: _parts.Part ) -> __.typx.Optional[ str ]:
 
 
 async def prompt_action(
-    part: _parts.Part, target: __.Path
+    part: _parts.Part, target: __.Path, protection: _fsprotect.Status
 ) -> tuple[ Action, str ]:
     ''' Prompts user for action on current part. '''
     # TODO: Support queuing of applies for parallel async update.
@@ -84,13 +85,10 @@ async def prompt_action(
         # TODO: Error or default action?
         return Action.APPLY, part.content
     content = part.content
+    protect = protection.active
     while True:
-        # TODO: Dynamically generate menu.
-        #       Consider whether user edit exists, etc....
-        print(
-            f"{part.location:<30} [{len(content)} bytes] : "
-            "(a)pply, (d)iff, (e)dit, (i)gnore, (v)iew",
-            end = '' )
+        menu = _produce_actions_menu( part, content, protect )
+        print( menu, end = '' )
         try: choice = input( " > " ).strip( ).lower( )
         except ( EOFError, KeyboardInterrupt ) as exc:
             print( ) # Add newline to avoid output mangling.
@@ -102,6 +100,7 @@ async def prompt_action(
                 edited = await edit_content( part )
                 if edited is not None: content = edited
             case 'i' | 'ignore': return Action.IGNORE, ''
+            case 'p' | 'permit': protect = False
             case 'v' | 'view': await display_content( part )
             case _: print( f"Invalid choice: {choice}" )
         continue
@@ -136,3 +135,12 @@ def _calculate_differences(
         fromfile = from_file,
         tofile = to_file,
         lineterm = '' ) )
+
+
+def _produce_actions_menu(
+    part: _parts.Part, content: str, protect: bool
+) -> str:
+    info = "{location:<30} [{size}]".format(
+        location = part.location, size = len( content ) )
+    if protect: return f"{info} : (d)iff, (i)gnore, (p)ermit, (v)iew"
+    return f"{info} : (a)pply, (d)iff, (e)dit, (i)gnore, (v)iew"

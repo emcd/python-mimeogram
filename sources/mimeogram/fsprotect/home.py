@@ -18,16 +18,39 @@
 #============================================================================#
 
 
-''' Common constants, imports, and utilities. '''
+''' Sensitive filesystem locations relative to user homes. '''
 
 
-# Expose everything from internal modules.
-from .application import Information as ApplicationInformation
-from .asyncf import *
-from .generics import *
-from .imports import *
-from .inscription import (
-    Control as InscriptionControl, Modes as InscriptionModes )
-from .preparation import *
-from .processes import *
-from .state import Globals
+from __future__ import annotations
+
+from . import __
+
+
+_scribe = __.produce_scribe( __name__ )
+
+
+def discover_sensitive_locations( ) -> frozenset[ str ]:
+    ''' Discovers sensitive locations relative to user home. '''
+    return frozenset( (
+        # Credentials and Keys
+        '.ssh', '.aws', '.gnupg', '.gpg',
+        # Cloud Services
+        '.config/gcloud', '.azure', '.kube',
+        '.terraform.d', '.chef',
+        # Package Managers
+        '.npm', '.pip', '.cargo', '.gem',
+        '.gradle', '.m2', '.ivy2',
+        # Browser Data
+        '.mozilla', '.chrome', '.config/chromium',
+        '.netscape', '.opera',
+        # Database
+        '.postgresql', '.mysql', '.redis',
+        # Shell History and Config
+        '.bash_history', '.zsh_history',
+        '.bashrc', '.zshrc', '.profile',
+        # Cryptocurrency
+        '.bitcoin', '.ethereum',
+        # Other Sensitive
+        '.password-store', '.secrets', '.keys',
+        '.config', '.local/share',
+    ) )

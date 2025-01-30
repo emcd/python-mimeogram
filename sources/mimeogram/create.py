@@ -68,10 +68,10 @@ class Command(
     ] = False
 
     async def __call__( self, auxdata: __.Globals ) -> None:
-        await create( self )
+        await create( auxdata, self )
 
 
-async def create( cmd: Command ) -> int:
+async def create( auxdata: __.Globals, cmd: Command ) -> int: # pylint: disable=unused-argument
     ''' Creates mimeogram. '''
     from .acquirers import acquire
     from .formatters import format_mimeogram
