@@ -76,7 +76,6 @@ class Cli(
         return args
 
 
-# async def main( argv: __.typx.Optional[ __.cabc.Sequence[ str ] ] = None ):
 async def main( ):
     ''' CLI entry point. '''
     config = (

@@ -22,30 +22,52 @@
 
 
 from . import imports as __
-# from . import dictedits as _dictedits
+from . import dictedits as _dictedits
 from . import distribution as _distribution
 from . import io as _io
+
+
+class EnablementTristate( __.enum.Enum ): # TODO: Python 3.11: StrEnum
+    ''' Disable, enable, or retain the natural state? '''
+
+    Disable = 'disable'
+    Retain = 'retain'
+    Enable = 'enable'
+
+    def __bool__( self ) -> bool:
+        if self.Disable is self: return False
+        if self.Enable is self: return True
+        # TODO: Raise proper error.
+        raise RuntimeError
+
+    def is_retain( self ) -> bool:
+        ''' Does enum indicate a retain state? '''
+        return self.Retain is self
 
 
 async def acquire(
     application_name: str,
     directories: __.PlatformDirs,
     distribution: _distribution.Information,
-    # edits: _dictedits.Edits = ( ),
+    edits: _dictedits.Edits = ( ),
     file: __.Absential[ __.Path ] = __.absent,
 ) -> __.AccretiveDictionary[ str, __.typx.Any ]:
     ''' Loads configuration as dictionary. '''
     if __.is_absent( file ):
         file = _discover_copy_template( directories, distribution )
-    from aiofiles import open as open_
-    from tomli import loads
-    async with open_( file ) as stream:
-        configuration = loads( await stream.read( ) )
+    configuration = await _acquire( file )
     includes = await _acquire_includes(
         application_name, directories, configuration.get( 'includes', ( ) ) )
     for include in includes: configuration.update( include )
-    # for edit in edits: edit( configuration )
+    for edit in edits: edit( configuration )
     return __.AccretiveDictionary( configuration )
+
+
+async def _acquire( file: __.Path ) -> __.NominativeDictionary:
+    from aiofiles import open as open_
+    from tomli import loads
+    async with open_( file ) as stream:
+        return loads( await stream.read( ) )
 
 
 async def _acquire_includes(

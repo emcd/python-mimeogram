@@ -24,17 +24,17 @@
 from . import imports as __
 from . import application as _application
 from . import configuration as _configuration
-# from . import dictedits as _dictedits
+from . import dictedits as _dictedits
 from . import distribution as _distribution
 from . import environment as _environment
 from . import inscription as _inscription
 from . import state as _state
 
 
-async def prepare(
+async def prepare( # pylint: disable=too-many-arguments,too-many-locals,too-many-positional-arguments
     exits: __.ExitsAsync,
     application: _application.Information = _application.Information( ),
-    # configedits: _dictedits.Edits = ( ),
+    configedits: _dictedits.Edits = ( ),
     configfile: __.Absential[ __.Path ] = __.absent,
     environment: bool = False,
     inscription: __.Absential[ _inscription.Control ] = __.absent,
@@ -58,7 +58,7 @@ async def prepare(
             application_name = application.name,
             directories = directories,
             distribution = distribution,
-            # edits = configedits,
+            edits = configedits,
             file = configfile ) )
     auxdata = _state.Globals(
         application = application,

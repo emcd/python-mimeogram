@@ -74,19 +74,18 @@ class Command(
 async def create( cmd: Command ) -> int:
     ''' Creates mimeogram. '''
     from .acquirers import acquire
-    from .exceptions import Omnierror
     from .formatters import format_mimeogram
     if cmd.edit:
         from .edit import edit_content
         try: message = edit_content( )
-        except Omnierror as exc:
+        except Exception as exc:
             _scribe.exception( "Could not acquire user message." )
             raise SystemExit( 1 ) from exc
     else: message = None
     try:
         # TODO: Handle cmd.strict.
         parts = await acquire( cmd.sources, recursive = cmd.recurse )
-    except Omnierror as exc:
+    except Exception as exc:
         _scribe.exception( "Could not acquire mimeogram parts." )
         raise SystemExit( 1 ) from exc
     mimeogram = format_mimeogram( parts, message = message )

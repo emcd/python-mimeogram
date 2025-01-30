@@ -260,6 +260,8 @@ ignored-parents = [
   'builtins.TypeError',
   'builtins.ValueError',
   'builtins.type',
+  'typing.Protocol',
+  'typing_extensions.Protocol',
   # --- BEGIN: Injected by Copier ---
   'mimeogram.exceptions.Omnierror',
   'mimeogram.exceptions.Omniexception',

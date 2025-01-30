@@ -49,15 +49,26 @@ import tyro
 
 from absence import Absential, absent, is_absent
 from accretive.qaliases import AccretiveDictionary
-from frigid.qaliases import ImmutableClass, reclassify_modules_as_immutable
+from frigid.qaliases import (
+    ImmutableClass,
+    ImmutableProtocolClass,
+    reclassify_modules_as_immutable,
+)
 from platformdirs import PlatformDirs
 
 
 ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
+NominativeDictionary: typx.TypeAlias = cabc.MutableMapping[ str, typx.Any ]
+ImmutableNominativeDictionary: typx.TypeAlias = cabc.Mapping[ str, typx.Any ]
 
 
 @typx.dataclass_transform( frozen_default = True, kw_only_default = True )
 class ImmutableStandardDataclass( ImmutableClass ):
+    ''' Metaclass for immutable standard dataclasses. (Typechecker hack.) '''
+
+
+@typx.dataclass_transform( frozen_default = True, kw_only_default = True )
+class ImmutableStandardProtocolDataclass( ImmutableProtocolClass ):
     ''' Metaclass for immutable standard dataclasses. (Typechecker hack.) '''
 
 
