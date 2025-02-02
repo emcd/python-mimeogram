@@ -26,6 +26,7 @@ from . import acquirers
 from . import apply
 from . import cli
 from . import create
+from . import differences
 from . import display
 from . import edit
 from . import exceptions

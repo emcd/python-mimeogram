@@ -140,6 +140,24 @@
   - Pattern-based protections
 - Add protection rule validation
 
+## Diff Enhancements
+
+- Evaluate patiencediff for better hunk alignment
+- Add side-by-side diff display with system compatibility:
+  - Terminal width detection
+  - Windows/Unix compatibility
+  - Fallback for narrow terminals
+- Support additional display options:
+  - Color schemes with Pygments integration
+  - Emoji markers for colorblind-friendly display
+  - Whitespace visualization
+  - Line wrapping and truncation
+- Add content validation:
+  - Binary content detection
+  - Line length limits
+  - Change count thresholds
+  - Memory usage monitoring
+
 # Notes
 
 - Priority is given to stability and correctness
@@ -154,7 +172,7 @@
 [X] Ensure correct charset and newlines during applies.
 [ ] Single keystroke actions. (I.e., no ENTER key to act.)
 [ ] Ability to queue applies. (Hit IDE/LS with all changes at once.)
-[ ] Ability to choose hunks to apply.
+[X] Ability to choose hunks to apply.
 [X] Protect against changes to unsafe paths + override mechanism.
 [ ] Command to produce prompt to give to LLM.
 [ ] Creation option to prepend prompt with Mimeogram instructions.

@@ -104,10 +104,10 @@ async def update_part( # pylint: disable=too-many-arguments,too-many-locals
     ''' Updates filesystem location from mimeogram part. '''
     content = part.content
     if interactive:
-        from .interactions import Action, prompt_action
+        from .interactions import Actions, prompt_action
         # TODO: Pass protection to 'prompt_action'.
         action, content_ = await prompt_action( part, target, protection )
-        if action is Action.IGNORE: return
+        if action is Actions.IGNORE: return
         if content_: content = content_
     elif protection: # pylint: disable=confusing-consecutive-elif
         if not force:

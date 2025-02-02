@@ -28,7 +28,7 @@ from . import fsprotect as _fsprotect
 from . import parts as _parts
 
 
-class Action( __.enum.Enum ):
+class Actions( __.enum.Enum ):
     ''' Available actions for each part in interactive mode. '''
     APPLY =     'apply'     # Write to filesystem
     DIFF =      'diff'      # Show changes
@@ -37,53 +37,56 @@ class Action( __.enum.Enum ):
     VIEW =      'view'      # Display in $PAGER
 
 
-async def display_content( part: _parts.Part ) -> None:
-    ''' Displays part content in system pager. '''
+async def display_content( part: _parts.Part, content: str ) -> None:
+    ''' Displays content in system pager. '''
     from .display import display_content as display
     # Suffix from location for proper syntax highlighting.
     suffix = __.Path( part.location ).suffix or '.txt'
-    display( part.content, suffix = suffix )
+    display( content, suffix = suffix )
 
 
 async def display_differences(
-    part: _parts.Part,
-    target: __.Path
+    part: _parts.Part, target: __.Path, revision: str
 ) -> None:
-    ''' Displays differences between part content and target file. '''
-    current_content = None
+    ''' Displays differences between content and target file. '''
+    original = ''
     if target.exists( ):
-        current_content = await _acquire_content( target, part.charset )
-    diff_lines = _calculate_differences(
-        part.content, current_content, target )
-    if not diff_lines:
+        from .exceptions import ContentAcquireFailure
+        try:
+            original = (
+                await __.acquire_text_file_async(
+                    target, charset = part.charset ) )
+        except Exception as exc:
+            raise ContentAcquireFailure( target ) from exc
+        original = part.linesep.normalize( original )
+    diff = _calculate_differences( part, revision, original )
+    if not diff:
         print( "No changes" )
         return
     from .display import display_content as display
-    display( '\n'.join( diff_lines ), suffix = '.diff' )
+    display( '\n'.join( diff ), suffix = '.diff' )
 
 
-async def edit_content( part: _parts.Part ) -> __.typx.Optional[ str ]:
-    ''' Edits part content in system editor. '''
+async def edit_content( target: __.Path, content: str ) -> str:
+    ''' Edits content in system editor. '''
     from .edit import edit_content as edit
-    from .exceptions import EditorFailure
     # Suffix from location for proper syntax highlighting.
-    suffix = __.Path( part.location ).suffix or '.txt'
-    try: edited = edit( part.content, suffix = suffix )
-    except Exception as exc: raise EditorFailure( exc ) from exc
-    if edited != part.content: return edited
-    return
+    suffix = __.Path( target ).suffix or '.txt'
+    return edit( content, suffix = suffix )
 
 
 async def prompt_action(
     part: _parts.Part, target: __.Path, protection: _fsprotect.Status
-) -> tuple[ Action, str ]:
+) -> tuple[ Actions, str ]:
     ''' Prompts user for action on current part. '''
+    # TODO? Track revision history.
     # TODO: Support queuing of applies for parallel async update.
+    from .differences import select_segments
     from .exceptions import UserOperateCancellation
     if not __.sys.stdin.isatty( ):
         # Default to APPLY if we cannot prompt.
         # TODO: Error or default action?
-        return Action.APPLY, part.content
+        return Actions.APPLY, part.content
     content = part.content
     protect = protection.active
     while True:
@@ -94,47 +97,41 @@ async def prompt_action(
             print( ) # Add newline to avoid output mangling.
             raise UserOperateCancellation( exc ) from exc
         match choice:
-            case 'a' | 'apply': return Action.APPLY, content
-            case 'd' | 'diff': await display_differences( part, target )
+            case 'a' | 'apply': return Actions.APPLY, content
+            case 'd' | 'diff':
+                await display_differences( part, target, content )
             case 'e' | 'edit':
-                edited = await edit_content( part )
-                if edited is not None: content = edited
-            case 'i' | 'ignore': return Action.IGNORE, ''
+                content = await edit_content( target, content )
+            case 'i' | 'ignore': return Actions.IGNORE, ''
             case 'p' | 'permit': protect = False
-            case 'v' | 'view': await display_content( part )
+            case 's' | 'select':
+                content = await select_segments( part, target, content )
+            case 'v' | 'view':
+                await display_content( part, content )
             case _: print( f"Invalid choice: {choice}" )
         continue
 
 
-async def _acquire_content( path: __.Path, encoding: str = 'utf-8' ) -> str:
-    ''' Acquires content from target file. '''
-    # TODO: Merge with logic in acquirers module.
-    from .exceptions import ContentAcquireFailure
-    try:
-        async with __.aiofiles.open( path, 'r', encoding = encoding ) as f:
-            return await f.read()
-    except Exception as exc: raise ContentAcquireFailure( path ) from exc
-
-
 def _calculate_differences(
-    new_content: str,
-    current_content: __.typx.Optional[ str ],
-    target_path: __.Path
+    part: _parts.Part,
+    revision: str,
+    original: __.Absential[ str ] = __.absent,
 ) -> list[ str ]:
     ''' Generates unified diff between contents. '''
-    import difflib
+    from patiencediff import (
+        unified_diff, PatienceSequenceMatcher ) # pyright: ignore
     from_lines = (
-        current_content.splitlines( keepends = True )
-        if current_content else [ ] )
-    to_lines = new_content.splitlines( keepends = True )
-    from_file = str( target_path ) if current_content else '/dev/null'
-    to_file = str( target_path )
-    return list( difflib.unified_diff(
-        from_lines,
-        to_lines,
-        fromfile = from_file,
-        tofile = to_file,
-        lineterm = '' ) )
+        original.split( '\n' )
+        if not __.is_absent( original ) else [ ] )
+    to_lines = revision.split( '\n' )
+    from_file = (
+        part.location
+        if not __.is_absent( original ) else '/dev/null' )
+    to_file = part.location
+    return list( unified_diff( # pyright: ignore
+        from_lines, to_lines,
+        fromfile = from_file, tofile = to_file,
+        lineterm = '', sequencematcher = PatienceSequenceMatcher ) )
 
 
 def _produce_actions_menu(
@@ -142,5 +139,6 @@ def _produce_actions_menu(
 ) -> str:
     info = "{location:<30} [{size}]".format(
         location = part.location, size = len( content ) )
+    # TODO: Add warning indicator when target is protected.
     if protect: return f"{info} : (d)iff, (i)gnore, (p)ermit, (v)iew"
-    return f"{info} : (a)pply, (d)iff, (e)dit, (i)gnore, (v)iew"
+    return f"{info} : (a)pply, (d)iff, (e)dit, (i)gnore, (s)elect, (v)iew"

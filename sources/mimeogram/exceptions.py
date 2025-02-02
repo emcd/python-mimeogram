@@ -63,6 +63,13 @@ class ContentUpdateFailure( Omnierror ):
         super( ).__init__( f"Could not update content at '{location}'." )
 
 
+class DifferencesProcessFailure( Omnierror ):
+    ''' Failure during diff processing. '''
+
+    def __init__( self, reason: str ):
+        super( ).__init__( f"Could not process changes. Reason: {reason}" )
+
+
 class EditorFailure( Omnierror ):
     ''' Failure while operating editor. '''
 

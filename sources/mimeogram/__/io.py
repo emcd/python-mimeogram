@@ -30,8 +30,24 @@ from . import asyncf as _asyncf
 from . import generics as _generics
 
 
+async def acquire_text_file_async(
+    file: str | __.Path,
+    charset: str = 'utf-8',
+    deserializer: __.Absential[
+        __.typx.Callable[ [ str ], __.typx.Any ] ] = __.absent,
+) -> __.typx.Any:
+    ''' Reads file asynchronously. '''
+    from aiofiles import open as open_
+    async with open_( file, encoding = charset ) as stream:
+        data = await stream.read( )
+    if not __.is_absent( deserializer ):
+        return deserializer( data )
+    return data
+
+
 async def acquire_text_files_async(
     *files: str | __.Path,
+    charset: str = 'utf-8',
     deserializer: __.Absential[
         __.typx.Callable[ [ str ], __.typx.Any ] ] = __.absent,
     return_exceptions: bool = False
@@ -42,7 +58,7 @@ async def acquire_text_files_async(
     extractor = _result_extractor if return_exceptions else _bare_extractor
     async with __.ExitsAsync( ) as exits:
         streams = await _asyncf.gather_async(
-            *(  exits.enter_async_context( open_( file ) )
+            *(  exits.enter_async_context( open_( file, encoding = charset ) )
                 for file in files ),
             return_exceptions = return_exceptions )
         data = await _asyncf.gather_async(

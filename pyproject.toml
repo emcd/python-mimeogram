@@ -21,6 +21,7 @@ dependencies = [
   'httpx',
   'importlib-resources',
   # 'importlib-resources @ git+https://github.com/emcd/importlib_resources@as-file-traversable',
+  'patiencediff',
   'platformdirs',
   'pyperclip',
   'python-dotenv',
