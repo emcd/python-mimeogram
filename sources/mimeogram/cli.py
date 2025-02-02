@@ -26,6 +26,7 @@ from __future__ import annotations
 from . import __
 from . import apply as _apply
 from . import create as _create
+from . import prompt as _prompt
 
 
 _scribe = __.produce_scribe( __name__ )
@@ -52,6 +53,11 @@ class Cli(
             _apply.Command,
             __.tyro.conf.subcommand( # pyright: ignore
                 'apply', prefix_name = False ),
+        ],
+        __.typx.Annotated[
+            _prompt.Command,
+            __.tyro.conf.subcommand( # pyright: ignore
+                'provide-prompt', prefix_name = False ),
         ],
     ]
 

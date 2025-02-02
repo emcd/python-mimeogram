@@ -55,6 +55,11 @@ class Command(
             aliases = ( '-e', '--edit-message' ),
             help = "Spawn editor to capture an introductory message." ),
     ] = False
+    prepend_prompt: __.typx.Annotated[
+        bool,
+        __.tyro.conf.arg( # pyright: ignore
+            help = "Prepend mimeogram format instructions." ),
+    ] = False
     recurse: __.typx.Annotated[
         bool,
         __.tyro.conf.arg( # pyright: ignore
@@ -71,7 +76,7 @@ class Command(
         await create( auxdata, self )
 
 
-async def create( auxdata: __.Globals, cmd: Command ) -> int: # pylint: disable=unused-argument
+async def create( auxdata: __.Globals, cmd: Command ) -> int: # pylint: disable=too-many-locals,too-many-statements
     ''' Creates mimeogram. '''
     from .acquirers import acquire
     from .formatters import format_mimeogram
@@ -89,6 +94,10 @@ async def create( auxdata: __.Globals, cmd: Command ) -> int: # pylint: disable=
         _scribe.exception( "Could not acquire mimeogram parts." )
         raise SystemExit( 1 ) from exc
     mimeogram = format_mimeogram( parts, message = message )
+    if cmd.prepend_prompt:
+        from .prompt import acquire_prompt
+        prompt = await acquire_prompt( auxdata )
+        mimeogram = f"{prompt}\n\n{mimeogram}"
     if cmd.clip:
         try: _pyperclip.copy( mimeogram )
         except Exception as exc:

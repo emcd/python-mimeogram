@@ -1,0 +1,50 @@
+def test_prompt_command_basic_output():
+    # Basic stdout capture matches expected prompt text
+    # No modifications to formatting or whitespace
+    # Preserve all newlines exactly
+
+def test_prompt_command_clipboard():
+    # Verify clipboard contents match expected prompt
+    # Handle clipboard operations on test platform
+    # Ensure proper error if clipboard unavailable
+
+def test_prompt_command_missing_file():
+    # Verify proper error message and exit code
+    # Ensure no partial output attempted
+
+def test_create_command_prepend_only():
+    # Verify prompt appears at start of mimeogram
+    # Check mimeogram structure remains valid
+    # Verify no extra newlines or formatting changes
+
+def test_create_command_prepend_with_message():
+    # Verify prompt appears before message
+    # Check double newline separator
+    # Verify message content preserved exactly
+    # Ensure mimeogram structure valid
+
+def test_create_command_prepend_with_edit():
+    # Test prompt + interactive message
+    # Verify order and formatting
+    # Check error cases (edit fails)
+
+def test_create_command_prepend_with_clipboard():
+    # Test prompt prepend with clipboard output
+    # Verify clipboard gets complete content
+    # Check error handling for clipboard failures
+
+def test_create_command_prompt_file_error():
+    # Handle prompt file access error during create
+    # Verify proper error message
+    # Check no partial mimeogram created
+
+def test_prompt_content_integrity():
+    # Verify prompt boundaries preserved
+    # Check all headers intact
+    # Validate content location paths
+    # Ensure file content unmodified
+
+def test_prompt_combined_options():
+    # Test all valid option combinations
+    # Verify option interactions work
+    # Check error cases propagate correctly

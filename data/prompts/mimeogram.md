@@ -72,19 +72,19 @@ Each part must include:
 ## Example
 
 ```
---====MIMEOGRAM_123456====
+--====MIMEOGRAM_083f1e1306624ef4a246c23193d3fdd7====
 Content-Location: mimeogram://message
 Content-Type: text/plain; charset=utf-8
 
 Please review these Python modules for a logging system.
---====MIMEOGRAM_123456====
+--====MIMEOGRAM_083f1e1306624ef4a246c23193d3fdd7====
 Content-Location: src/logger.py
 Content-Type: text/x-python; charset=utf-8
 
 class Logger:
     def __init__(self):
         pass
---====MIMEOGRAM_123456====--
+--====MIMEOGRAM_083f1e1306624ef4a246c23193d3fdd7====--
 ```
 
 In this example:

@@ -170,6 +170,63 @@
   - Change count thresholds
   - Memory usage monitoring
 
+## LLM Prompt Features
+
+### Core Functionality
+- Add library of standard prompts for different LLM capabilities:
+  - Basic prompt (current) for high-capability models
+  - Simplified prompt for models needing more explicit guidance
+  - Detailed prompt for models requiring step-by-step instructions
+- Support user-provided prompt overrides in config directory
+- Consider environment variable to select prompt variant
+
+### Testing Requirements
+
+#### Prompt Command Tests
+- Basic prompt display
+  - Verify stdout contains exact prompt text
+  - Ensure no additional whitespace/formatting changes
+  - Check preservation of newlines and special characters
+- Clipboard functionality
+  - Verify prompt text is copied to clipboard unchanged
+  - Test clipboard operations on various platforms
+  - Handle clipboard access failures gracefully
+- Error conditions
+  - Test missing prompt file
+  - Test inaccessible prompt file
+  - Verify appropriate error messages and exit codes
+
+#### Create Command Prompt Tests
+- Basic functionality
+  - Verify --prepend-prompt adds prompt correctly
+  - Check prompt appears before any message
+  - Ensure double newline between prompt and message
+  - Verify mimeogram structure remains valid
+- Combined operations
+  - Test --prepend-prompt with --edit
+  - Test --prepend-prompt with --clip
+  - Verify all combinations of options work correctly
+- Content integrity
+  - Ensure file contents remain unchanged
+  - Verify boundary markers are correct
+  - Check Content-Type headers are preserved
+  - Validate Content-Location headers
+- Error handling
+  - Test prompt file access failures during create
+  - Verify error messages match project style
+  - Check error propagation in combined operations
+
+#### Integration Tests
+- System tests with actual files
+- Cross-platform verification (Windows/Unix)
+- Large file handling
+
+### Documentation
+- Add prompt features to README.rst
+- Document prompt variants when implemented
+- Include common usage patterns and examples
+- Document any configuration options added
+
 # Notes
 
 - Priority is given to stability and correctness
@@ -186,8 +243,8 @@
 [ ] Ability to queue applies. (Hit IDE/LS with all changes at once.)
 [X] Ability to choose hunks to apply.
 [X] Protect against changes to unsafe paths + override mechanism.
-[ ] Command to produce prompt to give to LLM.
-[ ] Creation option to prepend prompt with Mimeogram instructions.
+[X] Command to produce prompt to give to LLM.
+[X] Creation option to prepend prompt with Mimeogram instructions.
 [ ] Build standalone executables (PyOxidizer or PyInstaller + StaticX).
 [ ] Tests.
 [ ] Documentation.

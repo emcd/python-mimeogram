@@ -24,6 +24,7 @@
 # Expose everything from internal modules.
 from .application import Information as ApplicationInformation
 from .asyncf import *
+from .distribution import Information as DistributionInformation
 from .generics import *
 from .imports import *
 from .inscription import (
