@@ -107,21 +107,24 @@ def _prompt_segment_action(
     lines: list[ str ], display_options: DisplayOptions
 ) -> bool:
     ''' Displays change and gets user decision. '''
+    # TODO: Display hunk number.
+    from readchar import readkey
     _display_differences( lines, display_options )
+    menu = "Apply this change? (y)es, (n)o, (v)iew"
     while True:
-        try: choice = input( "Apply this change? (y)es, (n)o, (v)iew > " )
+        print( f"\n{menu} > ", end = '' )
+        try: choice = readkey( ).lower( )
         except ( EOFError, KeyboardInterrupt ):
             print( ) # Add newline to avoid output mangling
             return False
-        match choice.strip( ).lower( ):
-            case 'y' | 'yes': return True
-            case 'n' | 'no': return False
-            case 'v' | 'view':
-                _display_differences( lines, display_options )
-                continue
+        print( choice ) # Echo.
+        match choice:
+            case 'y': return True
+            case 'n': return False
+            case 'v': _display_differences( lines, display_options )
             case _:
-                print( f"Invalid choice: {choice}" )
-                continue
+                if choice.isprintable( ): print( f"Invalid choice: {choice}" )
+                else: print( "Invalid choice." )
 
 
 def _select_segments( # pylint: disable=too-many-locals

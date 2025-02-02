@@ -11,7 +11,6 @@
   - `edits-by-context`: Context-based insertions, replacements, deletions
   - `unified-diff`: Direct unified diff from LLM
   - `none`: Whole file updates
-- Add indicator for original newline type to `Content-Type` header.
 
 ### Project Structure
 - Extract line-edit operations into standalone package (shared with AI
@@ -26,10 +25,6 @@
   - Line counting
   - Token estimation
   - Size warnings
-- Support splitting large changes:
-  - Multi-part mimeograms
-  - Dependency tracking
-  - Order preservation
 
 ## Usability Improvements
 
@@ -37,13 +32,10 @@
 - Add support for colored output in terminals
 - Implement file read caching to reduce I/O
 - Add option to always show diff before apply
-- Support hunk-by-hunk application of changes
 - Allow use of external diff tools
-- Support different diff formats
+- Support various diff formats
 
 ### Input/UX Improvements
-- Support single-key actions without requiring Enter
-- Improve terminal I/O handling
 - Consider compound actions (e.g., edit-then-apply)
 - Support restoring original content after edits
 - Add progress indicators for long operations
@@ -54,8 +46,6 @@
 
 ### Configuration System
 - Support environment variables for configuration
-- Make protected paths configurable
-- Special handling for XDG directories
 - User-configurable default actions
 - Configure boilerplate patterns
 
@@ -83,13 +73,6 @@
 - Version control system integration
 - Save/restore session state for long updates
 
-### Security
-- Implement robust path protection
-- Add safeguards against symlink attacks
-- Verify file ownership and permissions
-- Support for checksums/signatures
-- Handle file lock security implications
-
 ## Performance
 
 ### Optimization
@@ -98,6 +81,38 @@
 - Batch operations where possible
 - Profile and optimize common operations
 - Optimize async fanout for batch operations
+
+## Terminal UI Enhancements
+
+### Display Features
+- Add terminal capability detection:
+  - ANSI color support
+  - Unicode/emoji support
+  - Terminal width detection
+- Add configurable color themes:
+  - Protection status indicators
+  - Diff highlighting
+  - File information
+  - Action menus
+- Support status indicators:
+  - File existence/permissions
+  - Edit status tracking
+  - Protection status with emoji
+  - VCS status integration
+
+### Progress Feedback
+- Add operation progress indicators:
+  - File processing status
+  - Batch operation progress
+  - Background task status
+- Enhance error presentation:
+  - Detailed error context
+  - Recovery suggestions
+  - Error highlighting
+- Support status messages:
+  - Operation success/failure
+  - Warning notifications
+  - Background task updates
 
 ## Path Protection
 
@@ -126,8 +141,6 @@
 ### Usability Enhancements
 - Improve protection reason messages
 - Add detailed logging for protection decisions
-- Support for temporary protection overrides
-- Tools for analyzing protection rules
 - Documentation for common protection scenarios
 
 ### Testing and Validation
@@ -142,7 +155,6 @@
 
 ## Diff Enhancements
 
-- Evaluate patiencediff for better hunk alignment
 - Add side-by-side diff display with system compatibility:
   - Terminal width detection
   - Windows/Unix compatibility
@@ -170,7 +182,7 @@
 
 [X] Represent original newline marker for textual `Content-Type`.
 [X] Ensure correct charset and newlines during applies.
-[ ] Single keystroke actions. (I.e., no ENTER key to act.)
+[X] Single keystroke actions. (I.e., no ENTER key to act.)
 [ ] Ability to queue applies. (Hit IDE/LS with all changes at once.)
 [X] Ability to choose hunks to apply.
 [X] Protect against changes to unsafe paths + override mechanism.

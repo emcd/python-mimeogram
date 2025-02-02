@@ -81,6 +81,7 @@ class Command(
 async def apply( auxdata: __.Globals, cmd: Command ) -> int:
     ''' Applies mimeogram. '''
     # TODO? Use BSD sysexits.
+    _assert_sanity( cmd )
     from .parsers import parse
     from .updaters import update
     try: mgtext = await _acquire( cmd )
@@ -94,7 +95,7 @@ async def apply( auxdata: __.Globals, cmd: Command ) -> int:
     except Exception as exc:
         _scribe.exception( "Could not parse mimeogram." )
         raise SystemExit( 1 ) from exc
-    # TODO: Pass command object.
+    # TODO: Pass options DTO.
     nomargs: dict[ str, __.typx.Any ] = dict(
         force = cmd.force, interactive = cmd.interactive )
     if cmd.base: nomargs[ 'base' ] = cmd.base
@@ -124,3 +125,9 @@ async def _acquire(
         case _:
             async with __.aiofiles.open( cmd.source, 'r' ) as f:
                 return await f.read( )
+
+
+def _assert_sanity( command: Command ):
+    if not __.sys.stdin.isatty( ) and command.interactive:
+        _scribe.error( "Cannot use interactive mode without terminal." )
+        raise SystemExit( 1 )

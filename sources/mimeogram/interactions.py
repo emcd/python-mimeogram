@@ -75,41 +75,39 @@ async def edit_content( target: __.Path, content: str ) -> str:
     return edit( content, suffix = suffix )
 
 
-async def prompt_action(
+async def prompt_action( # pylint: disable=too-many-locals
     part: _parts.Part, target: __.Path, protection: _fsprotect.Status
 ) -> tuple[ Actions, str ]:
     ''' Prompts user for action on current part. '''
     # TODO? Track revision history.
     # TODO: Support queuing of applies for parallel async update.
+    from readchar import readkey
     from .differences import select_segments
     from .exceptions import UserOperateCancellation
-    if not __.sys.stdin.isatty( ):
-        # Default to APPLY if we cannot prompt.
-        # TODO: Error or default action?
-        return Actions.APPLY, part.content
     content = part.content
     protect = protection.active
     while True:
         menu = _produce_actions_menu( part, content, protect )
-        print( menu, end = '' )
-        try: choice = input( " > " ).strip( ).lower( )
+        print( f"\n{menu} > ", end = '' )
+        __.sys.stdout.flush( )
+        try: choice = readkey( ).lower( )
         except ( EOFError, KeyboardInterrupt ) as exc:
             print( ) # Add newline to avoid output mangling.
             raise UserOperateCancellation( exc ) from exc
+        print( choice ) # Echo.
         match choice:
-            case 'a' | 'apply': return Actions.APPLY, content
-            case 'd' | 'diff':
-                await display_differences( part, target, content )
-            case 'e' | 'edit':
+            case 'a' if not protect: return Actions.APPLY, content
+            case 'd': await display_differences( part, target, content )
+            case 'e' if not protect:
                 content = await edit_content( target, content )
-            case 'i' | 'ignore': return Actions.IGNORE, ''
-            case 'p' | 'permit': protect = False
-            case 's' | 'select':
+            case 'i': return Actions.IGNORE, ''
+            case 'p' if protect: protect = False
+            case 's' if not protect:
                 content = await select_segments( part, target, content )
-            case 'v' | 'view':
-                await display_content( part, content )
-            case _: print( f"Invalid choice: {choice}" )
-        continue
+            case 'v': await display_content( part, content )
+            case _:
+                if choice.isprintable( ): print( f"Invalid choice: {choice}" )
+                else: print( "Invalid choice." )
 
 
 def _calculate_differences(
@@ -121,12 +119,10 @@ def _calculate_differences(
     from patiencediff import (
         unified_diff, PatienceSequenceMatcher ) # pyright: ignore
     from_lines = (
-        original.split( '\n' )
-        if not __.is_absent( original ) else [ ] )
+        original.split( '\n' ) if not __.is_absent( original ) else [ ] )
     to_lines = revision.split( '\n' )
     from_file = (
-        part.location
-        if not __.is_absent( original ) else '/dev/null' )
+        part.location if not __.is_absent( original ) else '/dev/null' )
     to_file = part.location
     return list( unified_diff( # pyright: ignore
         from_lines, to_lines,
@@ -137,8 +133,17 @@ def _calculate_differences(
 def _produce_actions_menu(
     part: _parts.Part, content: str, protect: bool
 ) -> str:
-    info = "{location:<30} [{size}]".format(
-        location = part.location, size = len( content ) )
-    # TODO: Add warning indicator when target is protected.
-    if protect: return f"{info} : (d)iff, (i)gnore, (p)ermit, (v)iew"
-    return f"{info} : (a)pply, (d)iff, (e)dit, (i)gnore, (s)elect, (v)iew"
+    size = len( content )
+    size_str = (
+        "{:.1f}K".format( size / 1024 )
+        if 1024 <= size # pylint: disable=magic-value-comparison
+        else f"{size}B" )
+    status = "[PROTECTED]" if protect else ""
+    info = f"{part.location} [{size_str}] {status}"
+    if protect:
+        return (
+            f"{info}\n"
+            "Action? (d)iff, (i)gnore, (p)ermit changes, (v)iew" )
+    return (
+        f"{info}\n"
+        "Action? (a)pply, (d)iff, (e)dit, (i)gnore, (s)elect hunks, (v)iew" )

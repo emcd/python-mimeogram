@@ -26,6 +26,7 @@ dependencies = [
   'pyperclip',
   'python-dotenv',
   'python-magic',
+  'readchar',
   'rich',
   'tomli',
   'typing-extensions',

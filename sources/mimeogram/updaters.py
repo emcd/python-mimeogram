@@ -88,6 +88,7 @@ async def update( # pylint: disable=too-many-arguments,too-many-locals
                 interactive = interactive,
                 protection = protection,
                 reverter = reverter )
+        except StopIteration: break
         except Exception:
             await reverter.restore( )
             raise
@@ -105,7 +106,6 @@ async def update_part( # pylint: disable=too-many-arguments,too-many-locals
     content = part.content
     if interactive:
         from .interactions import Actions, prompt_action
-        # TODO: Pass protection to 'prompt_action'.
         action, content_ = await prompt_action( part, target, protection )
         if action is Actions.IGNORE: return
         if content_: content = content_
