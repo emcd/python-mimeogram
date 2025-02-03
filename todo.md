@@ -240,7 +240,7 @@
 [X] Represent original newline marker for textual `Content-Type`.
 [X] Ensure correct charset and newlines during applies.
 [X] Single keystroke actions. (I.e., no ENTER key to act.)
-[ ] Ability to queue applies. (Hit IDE/LS with all changes at once.)
+[X] Ability to queue applies. (Hit IDE/LS with all changes at once.)
 [X] Ability to choose hunks to apply.
 [X] Protect against changes to unsafe paths + override mechanism.
 [X] Command to produce prompt to give to LLM.

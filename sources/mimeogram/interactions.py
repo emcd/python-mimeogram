@@ -29,12 +29,10 @@ from . import parts as _parts
 
 
 class Actions( __.enum.Enum ):
-    ''' Available actions for each part in interactive mode. '''
-    APPLY =     'apply'     # Write to filesystem
-    DIFF =      'diff'      # Show changes
-    EDIT =      'edit'      # Edit in $EDITOR
-    IGNORE =    'ignore'    # Skip
-    VIEW =      'view'      # Display in $PAGER
+    ''' Available actions for each part. '''
+
+    Apply =     'apply'     # Write to filesystem
+    Ignore =    'ignore'    # Skip
 
 
 async def display_content( part: _parts.Part, content: str ) -> None:
@@ -96,11 +94,11 @@ async def prompt_action( # pylint: disable=too-many-locals
             raise UserOperateCancellation( exc ) from exc
         print( choice ) # Echo.
         match choice:
-            case 'a' if not protect: return Actions.APPLY, content
+            case 'a' if not protect: return Actions.Apply, content
             case 'd': await display_differences( part, target, content )
             case 'e' if not protect:
                 content = await edit_content( target, content )
-            case 'i': return Actions.IGNORE, ''
+            case 'i': return Actions.Ignore, content
             case 'p' if protect: protect = False
             case 's' if not protect:
                 content = await select_segments( part, target, content )

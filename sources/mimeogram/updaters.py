@@ -25,34 +25,50 @@ from __future__ import annotations
 
 from . import __
 from . import fsprotect as _fsprotect
+from . import interactions as _interactions
 from . import parts as _parts
 
 
 _scribe = __.produce_scribe( __name__ )
 
 
-class Reverter:
+class ReviewModes( __.enum.Enum ): # TODO: Python 3.11: StrEnum
+    ''' Controls how updates are reviewed and applied. '''
+
+    Silent =    'silent'        # Apply parts without review.
+    # Aggregate = 'aggregate'     # Git-style aggregated diff for all parts
+    Partitive = 'partitive'     # Interactively review each part.
+
+
+# pylint: disable=bad-reversed-sequence,unsubscriptable-object
+# pylint: disable=unsupported-assignment-operation,unsupported-membership-test
+class Reverter(
+    metaclass = __.ImmutableStandardDataclass,
+    decorators = ( __.standard_dataclass, ),
+):
     ''' Backup and restore filesystem state. '''
 
-    def __init__( self ):
-        self.originals: dict[ __.Path, str ] = { }
-        self.updated: list[ __.Path ] = [ ]
+    originals: dict[ __.Path, str ] = (
+        __.dataclass_declare( default_factory = dict ) )
+    revisions: list[ __.Path ] = (
+        __.dataclass_declare( default_factory = list ) )
 
-    async def save( self, path: __.Path ) -> None:
+    async def save( self, part: _parts.Part, path: __.Path ) -> None:
         ''' Saves original file content if it exists. '''
         from .exceptions import ContentAcquireFailure
         if not path.exists( ): return
         try:
-            # TODO: Do not assume UTF-8 charset.
-            async with __.aiofiles.open( path, 'r', encoding = 'utf-8' ) as f:
-                self.originals[ path ] = await f.read()
+            content = (
+                await __.acquire_text_file_async(
+                    path, charset = part.charset ) )
         except Exception as exc: raise ContentAcquireFailure( path ) from exc
+        self.originals[ path ] = content
 
     async def restore( self ) -> None:
         ''' Restores files to original contents in reverse order. '''
         # TODO: async parallel fanout
         from .exceptions import ContentUpdateFailure
-        for path in reversed( self.updated ):
+        for path in reversed( self.revisions ):
             if path in self.originals:
                 try:
                     await _update_content_atomic(
@@ -60,65 +76,92 @@ class Reverter:
                 except ContentUpdateFailure:
                     _scribe.exception( "Failed to restore {path}" )
             else: path.unlink( )
+# pylint: enable=bad-reversed-sequence,unsubscriptable-object
+# pylint: enable=unsupported-assignment-operation,unsupported-membership-test
 
 
-async def update( # pylint: disable=too-many-arguments,too-many-locals
+# pylint: disable=no-member,not-an-iterable
+class Queue(
+    metaclass = __.ImmutableStandardDataclass,
+    decorators = ( __.standard_dataclass, ),
+):
+    ''' Manages queued file updates for batch application. '''
+
+    updates: list[ tuple[ _parts.Part, __.Path, str ] ] = (
+        __.dataclass_declare( default_factory = list ) )
+    reverter: Reverter = (
+        __.dataclass_declare( default_factory = Reverter ) )
+
+    def enqueue(
+        self, part: _parts.Part, target: __.Path, content: str
+    ) -> None:
+        ''' Adds a file update to queue. '''
+        self.updates.append( ( part, target, content ) )
+
+    async def apply( self ) -> None:
+        ''' Applies all queued updates with parallel async fanout. '''
+        try:
+            await __.gather_async(
+                *(  self.reverter.save( part, target )
+                    for part, target, _ in self.updates ),
+                error_message = "Failed to backup files." )
+            await __.gather_async(
+                *(  _update_content_atomic(
+                        target, content, charset = part.charset )
+                    for part, target, content in self.updates ),
+                error_message = "Failed to apply updates." )
+        except Exception:
+            await self.reverter.restore( )
+            raise
+        for _, target, _ in self.updates:
+            self.reverter.revisions.append( target )
+# pylint: enable=no-member,not-an-iterable
+
+
+async def update( # pylint: disable=too-many-locals
     auxdata: __.Globals,
     parts: __.cabc.Sequence[ _parts.Part ],
+    mode: ReviewModes,
     base: __.Absential[ __.Path ] = __.absent,
     force: bool = False,
-    interactive: bool = False,
-    # TODO: collect/queue
-    reverter: __.Absential[ Reverter ] = __.absent,
 ) -> None:
     ''' Updates filesystem locations from mimeogram. '''
     # TODO: DTO for behavior options.
     if __.is_absent( base ): base = __.Path( )
-    if __.is_absent( reverter ): reverter = Reverter( )
     protector = _fsprotect.Cache.from_configuration( auxdata = auxdata )
+    queue = Queue( )
     for part in parts:
         if part.location.startswith( 'mimeogram://' ): continue
         target = _derive_location( part.location, base = base )
         protection = protector.verify( target )
-        try:
-            await update_part( # TODO: Collect actions for queue.
-                part,
-                target = target,
-                force = force,
-                interactive = interactive,
-                protection = protection,
-                reverter = reverter )
-        except StopIteration: break
-        except Exception:
-            await reverter.restore( )
-            raise
+        action, content = await update_part(
+            part,
+            target = target,
+            force = force,
+            mode = mode,
+            protection = protection )
+        if _interactions.Actions.Ignore is action: continue
+        queue.enqueue( part, target, content )
+    await queue.apply( )
 
 
-async def update_part( # pylint: disable=too-many-arguments,too-many-locals
+async def update_part(
     part: _parts.Part,
     target: __.Path,
     force: bool,
-    interactive: bool,
+    mode: ReviewModes,
     protection: _fsprotect.Status,
-    reverter: Reverter,
-) -> None:
+) -> tuple[ _interactions.Actions, str ]:
     ''' Updates filesystem location from mimeogram part. '''
     content = part.content
-    if interactive:
-        from .interactions import Actions, prompt_action
-        action, content_ = await prompt_action( part, target, protection )
-        if action is Actions.IGNORE: return
-        if content_: content = content_
-    elif protection: # pylint: disable=confusing-consecutive-elif
-        if not force:
-            _scribe.warning(
-                f"Skipping protected path: {target} "
-                f"Reason: {protection.description}" )
-            return
-    target.parent.mkdir( parents = True, exist_ok = True )
-    await reverter.save( target ) # TODO: Pass part metadata.
-    await _update_content_atomic( target, content, charset = part.charset )
-    reverter.updated.append( target )
+    if ReviewModes.Partitive is mode:
+        return await _interactions.prompt_action( part, target, protection )
+    if protection and not force:
+        _scribe.warning(
+            f"Skipping protected path: {target} "
+            f"Reason: {protection.description}" )
+        return _interactions.Actions.Ignore, content
+    return _interactions.Actions.Apply, content
 
 
 def _derive_location(
@@ -155,6 +198,7 @@ async def _update_content_atomic(
     ''' Updates file content atomically, if possible. '''
     import aiofiles.os as os # pylint: disable=consider-using-from-import
     from aiofiles.tempfile import NamedTemporaryFile
+    location.parent.mkdir( parents = True, exist_ok = True )
     content = linesep.nativize( content )
     async with NamedTemporaryFile(
         delete = False,

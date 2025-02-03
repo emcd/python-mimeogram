@@ -36,7 +36,10 @@ import sys
 import types
 
 from contextlib import AsyncExitStack as ExitsAsync
-from dataclasses import dataclass
+from dataclasses import (
+    dataclass,
+    field as dataclass_declare,
+)
 from logging import getLogger as produce_scribe
 from pathlib import Path
 from uuid import uuid4

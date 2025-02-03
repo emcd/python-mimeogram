@@ -26,6 +26,7 @@ from __future__ import annotations
 import pyperclip as _pyperclip
 
 from . import __
+from . import updaters as _updaters
 
 
 _scribe = __.produce_scribe( __name__ )
@@ -50,11 +51,16 @@ class Command(
             aliases = ( '--clipboard', '--from-clipboard' ),
             help = "Read mimeogram from clipboard instead of file or stdin." ),
     ] = False
-    interactive: __.typx.Annotated[
-        bool,
+    review_mode: __.typx.Annotated[
+        __.typx.Optional[ _updaters.ReviewModes ],
         __.tyro.conf.arg( # pyright: ignore
-            help = "Prompt for action on each part." ),
-    ] = False
+            help = (
+                "Controls how changes are reviewed. "
+                "'silent': Apply without review. "
+                "'partitive': Review each change interactively. "
+                "Partitive, if not specified and on a terminal. "
+                "Silent, if not specified and not on a terminal." ) ),
+    ] = None
     base: __.typx.Annotated[
         __.typx.Optional[ __.Path ],
         __.tyro.conf.arg( # pyright: ignore
@@ -81,7 +87,7 @@ class Command(
 async def apply( auxdata: __.Globals, cmd: Command ) -> int:
     ''' Applies mimeogram. '''
     # TODO? Use BSD sysexits.
-    _assert_sanity( cmd )
+    review_mode = _determine_review_mode( cmd )
     from .parsers import parse
     from .updaters import update
     try: mgtext = await _acquire( cmd )
@@ -97,7 +103,7 @@ async def apply( auxdata: __.Globals, cmd: Command ) -> int:
         raise SystemExit( 1 ) from exc
     # TODO: Pass options DTO.
     nomargs: dict[ str, __.typx.Any ] = dict(
-        force = cmd.force, interactive = cmd.interactive )
+        force = cmd.force, mode = review_mode )
     if cmd.base: nomargs[ 'base' ] = cmd.base
     try: await update( auxdata, parts, **nomargs )
     except Exception as exc:
@@ -127,7 +133,12 @@ async def _acquire(
                 return await f.read( )
 
 
-def _assert_sanity( command: Command ):
-    if not __.sys.stdin.isatty( ) and command.interactive:
-        _scribe.error( "Cannot use interactive mode without terminal." )
+def _determine_review_mode( command: Command ) -> _updaters.ReviewModes:
+    on_tty = __.sys.stdin.isatty( )
+    if command.review_mode is None:
+        if on_tty: return _updaters.ReviewModes.Partitive
+        return _updaters.ReviewModes.Silent
+    if not on_tty and command.review_mode is not _updaters.ReviewModes.Silent:
+        _scribe.error( "Cannot use an interactive mode without terminal." )
         raise SystemExit( 1 )
+    return command.review_mode
