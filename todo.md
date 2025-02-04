@@ -227,6 +227,39 @@
 - Include common usage patterns and examples
 - Document any configuration options added
 
+## Standalone Executables
+
+### Code Signing and Distribution
+- Consider macOS code signing and notarization for better user experience
+- Add documentation about running unsigned executables on macOS
+- Evaluate Windows code signing options
+- Consider additional distribution channels (Homebrew, Chocolatey, etc.)
+
+### Build System
+- Add arm64 builds for all platforms
+- Add options to control PyOxidizer configuration (memory mode, etc.)
+- Move PyOxidizer configuration to shared workflow
+- Update Copier template to support standalone builds
+
+### Performance and Size
+- Analyze and optimize executable sizes
+- Profile startup time and memory usage
+- Consider UPX compression for smaller binaries
+- Benchmark in-memory vs filesystem resource access
+
+### Testing
+- Add automated testing for standalone executables
+- Test on different OS versions
+- Verify behavior matches Python package
+- Test resource access patterns
+- Add CI checks for binary size changes
+
+### Documentation
+- Add installation instructions for binaries
+- Document system requirements
+- Add troubleshooting guide for common issues
+- Add release notes section for binary-specific changes
+
 # Notes
 
 - Priority is given to stability and correctness
@@ -245,6 +278,6 @@
 [X] Protect against changes to unsafe paths + override mechanism.
 [X] Command to produce prompt to give to LLM.
 [X] Creation option to prepend prompt with Mimeogram instructions.
-[ ] Build standalone executables (PyOxidizer or PyInstaller + StaticX).
+[X] Build standalone executables (PyOxidizer or PyInstaller + StaticX).
 [ ] Tests.
 [ ] Documentation.

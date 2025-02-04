@@ -30,7 +30,7 @@ jobs:
       platforms: '${{ needs.initialize.outputs.platforms }}'
       python-descriptors: '${{ needs.initialize.outputs.python-descriptors }}'
       python-versions: '${{ needs.initialize.outputs.python-versions }}'
-      
+
 
   report:
     needs: [initialize, test]
@@ -55,6 +55,45 @@ jobs:
     with:
       artifacts-path: '.auxiliary/artifacts/hatch-build' # TODO: Use environment.
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
+
+  create-executables:
+      needs: [initialize, package]
+      strategy:
+        matrix:
+          include:
+            - os: ubuntu-latest
+              target: x86_64-unknown-linux-gnu
+              executable: mimeogram
+            - os: windows-latest
+              target: x86_64-pc-windows-msvc
+              executable: mimeogram.exe
+            - os: macos-latest
+              target: x86_64-apple-darwin
+              executable: mimeogram
+      runs-on: ${{ matrix.os }}
+      steps:
+
+        # - name: Restore Distributions
+        #   uses: actions/download-artifact@v4
+        #   with:
+        #     name: python-package-distributions--${{ github.run_id }}
+        #     path: ${{ env.DISTRIBUTIONS_PATH }}
+
+        - name: Prepare Python
+          uses: emcd/python-project-common/.github/actions/python-hatch@v1.8.1
+          with:
+            python-version: ${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}
+
+        - name: Create Executable
+          run: |
+            hatch --env develop run pyoxidizer build --release --target-triple ${{ matrix.target }}
+
+        - name: Save Executable
+          uses: actions/upload-artifact@v4
+          with:
+            name: mimeogram-${{ matrix.target }}
+            # TODO: Adjust path.
+            path: build/${{ matrix.target }}/release/install/${{ matrix.executable }}
 
   publish-pypi:
     if: ${{ inputs.which-pypi == 'testpypi' || startsWith(github.ref, 'refs/tags/') }}
@@ -83,7 +122,7 @@ jobs:
 
   publish-github:
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
-    needs: [initialize, package, publish-pypi]
+    needs: [initialize, package, create-executables, publish-pypi]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -101,11 +140,20 @@ jobs:
           name: python-package-distributions--${{ github.run_id }}
           path: ${{ env.DISTRIBUTIONS_PATH }}
 
+      - name: Restore Executables
+        uses: actions/download-artifact@v4
+        with:
+          pattern: mimeogram-*
+          path: ${{ env.DISTRIBUTIONS_PATH }}/executables
+          merge-multiple: true
+
       - name: Generate Integrity Check Values
         run: |
           set -eu -o pipefail
           cd ${{ env.DISTRIBUTIONS_PATH }}
           sha256sum *.tar.gz *.whl >SHA256SUMS.txt
+          cd executables
+          sha256sum * >>../dist/SHA256SUMS.txt
 
       - name: Sign Distributions
         uses: sigstore/gh-action-sigstore-python@v3.0.0
@@ -114,6 +162,7 @@ jobs:
             ${{ env.DISTRIBUTIONS_PATH }}/SHA256SUMS.txt
             ${{ env.DISTRIBUTIONS_PATH }}/*.tar.gz
             ${{ env.DISTRIBUTIONS_PATH }}/*.whl
+            ${{ env.DISTRIBUTIONS_PATH }}/executables/*
 
       - name: Generate Release Notes
         run: |
