@@ -21,10 +21,7 @@
 ''' Entrypoint. '''
 
 
-from __future__ import annotations
-
-from . import __
-from .cli import main
+from .cli import execute
 
 
-if '__main__' == __name__: __.asyncio.run( main( ) )
+if '__main__' == __name__: execute( )

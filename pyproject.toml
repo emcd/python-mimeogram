@@ -5,7 +5,7 @@ requires = [
 build-backend = 'hatchling.build'
 
 [project]
-name = 'python-mimeogram'
+name = 'mimeogram'
 description = 'Exchange of MIME bundles with LLMs.'
 dynamic = [ 'version' ]
 license = 'Apache-2.0'
@@ -47,6 +47,8 @@ classifiers = [ # https://pypi.org/classifiers
   # TODO: Add classifiers as appropriate.
 ]
 keywords = [ ] # TODO: Add keywords.
+[project.scripts]
+mimeogram = 'mimeogram:main'
 [[project.authors]]
 name = 'Eric McDonald'
 email = 'emcd@users.noreply.github.com'
@@ -79,13 +81,14 @@ output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
 [tool.hatch.build]
 directory = '.auxiliary/artifacts/hatch-build'
 [tool.hatch.build.targets.sdist]
-only-include = [ 'sources/mimeogram' ]
+only-include = [ 'sources/mimeogram', 'data' ]
 strict-naming = false
 [tool.hatch.build.targets.wheel]
-only-include = [ 'sources/mimeogram' ]
+only-include = [ 'sources/mimeogram', 'data' ]
 strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
 'sources/mimeogram' = 'mimeogram'
+'data' = 'mimeogram/data'
 [tool.hatch.envs.default]
 python = '3.10'
 [tool.hatch.envs.develop]
@@ -96,10 +99,12 @@ dependencies = [
   'coverage[toml]',
   'furo',
   'icecream',
+  'oxidized-importer',
   'packaging',
   'pre-commit',
   'pylint',
   'pylint-per-file-ignores',
+  'pyoxidizer',
   'pyright',
   'pytest',
   'ruff',
@@ -213,6 +218,7 @@ strict = false
 
 # https://pylint.pycqa.org/en/latest/user_guide/configuration/index.html
 [tool.pylint.main]
+extension-pkg-allow-list = [ 'oxidized_importer' ]
 fail-under = 10
 # TODO: jobs: Consider parallelization if output interleaving, dependency
 #             grouping, and similarities detection bugs have been fixed.

@@ -35,8 +35,15 @@ from . import interactions
 from . import parsers
 from . import updaters
 
+# TODO: Export various module contents.
+
 
 __version__ = '1.0a0'
+
+
+def main( ):
+    ''' Entrypoint. '''
+    cli.execute( )
 
 
 __.reclassify_modules_as_immutable( __name__ )

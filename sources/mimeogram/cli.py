@@ -82,8 +82,9 @@ class Cli(
         return args
 
 
-async def main( ):
-    ''' CLI entry point. '''
+def execute( ):
+    ''' Entrypoint for CLI execution. '''
+    from asyncio import run
     config = (
         #__.tyro.conf.OmitSubcommandPrefixes,
         __.tyro.conf.EnumChoicesFromValues,
@@ -94,8 +95,7 @@ async def main( ):
     #     inscription = _inscription.Control( mode = _inscription.Modes.Rich ),
     #     command = InspectCommand( ),
     # )
-    # __.tyro.cli( Cli, config = config, default = default )( )
-    await __.tyro.cli( Cli, config = config )( )
+    run( __.tyro.cli( Cli, config = config )( ) )
 
 
 def _discover_inscription_level_name(
@@ -149,6 +149,3 @@ def _prepare_scribes(
         level = level,
         handlers = [ handler ] )
     logging.captureWarnings( True )
-
-
-if '__main__' == __name__: __.asyncio.run( main( ) )
