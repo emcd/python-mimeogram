@@ -24,7 +24,7 @@ jobs:
 
   test:
     needs: [initialize]
-    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@v1.8.1
+    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@v1.9
     with:
       matrix-exclusions: '${{ needs.initialize.outputs.matrix-exclusions }}'
       platforms: '${{ needs.initialize.outputs.platforms }}'
@@ -34,7 +34,7 @@ jobs:
 
   report:
     needs: [initialize, test]
-    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@v1.8.1
+    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@v1.9
     with:
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
 
@@ -44,14 +44,14 @@ jobs:
       contents: write
       id-token: write
       pages: write
-    uses: emcd/python-project-common/.github/workflows/xrepo--documenter.yaml@v1.8.1
+    uses: emcd/python-project-common/.github/workflows/xrepo--documenter.yaml@v1.9
     with:
       include-reports: true
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
 
   package:
     needs: [initialize, docsgen]
-    uses: emcd/python-project-common/.github/workflows/xrepo--packager.yaml@v1.8.1
+    uses: emcd/python-project-common/.github/workflows/xrepo--packager.yaml@v1.9
     with:
       artifacts-path: '.auxiliary/artifacts/hatch-build' # TODO: Use environment.
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
@@ -130,7 +130,7 @@ jobs:
     steps:
 
       - name: Prepare Python
-        uses: emcd/python-project-common/.github/actions/python-hatch@v1.8.1
+        uses: emcd/python-project-common/.github/actions/python-hatch@v1.9
         with:
           python-version: ${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}
 

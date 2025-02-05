@@ -17,16 +17,16 @@
    +--------------------------------------------------------------------------+
 
 *******************************************************************************
-                                  python-mimeogram
+                                  mimeogram
 *******************************************************************************
 
-.. image:: https://img.shields.io/pypi/v/python-mimeogram
+.. image:: https://img.shields.io/pypi/v/mimeogram
    :alt: Package Version
-   :target: https://pypi.org/project/python-mimeogram/
+   :target: https://pypi.org/project/mimeogram/
 
-.. image:: https://img.shields.io/pypi/status/python-mimeogram
+.. image:: https://img.shields.io/pypi/status/mimeogram
    :alt: PyPI - Status
-   :target: https://pypi.org/project/python-mimeogram/
+   :target: https://pypi.org/project/mimeogram/
 
 .. image:: https://github.com/emcd/python-mimeogram/actions/workflows/tester.yaml/badge.svg?branch=master&event=push
    :alt: Tests Status
@@ -40,9 +40,9 @@
    :alt: Project License
    :target: https://github.com/emcd/python-mimeogram/blob/master/LICENSE.txt
 
-.. image:: https://img.shields.io/pypi/pyversions/python-mimeogram
+.. image:: https://img.shields.io/pypi/pyversions/mimeogram
    :alt: Python Versions
-   :target: https://pypi.org/project/python-mimeogram/
+   :target: https://pypi.org/project/mimeogram/
 
 
 What and Why
@@ -153,10 +153,10 @@ Notes:
 
 
 
-.. image:: https://img.shields.io/pypi/implementation/python-mimeogram
+.. image:: https://img.shields.io/pypi/implementation/mimeogram
    :alt: PyPI - Implementation
-   :target: https://pypi.org/project/python-mimeogram/
+   :target: https://pypi.org/project/mimeogram/
 
-.. image:: https://img.shields.io/pypi/wheel/python-mimeogram
+.. image:: https://img.shields.io/pypi/wheel/mimeogram
    :alt: PyPI - Wheel
-   :target: https://pypi.org/project/python-mimeogram/
+   :target: https://pypi.org/project/mimeogram/

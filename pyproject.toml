@@ -33,7 +33,7 @@ dependencies = [
   'tyro',
 ]
 classifiers = [ # https://pypi.org/classifiers
-  'Development Status :: 3 - Alpha',
+  'Development Status :: 4 - Beta',
   #'Intended Audience :: Developers',
   'License :: OSI Approved :: Apache Software License',
   'Programming Language :: Python :: 3 :: Only',
@@ -55,7 +55,7 @@ email = 'emcd@users.noreply.github.com'
 [project.urls]
 'Homepage' = 'https://github.com/emcd/python-mimeogram'
 'Documentation' = 'https://emcd.github.io/python-mimeogram'
-'Download' = 'https://pypi.org/project/python-mimeogram/#files'
+'Download' = 'https://pypi.org/project/mimeogram/#files'
 'Source Code' = 'https://github.com/emcd/python-mimeogram'
 'Issue Tracker' = 'https://github.com/emcd/python-mimeogram/issues'
 
