@@ -23,6 +23,9 @@
 
 from __future__ import annotations
 
+import aiofiles as _aiofiles
+import httpx as _httpx
+
 from . import __
 from . import parts as _parts
 
@@ -56,7 +59,7 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
     ''' Acquires content from text file. '''
     from .exceptions import ContentAcquireFailure, ContentDecodeFailure
     try:
-        async with __.aiofiles.open( location, 'rb' ) as f:
+        async with _aiofiles.open( location, 'rb' ) as f:
             content_bytes = await f.read( )
     except Exception as exc: raise ContentAcquireFailure( location ) from exc
     mimetype = _detect_mimetype( content_bytes, location )
@@ -78,7 +81,7 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
 
 
 async def _acquire_via_http( # pylint: disable=too-many-locals
-    client: __.httpx.AsyncClient, url: str
+    client: _httpx.AsyncClient, url: str
 ) -> _parts.Part:
     ''' Acquires content via HTTP/HTTPS. '''
     from .exceptions import ContentAcquireFailure, ContentDecodeFailure
@@ -192,7 +195,8 @@ def _produce_http_task(
     # TODO: Reuse clients for common hosts.
 
     async def _execute_session( ) -> _parts.Part:
-        async with __.httpx.AsyncClient( follow_redirects = True ) as client:
-            return await _acquire_via_http( client, url )
+        async with _httpx.AsyncClient( # nosec B113
+            follow_redirects = True
+        ) as client: return await _acquire_via_http( client, url )
 
     return _execute_session( )

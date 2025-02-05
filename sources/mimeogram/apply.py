@@ -129,7 +129,9 @@ async def _acquire(
     match cmd.source:
         case '-': return __.sys.stdin.read( )
         case _:
-            async with __.aiofiles.open( cmd.source, 'r' ) as f:
+            # TODO: Use I/O module.
+            from aiofiles import open as open_
+            async with open_( cmd.source, 'r' ) as f:
                 return await f.read( )
 
 

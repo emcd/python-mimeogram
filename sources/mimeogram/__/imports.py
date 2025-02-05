@@ -44,9 +44,6 @@ from logging import getLogger as produce_scribe
 from pathlib import Path
 from uuid import uuid4
 
-import aiofiles # TODO: Localize import.
-import httpx    # TODO: Localize import.
-import magic    # TODO: Localize import.
 import typing_extensions as typx
 import tyro
 
@@ -55,6 +52,7 @@ from accretive.qaliases import AccretiveDictionary
 from frigid.qaliases import (
     ImmutableClass,
     ImmutableDictionary,
+    ImmutableObject,
     ImmutableProtocolClass,
     reclassify_modules_as_immutable,
 )

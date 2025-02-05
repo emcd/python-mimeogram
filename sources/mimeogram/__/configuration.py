@@ -24,6 +24,7 @@
 from . import imports as __
 from . import dictedits as _dictedits
 from . import distribution as _distribution
+from . import exceptions as _exceptions
 from . import io as _io
 
 
@@ -37,8 +38,8 @@ class EnablementTristate( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     def __bool__( self ) -> bool:
         if self.Disable is self: return False
         if self.Enable is self: return True
-        # TODO: Raise proper error.
-        raise RuntimeError
+        raise _exceptions.OperationInvalidity(
+            'inert enablement tristate', 'boolean translation' )
 
     def is_retain( self ) -> bool:
         ''' Does enum indicate a retain state? '''

@@ -19,6 +19,7 @@
 
 
 ''' Generic types. '''
+# TODO: Independent package.
 
 
 from __future__ import annotations
@@ -31,9 +32,8 @@ U = __.typx.TypeVar( 'U' ) # generic
 E = __.typx.TypeVar( 'E', bound = Exception ) # error
 
 
-class Result( __.typx.Generic[ T, E ] ):
+class Result( __.ImmutableObject, __.typx.Generic[ T, E ] ):
     ''' Either a value or an error. '''
-    # TODO: Enforce class and instance immutability.
 
     def is_error( self ) -> bool:
         ''' Returns ``True`` if error result. Else ``False``. '''

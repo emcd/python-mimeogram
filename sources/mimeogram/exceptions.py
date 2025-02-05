@@ -28,9 +28,10 @@
 from . import __
 
 
-class Omniexception( BaseException ):
+class Omniexception( BaseException, metaclass = __.ImmutableClass ):
     ''' Base for all exceptions raised by package API. '''
-    # TODO: Class and instance attribute concealment and immutability.
+    # TODO: Class attribute concealment.
+    # TODO: Instance attribute concealment and immutability.
 
     _attribute_visibility_includes_: __.cabc.Collection[ str ] = (
         frozenset( ( '__cause__', '__context__', ) ) )

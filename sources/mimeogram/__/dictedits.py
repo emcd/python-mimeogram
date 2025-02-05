@@ -24,6 +24,7 @@
 
 
 from . import imports as __
+from . import exceptions as _exceptions
 
 
 class Edit( # pylint: disable=invalid-metaclass
@@ -46,7 +47,10 @@ class Edit( # pylint: disable=invalid-metaclass
         ''' Dereferences value at address in configuration. '''
         configuration_ = configuration
         for part in self.address:
-            # TODO: Error on missing part.
+            if part not in configuration_:
+                raise (
+                    _exceptions.AddressLocateFailure(
+                        'configuration dictionary', self.address, part ) )
             configuration_ = configuration_[ part ]
         return configuration_
 
@@ -75,7 +79,9 @@ class ElementsEntryEdit( Edit, decorators = ( __.standard_dataclass, ) ):
         ename, evalue = self.editee
         for element in array:
             if iname:
-                # TODO: Error on missing identifier.
+                if iname not in element:
+                    raise _exceptions.EntryAssertionFailure(
+                        'configuration array element', iname )
                 if ivalue != element[ iname ]: continue
             element[ ename ] = evalue
 
