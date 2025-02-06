@@ -71,7 +71,7 @@ branch = true
 command_line = '-m pytest' # TODO? '--fail-under'
 data_file = '.auxiliary/caches/pytest/coverage.sqlite3'
 parallel = true
-source = [ 'sources', 'tests' ]
+source = [ 'sources' ]
 [tool.coverage.html]
 directory = '.auxiliary/artifacts/coverage-pytest'
 [tool.coverage.xml]
@@ -108,7 +108,7 @@ dependencies = [
   'pyoxidizer',
   'pyright',
   'pytest',
-  'pytest-asyncio',
+  #'pytest-asyncio',
   'pytest-httpx',
   'ruff',
   'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
