@@ -151,7 +151,9 @@ Notes:
    :alt: Ruff
    :target: https://github.com/astral-sh/ruff
 
-
+.. image:: https://img.shields.io/badge/hypothesis-tested-brightgreen.svg
+   :alt: Hypothesis
+   :target: https://hypothesis.readthedocs.io/en/latest/
 
 .. image:: https://img.shields.io/pypi/implementation/mimeogram
    :alt: PyPI - Implementation

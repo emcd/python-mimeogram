@@ -98,6 +98,7 @@ dependencies = [
   'bandit',
   'coverage[toml]',
   'furo',
+  'hypothesis',
   'icecream',
   'oxidized-importer',
   'packaging',
@@ -107,6 +108,8 @@ dependencies = [
   'pyoxidizer',
   'pyright',
   'pytest',
+  'pytest-asyncio',
+  'pytest-httpx',
   'ruff',
   'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
   'sphinx',
@@ -120,6 +123,7 @@ post-install-commands = [
 ]
 [tool.hatch.envs.develop.env-vars]
 _DEVELOPMENT_MODE_ = 'TRUE'
+HYPOTHESIS_STORAGE_DIRECTORY = '.auxiliary/caches/hypothesis'
 PYTHONUNBUFFERED = 'TRUE' # TODO: Only for coverage/pytest.
 [tool.hatch.envs.develop.scripts]
 docsgen = [

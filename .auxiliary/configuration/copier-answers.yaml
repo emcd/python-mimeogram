@@ -6,7 +6,7 @@ author_name: Eric McDonald
 description: Exchange of MIME bundles with LLMs.
 development_status: 4 - Beta
 distribution_name: mimeogram
-enable_property_tests: false
+enable_property_tests: true
 enable_publication: true
 enable_rust_extension: false
 gh_owner: emcd
