@@ -24,6 +24,12 @@
 # Expose everything from internal modules.
 from .application import Information as ApplicationInformation
 from .asyncf import *
+from .dictedits import (
+    Edit as                 DictionaryEdit,
+    Edits as                DictionaryEdits,
+    ElementsEntryEdit as    ElementsEntryDictionaryEdit,
+    SimpleEdit as           SimpleDictionaryEdit,
+)
 from .distribution import Information as DistributionInformation
 from .exceptions import *
 from .generics import *

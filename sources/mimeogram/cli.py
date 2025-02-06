@@ -73,8 +73,11 @@ class Cli(
         self,
     ) -> __.cabc.Mapping[ str, __.typx.Any ]:
         ''' Prepares arguments for initial configuration. '''
+        configedits: __.DictionaryEdits = (
+            self.command.provide_configuration_edits( ) )
         args: dict[ str, __.typx.Any ] = dict(
             application = self.application,
+            configedits = configedits,
             environment = True,
             inscription = self.inscription,
         )
@@ -117,6 +120,7 @@ def _discover_inscription_level_name(
 
 async def _prepare(
     application: __.ApplicationInformation,
+    configedits: __.DictionaryEdits,
     environment: bool,
     exits: __.ExitsAsync,
     inscription: __.InscriptionControl,
@@ -124,6 +128,7 @@ async def _prepare(
     ''' Configures logging based on verbosity. '''
     auxdata = await __.prepare(
         application = application,
+        configedits = configedits,
         environment = environment,
         exits = exits,
         inscription = inscription )

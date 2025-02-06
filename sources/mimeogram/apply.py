@@ -19,11 +19,10 @@
 
 
 ''' Application of mimeograms. '''
+# TODO? Use BSD sysexits.
 
 
 from __future__ import annotations
-
-import pyperclip as _pyperclip
 
 from . import __
 from . import updaters as _updaters
@@ -37,6 +36,7 @@ class Command(
     decorators = ( __.standard_dataclass, __.standard_tyro_class ),
 ):
     ''' Applies mimeogram to filesystem locations. '''
+    # TODO: Inherit from abstract command.
 
     source: __.typx.Annotated[
         str, # TODO: str | Path
@@ -46,14 +46,15 @@ class Command(
                 "Defaults to stdin if '--clip' not specified." ) ),
     ] = '-'
     clip: __.typx.Annotated[
-        bool,
+        __.typx.Optional[ bool ],
         __.tyro.conf.arg( # pyright: ignore
             aliases = ( '--clipboard', '--from-clipboard' ),
             help = "Read mimeogram from clipboard instead of file or stdin." ),
-    ] = False
-    review_mode: __.typx.Annotated[
+    ] = None
+    mode: __.typx.Annotated[
         __.typx.Optional[ _updaters.ReviewModes ],
         __.tyro.conf.arg( # pyright: ignore
+            aliases = ( '--review-mode', ),
             help = (
                 "Controls how changes are reviewed. "
                 "'silent': Apply without review. "
@@ -69,28 +70,40 @@ class Command(
                 "Base directory for relative locations. "
                 "Defaults to current working directory." ) ),
     ] = None
-    dry_run: __.typx.Annotated[
-        bool,
-        __.tyro.conf.arg( # pyright: ignore
-            help = "Show what would be changed without making changes." ),
-    ] = False
+    # preview: __.typx.Annotated[
+    #     __.typx.Optional[ bool ],
+    #     __.tyro.conf.arg( # pyright: ignore
+    #         help = "Show what would be changed without making changes." ),
+    # ] = None
     force: __.typx.Annotated[
-        bool,
+        __.typx.Optional[ bool ],
         __.tyro.conf.arg( # pyright: ignore
-            help = 'Override protected path checks' ),
-    ] = False
+            help = 'Override protected path checks.' ),
+    ] = None
 
     async def __call__( self, auxdata: __.Globals ) -> None:
+        ''' Executes command to apply mimeogram. '''
         await apply( auxdata, self )
 
+    def provide_configuration_edits( self ) -> __.DictionaryEdits:
+        ''' Provides edits against configuration from options. '''
+        edits: list[ __.DictionaryEdit ] = [ ]
+        if None is not self.clip:
+            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+                address = ( 'apply', 'from-clipboard' ), value = self.clip ) )
+        if None is not self.force:
+            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+                address = ( 'update-parts', 'disable-protections' ),
+                value = self.clip ) )
+        return tuple( edits )
 
-async def apply( auxdata: __.Globals, cmd: Command ) -> int:
+
+async def apply( auxdata: __.Globals, command: Command ) -> __.typx.Never:
     ''' Applies mimeogram. '''
-    # TODO? Use BSD sysexits.
-    review_mode = _determine_review_mode( cmd )
+    review_mode = _determine_review_mode( command )
     from .parsers import parse
     from .updaters import update
-    try: mgtext = await _acquire( cmd )
+    try: mgtext = await _acquire( auxdata, command )
     except Exception as exc:
         _scribe.exception( "Could not acquire mimeogram to apply." )
         raise SystemExit( 1 ) from exc
@@ -101,10 +114,8 @@ async def apply( auxdata: __.Globals, cmd: Command ) -> int:
     except Exception as exc:
         _scribe.exception( "Could not parse mimeogram." )
         raise SystemExit( 1 ) from exc
-    # TODO: Pass options DTO.
-    nomargs: dict[ str, __.typx.Any ] = dict(
-        force = cmd.force, mode = review_mode )
-    if cmd.base: nomargs[ 'base' ] = cmd.base
+    nomargs: dict[ str, __.typx.Any ] = dict( mode = review_mode )
+    if command.base: nomargs[ 'base' ] = command.base
     try: await update( auxdata, parts, **nomargs )
     except Exception as exc:
         _scribe.exception( "Could not apply mimeogram." )
@@ -113,16 +124,15 @@ async def apply( auxdata: __.Globals, cmd: Command ) -> int:
     raise SystemExit( 0 )
 
 
-async def _acquire(
-    cmd: Command
-) -> __.typx.Optional[ str ]:
+async def _acquire( auxdata: __.Globals, cmd: Command ) -> str:
     ''' Acquires content to parse from clipboard, file, or stdin. '''
-    if cmd.clip:
-        content = _pyperclip.paste( )
+    options = auxdata.configuration.get( 'create', { } )
+    if options.get( 'from-clipboard', False ):
+        from pyperclip import paste
+        content = paste( )
         if not content:
-            # TODO: Raise exception.
             _scribe.error( "Clipboard is empty" )
-            return
+            raise SystemExit( 1 )
         _scribe.debug(
             "Read {} characters from clipboard.".format( len( content ) ) )
         return content
@@ -137,10 +147,10 @@ async def _acquire(
 
 def _determine_review_mode( command: Command ) -> _updaters.ReviewModes:
     on_tty = __.sys.stdin.isatty( )
-    if command.review_mode is None:
+    if command.mode is None:
         if on_tty: return _updaters.ReviewModes.Partitive
         return _updaters.ReviewModes.Silent
-    if not on_tty and command.review_mode is not _updaters.ReviewModes.Silent:
+    if not on_tty and command.mode is not _updaters.ReviewModes.Silent:
         _scribe.error( "Cannot use an interactive mode without terminal." )
         raise SystemExit( 1 )
-    return command.review_mode
+    return command.mode

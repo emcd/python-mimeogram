@@ -19,11 +19,10 @@
 
 
 ''' Creation of mimeograms. '''
+# TODO? Use BSD sysexits.
 
 
 from __future__ import annotations
-
-import pyperclip as _pyperclip
 
 from . import __
 
@@ -36,6 +35,7 @@ class Command(
     decorators = ( __.standard_dataclass, __.standard_tyro_class ),
 ):
     ''' Creates mimeogram from filesystem locations or URLs. '''
+    # TODO: Inherit from abstract command.
 
     sources: __.typx.Annotated[
         __.tyro.conf.Positional[ list[ str ] ],
@@ -44,11 +44,11 @@ class Command(
             prefix_name = False ),
     ]
     clip: __.typx.Annotated[
-        bool,
+        __.typx.Optional[ bool ],
         __.tyro.conf.arg( # pyright: ignore
             aliases = ( '--clipboard', '--to-clipboard' ),
             help = "Copy mimeogram to clipboard." ),
-    ] = False
+    ] = None
     edit: __.typx.Annotated[
         bool,
         __.tyro.conf.arg( # pyright: ignore
@@ -61,48 +61,76 @@ class Command(
             help = "Prepend mimeogram format instructions." ),
     ] = False
     recurse: __.typx.Annotated[
-        bool,
+        __.typx.Optional[ bool ],
         __.tyro.conf.arg( # pyright: ignore
             aliases = ( '-r', '--recurse-directories', '--recursive' ),
             help = "Recurse into directories." ),
-    ] = False
+    ] = None
     strict: __.typx.Annotated[
-        bool,
+        __.typx.Optional[ bool ],
         __.tyro.conf.arg( # pyright: ignore
             help = "Fail on invalid contents instead of skipping them." ),
-    ] = False
+    ] = None
 
     async def __call__( self, auxdata: __.Globals ) -> None:
+        ''' Executes command to create mimeogram. '''
         await create( auxdata, self )
 
+    def provide_configuration_edits( self ) -> __.DictionaryEdits:
+        ''' Provides edits against configuration from options. '''
+        edits: list[ __.DictionaryEdit ] = [ ]
+        if None is not self.clip:
+            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+                address = ( 'create', 'to-clipboard' ), value = self.clip ) )
+        if None is not self.recurse:
+            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+                address = ( 'acquire-parts', 'recurse-directories' ),
+                value = self.recurse ) )
+        if None is not self.strict:
+            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+                address = ( 'acquire-parts', 'fail-on-invalid' ),
+                value = self.strict ) )
+        return tuple( edits )
 
-async def create( auxdata: __.Globals, cmd: Command ) -> int: # pylint: disable=too-many-locals,too-many-statements
+
+async def create( auxdata: __.Globals, cmd: Command ) -> __.typx.Never:
     ''' Creates mimeogram. '''
     from .acquirers import acquire
     from .formatters import format_mimeogram
-    if cmd.edit:
-        from .edit import edit_content
-        try: message = edit_content( )
-        except Exception as exc:
-            _scribe.exception( "Could not acquire user message." )
-            raise SystemExit( 1 ) from exc
+    if cmd.edit: message = await _edit_message( )
     else: message = None
-    try:
-        # TODO: Handle cmd.strict.
-        parts = await acquire( cmd.sources, recursive = cmd.recurse )
+    try: parts = await acquire( auxdata, cmd.sources )
     except Exception as exc:
         _scribe.exception( "Could not acquire mimeogram parts." )
         raise SystemExit( 1 ) from exc
     mimeogram = format_mimeogram( parts, message = message )
+    # TODO? Pass prompt to 'format_mimeogram'.
     if cmd.prepend_prompt:
-        from .prompt import acquire_prompt
-        prompt = await acquire_prompt( auxdata )
-        mimeogram = f"{prompt}\n\n{mimeogram}"
-    if cmd.clip:
-        try: _pyperclip.copy( mimeogram )
-        except Exception as exc:
-            _scribe.exception( "Could not copy mimeogram to clipboard." )
-            raise SystemExit( 1 ) from exc
-        _scribe.info( "Copied mimeogram to clipboard." )
-    else: print( mimeogram )
+        mimeogram = await _prepend_prompt( auxdata, mimeogram )
+    options = auxdata.configuration.get( 'create', { } )
+    if options.get( 'to-clipboard', False ): _copy_to_clipboard( mimeogram )
+    else: print( mimeogram ) # TODO? Use output stream from configuration.
     raise SystemExit( 0 )
+
+
+def _copy_to_clipboard( mimeogram: str ) -> None:
+    from pyperclip import copy
+    try: copy( mimeogram )
+    except Exception as exc:
+        _scribe.exception( "Could not copy mimeogram to clipboard." )
+        raise SystemExit( 1 ) from exc
+    _scribe.info( "Copied mimeogram to clipboard." )
+
+
+async def _edit_message( ) -> str:
+    from .edit import edit_content
+    try: return edit_content( )
+    except Exception as exc:
+        _scribe.exception( "Could not acquire user message." )
+        raise SystemExit( 1 ) from exc
+
+
+async def _prepend_prompt( auxdata: __.Globals, mimeogram: str ) -> str:
+    from .prompt import acquire_prompt
+    prompt = await acquire_prompt( auxdata )
+    return f"{prompt}\n\n{mimeogram}"

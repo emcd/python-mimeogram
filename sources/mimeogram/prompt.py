@@ -19,11 +19,10 @@
 
 
 ''' Mimeogram prompt text for LLMs. '''
+# TODO? Use BSD sysexits.
 
 
 from __future__ import annotations
-
-import pyperclip as _pyperclip
 
 from . import __
 
@@ -36,17 +35,26 @@ class Command(
     decorators = ( __.standard_dataclass, __.standard_tyro_class ),
 ):
     ''' Provides LLM prompt text for mimeogram format. '''
+    # TODO: Inherit from abstract command.
 
     clip: __.typx.Annotated[
-        bool,
+        __.typx.Optional[ bool ],
         __.tyro.conf.arg( # pyright: ignore
             aliases = ( '--clipboard', '--to-clipboard' ),
             help = "Copy prompt to clipboard." ),
-    ] = False
+    ] = None
 
     async def __call__( self, auxdata: __.Globals ) -> None:
         ''' Executes command to provide prompt text. '''
-        await provide_prompt( auxdata, self )
+        await provide_prompt( auxdata )
+
+    def provide_configuration_edits( self ) -> __.DictionaryEdits:
+        ''' Provides edits against configuration from options. '''
+        edits: list[ __.DictionaryEdit ] = [ ]
+        if None is not self.clip:
+            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+                address = ( 'prompt', 'to-clipboard' ), value = self.clip ) )
+        return tuple( edits )
 
 
 async def acquire_prompt( auxdata: __.Globals ) -> str:
@@ -57,17 +65,19 @@ async def acquire_prompt( auxdata: __.Globals ) -> str:
     return await __.acquire_text_file_async( location )
 
 
-async def provide_prompt( auxdata: __.Globals, cmd: Command ) -> None:
+async def provide_prompt( auxdata: __.Globals ) -> None:
     ''' Provides mimeogram prompt text. '''
     try: prompt = await acquire_prompt( auxdata )
     except Exception as exc:
         _scribe.exception( "Could not acquire prompt text." )
         raise SystemExit( 1 ) from exc
-    if cmd.clip:
-        try: _pyperclip.copy( prompt )
+    options = auxdata.configuration.get( 'prompt', { } )
+    if options.get( 'to-clipboard', False ):
+        from pyperclip import copy
+        try: copy( prompt )
         except Exception as exc:
             _scribe.exception( "Could not copy prompt to clipboard." )
             raise SystemExit( 1 ) from exc
         _scribe.info( "Copied prompt to clipboard." )
-    else: print( prompt )
+    else: print( prompt ) # TODO? Use output stream from configuration.
     raise SystemExit( 0 )

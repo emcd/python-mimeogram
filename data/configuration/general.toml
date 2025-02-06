@@ -1,1 +1,17 @@
 format-version = 1
+
+[apply]
+from-clipboard = true
+
+[create]
+to-clipboard = true
+
+[prompt]
+to-clipboard = true
+
+[acquire-parts]
+fail-on-invalid = false
+recurse-directories = false
+
+[update-parts]
+disable-protections = false

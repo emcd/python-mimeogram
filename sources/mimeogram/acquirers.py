@@ -34,12 +34,13 @@ _scribe = __.produce_scribe( __name__ )
 
 
 async def acquire(
-    sources: __.cabc.Sequence[ str | __.Path ],
-    recursive: bool = False,
-    # strict: bool = False,
+    auxdata: __.Globals, sources: __.cabc.Sequence[ str | __.Path ]
 ) -> __.cabc.Sequence[ _parts.Part ]:
     ''' Acquires content from multiple sources. '''
     from urllib.parse import urlparse
+    options = auxdata.configuration.get( 'acquire-parts', { } )
+    # strict = options.get( 'fail-on-invalid', False )
+    recursive = options.get( 'recurse-directories', False )
     tasks: list[ __.cabc.Coroutine[ None, None, _parts.Part ] ] = [ ]
     for source in sources:
         url_parts = (

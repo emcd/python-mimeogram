@@ -123,10 +123,8 @@ async def update( # pylint: disable=too-many-locals
     parts: __.cabc.Sequence[ _parts.Part ],
     mode: ReviewModes,
     base: __.Absential[ __.Path ] = __.absent,
-    force: bool = False,
 ) -> None:
     ''' Updates filesystem locations from mimeogram. '''
-    # TODO: DTO for behavior options.
     if __.is_absent( base ): base = __.Path( )
     protector = _fsprotect.Cache.from_configuration( auxdata = auxdata )
     queue = Queue( )
@@ -135,20 +133,17 @@ async def update( # pylint: disable=too-many-locals
         target = _derive_location( part.location, base = base )
         protection = protector.verify( target )
         action, content = await update_part(
-            part,
-            target = target,
-            force = force,
-            mode = mode,
-            protection = protection )
+            auxdata, part,
+            target = target, mode = mode, protection = protection )
         if _interactions.Actions.Ignore is action: continue
         queue.enqueue( part, target, content )
     await queue.apply( )
 
 
 async def update_part(
+    auxdata: __.Globals,
     part: _parts.Part,
     target: __.Path,
-    force: bool,
     mode: ReviewModes,
     protection: _fsprotect.Status,
 ) -> tuple[ _interactions.Actions, str ]:
@@ -156,7 +151,8 @@ async def update_part(
     content = part.content
     if ReviewModes.Partitive is mode:
         return await _interactions.prompt_action( part, target, protection )
-    if protection and not force:
+    options = auxdata.configuration.get( 'update-parts', { } )
+    if protection and not options.get( 'disable-protections', False ):
         _scribe.warning(
             f"Skipping protected path: {target} "
             f"Reason: {protection.description}" )
