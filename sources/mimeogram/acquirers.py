@@ -27,6 +27,7 @@ import aiofiles as _aiofiles
 import httpx as _httpx
 
 from . import __
+from . import exceptions as _exceptions
 from . import parts as _parts
 
 
@@ -52,7 +53,7 @@ async def acquire(
             case 'http' | 'https':
                 tasks.append( _produce_http_task( str( source ) ) )
             case _:
-                pass # TODO: Raise exception for unsupported URL scheme.
+                raise _exceptions.UrlSchemeNoSupport( str( source ) )
     return await __.gather_async( *tasks )
 
 

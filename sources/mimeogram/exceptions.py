@@ -129,6 +129,13 @@ class TextualMimetypeInvalidity( Omnierror ):
             f"Invalid MIME type '{mimetype}' for content at '{location}'." )
 
 
+class UrlSchemeNoSupport( Omnierror ):
+    ''' Unsupported URL scheme. '''
+
+    def __init__( self, url: str ):
+        super( ).__init__( f"Scheme of URL '{url}' is not supported." )
+
+
 class UserOperateCancellation( Omniexception ):
     ''' Operation cancelled by user. '''
 

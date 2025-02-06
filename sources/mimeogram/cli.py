@@ -98,7 +98,13 @@ def execute( ):
     #     inscription = _inscription.Control( mode = _inscription.Modes.Rich ),
     #     command = InspectCommand( ),
     # )
-    run( __.tyro.cli( Cli, config = config )( ) )
+    try: run( __.tyro.cli( Cli, config = config )( ) )
+    except SystemExit: raise
+    except BaseException:
+        _scribe.exception(
+            "Program terminated from uncaught exception. "
+            "Please file a bug report." )
+        raise SystemExit( 1 ) from None
 
 
 def _discover_inscription_level_name(
