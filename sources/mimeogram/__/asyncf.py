@@ -77,35 +77,38 @@ async def intercept_error_async(
 
 
 async def _gather_async_permissive(
-    operands: __.typx.Any
+    operands: __.cabc.Sequence[ __.typx.Any ]
 ) -> __.cabc.Sequence[ __.typx.Any ]:
     from asyncio import gather # TODO? Python 3.11: TaskGroup
-    awaitables: __.cabc.MutableMapping[
-        int, __.cabc.Awaitable[ __.typx.Any ]
-    ] = { }
+    awaitables: dict[ int, __.cabc.Awaitable[ __.typx.Any ] ] = { }
+    results: list[ _generics.GenericResult ] = [ ]
     for i, operand in enumerate( operands ):
         if isinstance( operand, __.cabc.Awaitable ):
             awaitables[ i ] = (
                 intercept_error_async( __.typx.cast(
                     __.cabc.Awaitable[ __.typx.Any ], operand ) ) )
+            results.append( _generics.Value( None ) )
+        else: results.append( _generics.Value( operand ) )
     results_ = await gather( *awaitables.values( ) )
-    results = list( operands )
     for i, result in zip( awaitables.keys( ), results_ ):
         results[ i ] = result
     return results
 
 
 async def _gather_async_strict(
-    operands: __.typx.Any
+    operands: __.cabc.Sequence[ __.typx.Any ]
 ) -> __.cabc.Sequence[ __.typx.Any ]:
+    from inspect import isawaitable, iscoroutine
     from asyncio import gather # TODO? Python 3.11: TaskGroup
-    awaitables: __.cabc.MutableSequence[
-        __.cabc.Awaitable[ __.typx.Any ]
-    ] = [ ]
+    awaitables: list[ __.cabc.Awaitable[ __.typx.Any ] ] = [ ]
+    for operand in operands: # Sanity check.
+        if isawaitable( operand ): continue
+        for operand_ in operands: # Cleanup.
+            if iscoroutine( operand_ ): operand_.close( )
+        # TODO: Raise internal exception.
+        raise TypeError( # noqa: TRY003
+            f"Operand {operand!r} must be awaitable." )
     for operand in operands:
-        if not isinstance( operand, __.cabc.Awaitable ):
-            raise TypeError( # noqa: TRY003
-                f"Operand {operand!r} must be awaitable." )
         awaitables.append( intercept_error_async( __.typx.cast(
             __.cabc.Awaitable[ __.typx.Any ], operand ) ) )
     return await gather( *awaitables )

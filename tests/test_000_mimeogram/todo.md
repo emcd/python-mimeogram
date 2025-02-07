@@ -1,0 +1,166 @@
+# Mimeogram Testing Progress and Plans
+
+## Test Module Organization
+
+### Current Structure
+```
+tests/
+  test_000_mimeogram/       # Core package tests
+    __init__.py            # Test utilities and constants
+    fixtures.py            # Shared test fixtures
+    test_010_base.py      # Basic package structure tests
+    test_015_exceptions.py # Exception hierarchy tests
+    test_020_generics.py  # Generic types tests
+    test_025_dictedits.py # Dictionary editing tests
+    test_030_asyncf.py    # Async utilities tests
+```
+
+### Completed Modules (100% coverage)
+- `exceptions.py`: Exception hierarchy and behaviors
+- `generics.py`: Result type and variants
+- `dictedits.py`: Dictionary editing functionality
+- `asyncf.py`: Async utilities and error handling
+
+### Pending Internal Modules
+
+Already Completed:
+- test_010_base.py: Basic package structure
+- test_015_exceptions.py: Exception hierarchy
+- test_020_generics.py: Generic types
+- test_025_dictedits.py: Dictionary editing
+- test_030_asyncf.py: Async utilities
+
+Remaining (in dependency order):
+
+Base Layer (minimal dependencies):
+- test_035_processes.py: Process management
+  - Depends on: imports
+
+- test_040_io.py: File I/O operations
+  - Depends on: imports, asyncf, generics
+
+- test_045_inscription.py: Logging configuration
+  - Depends on: imports
+
+Middle Layer:
+- test_050_application.py: Application metadata
+  - Depends on: imports
+
+- test_055_distribution.py: Package distribution info
+  - Depends on: imports, io
+
+- test_060_state.py: Global state management
+  - Depends on: imports, application, distribution
+
+High Layer (multiple dependencies):
+- test_065_configuration.py: Config management
+  - Depends on: imports, dictedits, distribution, exceptions, io
+
+- test_070_environment.py: Environment handling
+  - Depends on: imports, io, state
+
+- test_075_preparation.py: Library initialization
+  - Depends on: multiple (integration level)
+
+## Planned Features
+
+### Test Data Bank
+Location: `data/tests/mimeograms/`
+
+Structure:
+```
+mimeograms/
+  valid/
+    simple_text.mg
+    mixed_content.mg
+    utf8_content.mg
+    empty_parts.mg
+    max_headers.mg
+  invalid/
+    missing_boundary.mg
+    invalid_headers.mg
+    wrong_charset.mg
+    truncated.mg
+```
+
+Helper function to implement:
+```python
+def acquire_test_mimeogram(name: str) -> str:
+    """Acquires test mimeogram from data directory."""
+    from importlib.resources import files
+    location = files('mimeogram.data.tests.mimeograms').joinpath(f"{name}.mg")
+    return location.read_text()
+```
+
+### Property-Based Testing
+Tool: Hypothesis
+
+Areas to cover:
+1. Mimeogram format validation
+   - Boundary generation
+   - Header combinations
+   - Content variations
+
+2. Content processing
+   - Character encodings
+   - Line endings
+   - Size variations
+
+3. Error conditions
+   - Malformed input
+   - Edge cases
+   - Recovery scenarios
+
+## Infrastructure Improvements
+
+### Dependencies Added
+- pytest-asyncio
+- exceptiongroup
+- hypothesis (pending)
+
+### Noted Issues
+1. `generics.Result` needs to be converted to proper ABC
+2. Review class/instance attribute immutability in exceptions
+
+## Testing Strategy
+
+### Core Modules
+1. Test in dependency order
+2. Focus on interface contracts
+3. Ensure error handling coverage
+4. Test immutability guarantees
+
+### I/O and External Interactions
+1. Use fixtures for filesystem isolation
+2. Mock external services
+3. Use pytest-httpx for HTTP testing
+4. Handle async operations properly
+
+### Integration Testing
+1. Test full workflows
+2. Verify component interactions
+3. Test CLI interface
+4. Ensure proper cleanup
+
+## Next Steps
+
+1. Immediate Tasks
+   - Continue with remaining core modules
+   - Implement test mimeogram bank
+   - Set up Hypothesis testing
+
+2. Medium Term
+   - Add integration tests
+   - Fix noted issues
+   - Review error handling
+
+3. Future Improvements
+   - Consider module extraction
+   - Enhance property testing
+   - Add performance tests
+
+## Notes
+- Follow project style guidelines
+- Use 005 increments for new test modules
+- Maintain test independence
+- Keep coverage at 100%

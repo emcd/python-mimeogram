@@ -16,6 +16,7 @@ dependencies = [
   'accretive',
   'aiofiles',
   'chardet',
+  'exceptiongroup',
   'frigid',
   'gitignorefile',
   'httpx',
@@ -108,7 +109,7 @@ dependencies = [
   'pyoxidizer',
   'pyright',
   'pytest',
-  #'pytest-asyncio',
+  'pytest-asyncio',
   'pytest-httpx',
   'ruff',
   'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
@@ -412,8 +413,8 @@ stubPath = 'sources/mimeogram/_typedecls'
 #       attribute on protected modules. Instead, we use Sphinx to run doctests.
 minversion = '8.1'
 addopts = '--capture=no --exitfirst -rfE'
-testpaths = [ 'tests', 'sources' ]
-python_files = [ '*.py' ]
+testpaths = [ 'tests' ]
+python_files = [ 'test_*.py' ]
 python_functions = [ 'test_[0-9][0-9][0-9]_*' ]
 cache_dir = '.auxiliary/caches/pytest'
 

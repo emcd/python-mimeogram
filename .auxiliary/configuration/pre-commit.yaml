@@ -63,6 +63,7 @@ repos:
     name: 'Lint: Tryceratops'
     #stages: [ 'pre-push' ]
     fail_fast: true
+    exclude: '^.*/test_.*$'
 
 - repo: https://github.com/semgrep/semgrep
   rev: 'v1.89.0'
