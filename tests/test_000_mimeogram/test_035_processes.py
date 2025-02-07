@@ -18,40 +18,30 @@
 #============================================================================#
 
 
-''' Common I/O primitives. '''
+''' Tests for processes module. '''
 
 
-from . import imports as __
-from . import asyncf as _asyncf
+import pytest
+
+from . import cache_import_module
 
 
-async def acquire_text_file_async(
-    file: str | __.Path,
-    charset: str = 'utf-8',
-    deserializer: __.Absential[
-        __.typx.Callable[ [ str ], __.typx.Any ] ] = __.absent,
-) -> __.typx.Any:
-    ''' Reads file asynchronously. '''
-    from aiofiles import open as open_
-    async with open_( file, encoding = charset ) as stream:
-        data = await stream.read( )
-    if not __.is_absent( deserializer ):
-        return deserializer( data )
-    return data
+def test_000_subprocess_execute_success( ):
+    ''' subprocess_execute successfully runs commands. '''
+    processes = cache_import_module( 'mimeogram.__.processes' )
+    result = processes.subprocess_execute( 'echo', 'test' )
+    assert result.returncode == 0
 
 
-async def acquire_text_files_async(
-    *files: str | __.Path,
-    charset: str = 'utf-8',
-    deserializer: __.Absential[
-        __.typx.Callable[ [ str ], __.typx.Any ] ] = __.absent,
-    return_exceptions: bool = False
-) -> __.typx.Sequence[ __.typx.Any ]:
-    ''' Reads files in parallel asynchronously. '''
-    # TODO? Batch to prevent fd exhaustion over large file sets.
-    return await _asyncf.gather_async(
-        *(  acquire_text_file_async(
-                file, charset = charset, deserializer = deserializer )
-            for file in files ),
-        error_message = 'Failure to read files.',
-        return_exceptions = return_exceptions )
+def test_010_subprocess_execute_failure( ):
+    ''' subprocess_execute handles command failures. '''
+    processes = cache_import_module( 'mimeogram.__.processes' )
+    with pytest.raises( FileNotFoundError ):
+        processes.subprocess_execute( 'nonexistent_command' )
+
+
+def test_020_subprocess_execute_empty( ):
+    ''' subprocess_execute handles empty arguments appropriately. '''
+    processes = cache_import_module( 'mimeogram.__.processes' )
+    with pytest.raises( IndexError ):
+        processes.subprocess_execute( )

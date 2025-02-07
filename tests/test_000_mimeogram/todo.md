@@ -13,6 +13,9 @@ tests/
     test_020_generics.py  # Generic types tests
     test_025_dictedits.py # Dictionary editing tests
     test_030_asyncf.py    # Async utilities tests
+    test_035_processes.py # Process management tests
+    test_040_io.py       # File I/O operations tests
+    test_045_inscription.py # Logging configuration tests
 ```
 
 ### Completed Modules (100% coverage)
@@ -20,6 +23,9 @@ tests/
 - `generics.py`: Result type and variants
 - `dictedits.py`: Dictionary editing functionality
 - `asyncf.py`: Async utilities and error handling
+- `processes.py`: Process management utilities
+- `io.py`: File I/O operations
+- `inscription.py`: Logging and debug printing configuration
 
 ### Pending Internal Modules
 
@@ -29,18 +35,11 @@ Already Completed:
 - test_020_generics.py: Generic types
 - test_025_dictedits.py: Dictionary editing
 - test_030_asyncf.py: Async utilities
+- test_035_processes.py: Process management
+- test_040_io.py: File I/O operations
+- test_045_inscription.py: Logging configuration
 
 Remaining (in dependency order):
-
-Base Layer (minimal dependencies):
-- test_035_processes.py: Process management
-  - Depends on: imports
-
-- test_040_io.py: File I/O operations
-  - Depends on: imports, asyncf, generics
-
-- test_045_inscription.py: Logging configuration
-  - Depends on: imports
 
 Middle Layer:
 - test_050_application.py: Application metadata
@@ -145,19 +144,20 @@ Areas to cover:
 ## Next Steps
 
 1. Immediate Tasks
-   - Continue with remaining core modules
-   - Implement test mimeogram bank
-   - Set up Hypothesis testing
+   - Continue with `application.py` tests in the middle layer
+   - Implement remaining core module tests in dependency order
+   - Ensure proper test isolation and cleanup
 
 2. Medium Term
-   - Add integration tests
-   - Fix noted issues
-   - Review error handling
+   - Complete middle layer modules
+   - Move on to high layer modules
+   - Review and improve fixtures as needed
 
-3. Future Improvements
-   - Consider module extraction
-   - Enhance property testing
-   - Add performance tests
+3. Future Work
+   - Add integration tests
+   - Implement property-based testing
+   - Set up test mimeogram bank
+   - Review error handling coverage
 
 ## Notes
 - Follow project style guidelines

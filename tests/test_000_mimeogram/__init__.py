@@ -24,6 +24,8 @@
 '''
 
 
+import types
+
 from types import MappingProxyType as DictionaryProxy
 
 
@@ -31,8 +33,8 @@ PACKAGE_NAME = 'mimeogram'
 PACKAGES_NAMES = ( PACKAGE_NAME, )
 
 
-_modules_cache = { }
-def cache_import_module( qname ):
+_modules_cache: dict[ str, types.ModuleType ] = { }
+def cache_import_module( qname: str ) -> types.ModuleType:
     ''' Imports module from package by name and caches it. '''
     from importlib import import_module
     package_name, *maybe_module_name = qname.rsplit( '.', maxsplit = 1 )
@@ -43,7 +45,7 @@ def cache_import_module( qname ):
     return _modules_cache[ qname ]
 
 
-def _discover_module_names( package_name ):
+def _discover_module_names( package_name: str ) -> tuple[ str, ... ]:
     from pathlib import Path
     package = cache_import_module( package_name )
     return tuple(

@@ -70,7 +70,7 @@ def prepare_scribe_icecream( control: Control ) -> None:
             ic.disable( )
         case Modes.Pass:
             ic.configureOutput( **nomargs )
-        case Modes.Rich:
+        case Modes.Rich: # pragma: no branch
             from rich.pretty import pretty_repr
             ic.configureOutput( argToStringFunction = pretty_repr, **nomargs )
     install( )
@@ -90,7 +90,7 @@ def prepare_scribe_logging( control: Control ) -> None:
             scribe.addHandler( logging.NullHandler( ) )
         case Modes.Pass:
             scribe.propagate = True
-        case Modes.Rich:
+        case Modes.Rich: # pragma: no branch
             from rich.console import Console
             from rich.logging import RichHandler
             formatter = logging.Formatter( "%(name)s: %(message)s" )
