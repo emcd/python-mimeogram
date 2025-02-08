@@ -20,17 +20,12 @@
 
 ''' Tests for io module. '''
 
-# TODO: Fix mess with 'provide_tempdir' fixture so we can re-enable linters.
-# pylint: disable=all
-# ruff: noqa
-
 
 from exceptiongroup import ExceptionGroup
 
 import pytest
 
-from . import cache_import_module
-from .fixtures import create_test_files, provide_tempdir
+from . import cache_import_module, create_test_files
 
 
 @pytest.mark.asyncio

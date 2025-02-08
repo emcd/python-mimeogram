@@ -22,7 +22,7 @@
 
 
 from . import imports as __
-# from . import locations as _locations
+from . import io as _io
 
 
 class Information(
@@ -37,7 +37,8 @@ class Information(
 
     @classmethod
     async def prepare(
-        selfclass, package: str, exits: __.ExitsAsync
+        selfclass, package: str, exits: __.ExitsAsync,
+        project_anchor: __.Absential[ __.Path ] = __.absent,
     ) -> __.typx.Self:
         ''' Acquires information about our package distribution. '''
         import sys
@@ -51,7 +52,9 @@ class Information(
         name = packages_distributions( ).get( package )
         if name is None: # Development sources rather than distribution.
             editable = True # Implies no use of importlib.resources.
-            location, name = await _acquire_development_information( )
+            location, name = (
+                await _acquire_development_information(
+                    location = project_anchor ) )
         else:
             editable = False
             name = name[ 0 ]
@@ -65,20 +68,15 @@ class Information(
         if appendages: return base.joinpath( *appendages )
         return base
 
-    # def provide_data_location_accessor(
-    #     self, *appendages: str
-    # ) -> _locations.GeneralAccessor:
-    #     return _locations.adapter_from_url(
-    #         self.provide_data_location( *appendages ) )
 
-
-async def _acquire_development_information( ) -> tuple[ __.Path, str ]:
-    from aiofiles import open as open_
+async def _acquire_development_information(
+    location: __.Absential[ __.Path ] = __.absent
+) -> tuple[ __.Path, str ]:
     from tomli import loads
-    location = (
-        __.Path( __file__ ).parents[ 3 ].resolve( strict = True ) )
-    async with open_( location / 'pyproject.toml' ) as file:
-        pyproject = loads( await file.read( ) )
+    if __.is_absent( location ):
+        location = __.Path( __file__ ).parents[ 3 ].resolve( strict = True )
+    pyproject = await _io.acquire_text_file_async(
+        location / 'pyproject.toml', deserializer = loads )
     name = pyproject[ 'project' ][ 'name' ]
     return location, name
 

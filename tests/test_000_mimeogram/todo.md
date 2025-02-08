@@ -7,7 +7,7 @@
 tests/
   test_000_mimeogram/       # Core package tests
     __init__.py            # Test utilities and constants
-    fixtures.py            # Shared test fixtures
+    conftest.py           # Shared test fixtures
     test_010_base.py      # Basic package structure tests
     test_015_exceptions.py # Exception hierarchy tests
     test_020_generics.py  # Generic types tests
@@ -16,16 +16,20 @@ tests/
     test_035_processes.py # Process management tests
     test_040_io.py       # File I/O operations tests
     test_045_inscription.py # Logging configuration tests
+    test_050_application.py # Application metadata tests
+    test_055_distribution.py # Distribution info tests
 ```
 
-### Completed Modules (100% coverage)
-- `exceptions.py`: Exception hierarchy and behaviors
-- `generics.py`: Result type and variants
-- `dictedits.py`: Dictionary editing functionality
-- `asyncf.py`: Async utilities and error handling
-- `processes.py`: Process management utilities
-- `io.py`: File I/O operations
-- `inscription.py`: Logging and debug printing configuration
+### Completed Modules
+- `exceptions.py`: Exception hierarchy and behaviors (100%)
+- `generics.py`: Result type and variants (100%)
+- `dictedits.py`: Dictionary editing functionality (100%)
+- `asyncf.py`: Async utilities and error handling (100%)
+- `processes.py`: Process management utilities (100%)
+- `io.py`: File I/O operations (100%)
+- `inscription.py`: Logging and debug printing configuration (100%)
+- `application.py`: Application metadata handling (100%)
+- `distribution.py`: Package distribution info (65% - PyOxidizer paths untested)
 
 ### Pending Internal Modules
 
@@ -38,16 +42,12 @@ Already Completed:
 - test_035_processes.py: Process management
 - test_040_io.py: File I/O operations
 - test_045_inscription.py: Logging configuration
+- test_050_application.py: Application metadata
+- test_055_distribution.py: Distribution info
 
 Remaining (in dependency order):
 
 Middle Layer:
-- test_050_application.py: Application metadata
-  - Depends on: imports
-
-- test_055_distribution.py: Package distribution info
-  - Depends on: imports, io
-
 - test_060_state.py: Global state management
   - Depends on: imports, application, distribution
 
@@ -144,7 +144,7 @@ Areas to cover:
 ## Next Steps
 
 1. Immediate Tasks
-   - Continue with `application.py` tests in the middle layer
+   - Continue with `state.py` tests in the middle layer
    - Implement remaining core module tests in dependency order
    - Ensure proper test isolation and cleanup
 
@@ -163,4 +163,8 @@ Areas to cover:
 - Follow project style guidelines
 - Use 005 increments for new test modules
 - Maintain test independence
-- Keep coverage at 100%
+- Keep coverage at 100% where feasible
+  - Some modules like distribution.py may have lower coverage due to environment-specific code paths (e.g., PyOxidizer)
+- Fixtures now in conftest.py
+- Helper functions in __init__.py
+- Consider environment-specific tests for PyOxidizer paths if needed

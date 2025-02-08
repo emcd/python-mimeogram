@@ -20,9 +20,7 @@
 
 ''' Tests for inscription module. '''
 
-# TODO: Fix mess with 'provide_tempenv' fixture so we can re-enable linters.
-# pylint: disable=all
-# ruff: noqa
+# pylint: disable=comparison-with-callable,unused-argument
 
 
 import builtins
@@ -30,16 +28,12 @@ import logging
 
 import pytest
 
-import pytest
-
 from . import PACKAGE_NAME, cache_import_module
-from .fixtures import provide_tempenv
 
 
 @pytest.fixture( autouse = True )
 def reset_icecream( ):
     ''' Reset Icecream state before each test. '''
-    import builtins
     import icecream
     icecream.install( )  # Reset to defaults
     icecream.ic.enable( )  # Ensure enabled initially
@@ -192,7 +186,7 @@ def test_330_prepare_scribe_icecream_no_development( provide_tempenv ):
     inscription.prepare_scribe_icecream( control )
 
     assert hasattr( builtins, 'ic' )
-    result = builtins.ic( 'test' )
+    result = builtins.ic( 'test' ) # pylint: disable=no-member
     assert ( 'test', ) == result
 
 

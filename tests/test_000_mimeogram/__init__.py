@@ -24,7 +24,10 @@
 '''
 
 
+import contextlib
+import pathlib
 import types
+import typing_extensions as typx
 
 from types import MappingProxyType as DictionaryProxy
 
@@ -43,6 +46,41 @@ def cache_import_module( qname: str ) -> types.ModuleType:
     if qname not in _modules_cache:
         _modules_cache[ qname ] = import_module( *arguments )
     return _modules_cache[ qname ]
+
+
+def acquire_test_mimeogram( name: str ) -> str:
+    ''' Acquires test mimeogram from data directory. '''
+    from importlib.resources import files
+    location = files( 'mimeogram.data.tests.mimeograms' ).joinpath(
+        f"{name}.mg" )
+    return location.read_text( )
+
+
+@contextlib.contextmanager
+def create_test_files(
+    base_dir: pathlib.Path, files: dict[ str, str ]
+) -> typx.Iterator[ None ]:
+    ''' Creates test files in specified directory. '''
+    created: list[ pathlib.Path ] = [ ]
+    try: # pylint: disable=too-many-try-statements
+        for relpath, content in files.items( ):
+            filepath = base_dir / relpath
+            filepath.parent.mkdir( parents = True, exist_ok = True )
+            filepath.write_text( content )
+            created.append( filepath )
+        yield
+    finally:
+        for filepath in reversed( created ):
+            if filepath.exists( ): filepath.unlink( )
+
+
+def produce_test_environment( ) -> dict[ str, str ]:
+    ''' Produces test environment variables. '''
+    return {
+        'MIMEOGRAM_LOG_LEVEL': 'DEBUG',
+        'MIMEOGRAM_CONFIG_PATH': '/test/config',
+        'MIMEOGRAM_DATA_PATH': '/test/data',
+    }
 
 
 def _discover_module_names( package_name: str ) -> tuple[ str, ... ]:
