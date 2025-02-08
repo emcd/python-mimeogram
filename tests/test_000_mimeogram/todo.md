@@ -19,6 +19,7 @@ tests/
     test_050_application.py # Application metadata tests
     test_055_distribution.py # Distribution info tests
     test_060_state.py    # Global state management tests
+    test_065_configuration.py # Config management tests
 ```
 
 ### Completed Modules
@@ -32,33 +33,21 @@ tests/
 - `application.py`: Application metadata handling (100%)
 - `distribution.py`: Package distribution info (65% - PyOxidizer paths untested)
 - `state.py`: Global state management (100%)
+- `configuration.py`: Configuration management (100%)
 
 ### Pending Internal Modules
-
-Already Completed:
-- test_010_base.py: Basic package structure
-- test_015_exceptions.py: Exception hierarchy
-- test_020_generics.py: Generic types
-- test_025_dictedits.py: Dictionary editing
-- test_030_asyncf.py: Async utilities
-- test_035_processes.py: Process management
-- test_040_io.py: File I/O operations
-- test_045_inscription.py: Logging configuration
-- test_050_application.py: Application metadata
-- test_055_distribution.py: Distribution info
-- test_060_state.py: Global state management
 
 Remaining (in dependency order):
 
 High Layer (multiple dependencies):
-- test_065_configuration.py: Config management
-  - Depends on: imports, dictedits, distribution, exceptions, io
-
 - test_070_environment.py: Environment handling
   - Depends on: imports, io, state
 
 - test_075_preparation.py: Library initialization
   - Depends on: multiple (integration level)
+
+The next module to test is environment.py, which handles loading environment
+variables from .env files.
 
 ## Planned Features
 
@@ -138,9 +127,9 @@ Areas to cover:
 ## Next Steps
 
 1. Immediate Tasks
-   - Continue with `configuration.py` tests in the high layer
-   - Implement remaining core module tests in dependency order
-   - Ensure proper test isolation and cleanup
+   - Begin implementation of environment.py tests
+   - Focus on proper .env file handling and state management
+   - Ensure coverage of all environment variable scenarios
 
 2. Medium Term
    - Complete high layer modules
@@ -158,4 +147,5 @@ Areas to cover:
 - Use 005 increments for new test modules
 - Maintain test independence
 - Keep coverage at 100% where feasible
-  - Some modules like distribution.py may have lower coverage due to environment-specific code paths (e.g., PyOxidizer)
+- Some modules like distribution.py may have lower coverage due to
+  environment-specific code paths (e.g., PyOxidizer)
