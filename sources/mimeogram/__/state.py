@@ -71,9 +71,10 @@ class Globals(
         ''' Provides particular species of location from configuration. '''
         species_name = species.value
         base = getattr( self.directories, f"user_{species_name}_path" )
-        if spec := self.configuration.get( 'locations', { } ).get( species ):
+        spec = self.configuration.get( 'locations', { } ).get( species_name )
+        if spec:
             args: dict[ str, str | __.Path ] = {
-                f"user_{species}": base,
+                f"user_{species_name}": base,
                 'user_home': __.Path.home( ),
                 'application_name': self.application.name,
             }
