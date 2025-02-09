@@ -29,23 +29,6 @@ from . import state as _state
 _index_name = 'environment'
 
 
-# async def update( auxdata: _state.Globals ):
-#     ''' Updates process environment from dot files. '''
-#     locations = auxdata.configuration.get( 'locations', { } )
-#     location = __.Path( ) / '.env'
-#     if not location.exists( ) and auxdata.distribution.editable:
-#         location = __.Path( auxdata.distribution.location ) / '.env'
-#     if not location.exists( ) and _index_name in locations:
-#         location = __.Path( locations[ _index_name ].format(
-#             user_configuration = auxdata.directories.user_config_path,
-#             user_home = __.Path.home( ) ) )
-#     if not location.exists( ): return
-#     files = (
-#         location.glob( '*.env' ) if location.is_dir( ) else ( location, ) )
-#     await _io.acquire_text_files_async(
-#         *( file for file in files ), deserializer = _inject_dotenv_data )
-
-
 async def update( auxdata: _state.Globals ):
     ''' Updates process environment from dot files.
 

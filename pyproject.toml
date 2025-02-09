@@ -336,7 +336,7 @@ disable = [
 ]
 # TODO: Latest 'per-file-ignores' code may supports dicts and lists in addition to strings.
 per-file-ignores = '''
-  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,singleton-comparison,superfluous-parens,unexpected-keyword-arg
+  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,singleton-comparison,superfluous-parens,too-many-try-statements,unexpected-keyword-arg
   __init__\.py:unused-import
 ''' # Note: Paths are regexes.
 [tool.pylint.refactoring]

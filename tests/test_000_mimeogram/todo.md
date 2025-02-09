@@ -20,6 +20,8 @@ tests/
     test_055_distribution.py # Distribution info tests
     test_060_state.py    # Global state management tests
     test_065_configuration.py # Config management tests
+    test_070_environment.py # Environment variable handling tests
+    test_075_preparation.py # Library initialization tests
 ```
 
 ### Completed Modules
@@ -34,20 +36,12 @@ tests/
 - `distribution.py`: Package distribution info (65% - PyOxidizer paths untested)
 - `state.py`: Global state management (100%)
 - `configuration.py`: Configuration management (100%)
+- `environment.py`: Environment variable handling (100%)
+- `preparation.py`: Library initialization (100%)
 
 ### Pending Internal Modules
 
-Remaining (in dependency order):
-
-High Layer (multiple dependencies):
-- test_070_environment.py: Environment handling
-  - Depends on: imports, io, state
-
-- test_075_preparation.py: Library initialization
-  - Depends on: multiple (integration level)
-
-The next module to test is environment.py, which handles loading environment
-variables from .env files.
+All core internal modules have test coverage now, with the exception of some PyOxidizer-specific code paths in distribution.py that would require a special test environment.
 
 ## Planned Features
 
@@ -103,6 +97,7 @@ Areas to cover:
 ### Noted Issues
 1. `generics.Result` needs to be converted to proper ABC
 2. Review class/instance attribute immutability in exceptions
+3. Consider PyOxidizer-specific tests if needed for distribution.py
 
 ## Testing Strategy
 
@@ -127,20 +122,19 @@ Areas to cover:
 ## Next Steps
 
 1. Immediate Tasks
-   - Begin implementation of environment.py tests
-   - Focus on proper .env file handling and state management
-   - Ensure coverage of all environment variable scenarios
+   - Review test plan for public API modules
+   - Start design of mimeogram test data bank
+   - Consider scope of integration tests needed
 
 2. Medium Term
-   - Complete high layer modules
-   - Review and improve fixtures as needed
-   - Consider property-based testing implementation
+   - Complete public API module tests
+   - Set up test mimeogram bank
+   - Add integration tests
 
 3. Future Work
-   - Add integration tests
-   - Set up test mimeogram bank
-   - Review error handling coverage
-   - Consider PyOxidizer-specific tests for distribution.py if needed
+   - Consider PyOxidizer-specific testing strategy
+   - Review and improve fixtures if needed
+   - Implement property-based testing
 
 ## Notes
 - Follow project style guidelines
