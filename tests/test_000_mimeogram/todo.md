@@ -1,5 +1,38 @@
 # Mimeogram Testing Progress and Plans
 
+## API Testing Progress
+
+### Foundation Layer (Complete: 1/2)
+- ✓ `exceptions.py` (100%)
+- `parts.py` (NEXT)
+
+### Parser/Formatter Layer (Complete: 0/2)
+- `parsers.py` (PENDING)
+- `formatters.py` (PENDING)
+
+### Utility Layer (Complete: 0/4)
+- `display.py` (PENDING)
+- `edit.py` (PENDING)
+- `differences.py` (PENDING)
+- `interactions.py` (PENDING)
+
+### Filesystem Protection Layer (Complete: 0/5)
+- `fsprotect/__init__.py` (PENDING)
+- `fsprotect/core.py` (PENDING)
+- `fsprotect/home.py` (PENDING)
+- `fsprotect/project.py` (PENDING)
+- `fsprotect/cache.py` (PENDING)
+
+### Content Handler Layer (Complete: 0/2)
+- `acquirers.py` (PENDING)
+- `updaters.py` (PENDING)
+
+### CLI Layer (Complete: 0/4)
+- `create.py` (PENDING)
+- `apply.py` (PENDING)
+- `prompt.py` (PENDING)
+- `cli.py` (PENDING)
+
 ## Test Module Organization
 
 ### Current Structure
@@ -75,7 +108,9 @@ tests/
 
 ### Pending Internal Modules
 
-All core internal modules have test coverage now, with the exception of some PyOxidizer-specific code paths in distribution.py that would require a special test environment.
+All core internal modules have test coverage now, with the exception of some
+PyOxidizer-specific code paths in distribution.py that would require a special
+test environment.
 
 ## Planned Features
 
@@ -157,23 +192,6 @@ Areas to cover:
 2. Verify component interactions
 3. Test CLI interface
 4. Ensure proper cleanup
-
-## Next Steps
-
-1. Immediate Tasks
-   - Review test plan for public API modules
-   - Start design of mimeogram test data bank
-   - Consider scope of integration tests needed
-
-2. Medium Term
-   - Complete public API module tests
-   - Set up test mimeogram bank
-   - Add integration tests
-
-3. Future Work
-   - Consider PyOxidizer-specific testing strategy
-   - Review and improve fixtures if needed
-   - Implement property-based testing
 
 ## Notes
 - Follow project style guidelines
