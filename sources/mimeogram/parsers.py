@@ -38,7 +38,6 @@ def parse( mgtext: str ) -> __.cabc.Sequence[ _parts.Part ]:
         raise MimeogramParseFailure( reason = "Empty mimeogram." )
     boundary = _extract_boundary( mgtext )
     ptexts = _separate_parts( mgtext, boundary )
-    if not ptexts: raise MimeogramParseFailure( reason = "No parts found." )
     parts: list[ _parts.Part ] = [ ]
     for i, ptext in enumerate( ptexts, 1 ):
         try: part = parse_part( ptext )

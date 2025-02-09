@@ -6,9 +6,9 @@
 - ✓ `exceptions.py` (100%)
 - ✓ `parts.py` (100%)
 
-### Parser/Formatter Layer (Complete: 0/2)
-- `parsers.py` (NEXT)
-- `formatters.py` (PENDING)
+### Parser/Formatter Layer (Complete: 1/2)
+- ✓ `parsers.py` (100%)
+- `formatters.py` (NEXT)
 
 ### Utility Layer (Complete: 0/4)
 - `display.py` (PENDING)

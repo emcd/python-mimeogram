@@ -29,7 +29,7 @@ from . import PACKAGE_NAME, cache_import_module
 
 
 def test_000_base_exception_hierarchy( ):
-    ''' Tests base exception hierarchy relationships. '''
+    ''' Base exception hierarchy relationships. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     assert issubclass( exceptions.Omniexception, BaseException )
@@ -38,7 +38,7 @@ def test_000_base_exception_hierarchy( ):
 
 
 def test_010_base_exceptions_immutability( ):
-    ''' Tests immutability of base exception classes. '''
+    ''' Immutability of base exception classes. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     with pytest.raises( AttributeError ):
@@ -48,7 +48,7 @@ def test_010_base_exceptions_immutability( ):
 
 
 def test_020_content_acquisition_failures( ):
-    ''' Tests content acquisition failure exceptions. '''
+    ''' Content acquisition failure exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     location = Path( '/test/path' )
@@ -64,7 +64,7 @@ def test_020_content_acquisition_failures( ):
 
 
 def test_030_content_update_failures( ):
-    ''' Tests content update failure exceptions. '''
+    ''' Content update failure exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     location = Path( '/test/path' )
@@ -74,7 +74,7 @@ def test_030_content_update_failures( ):
 
 
 def test_040_differences_failures( ):
-    ''' Tests difference processing failure exceptions. '''
+    ''' Difference processing failure exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     reason = 'test reason'
@@ -84,7 +84,7 @@ def test_040_differences_failures( ):
 
 
 def test_050_editor_and_pager_failures( ):
-    ''' Tests editor and pager failure exceptions. '''
+    ''' Editor and pager failure exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     cause = 'test cause'
@@ -98,7 +98,7 @@ def test_050_editor_and_pager_failures( ):
 
 
 def test_060_location_invalidity( ):
-    ''' Tests location invalidity exceptions. '''
+    ''' Location invalidity exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     location = Path( '/test/path' )
@@ -108,7 +108,7 @@ def test_060_location_invalidity( ):
 
 
 def test_070_mimeogram_format_failures( ):
-    ''' Tests mimeogram format failure exceptions. '''
+    ''' Mimeogram format failure exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     exc = exceptions.MimeogramFormatEmpty( )
@@ -122,7 +122,7 @@ def test_070_mimeogram_format_failures( ):
 
 
 def test_080_mimetype_failures( ):
-    ''' Tests MIME type failure exceptions. '''
+    ''' MIME type failure exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     location = Path( '/test/path' )
@@ -138,7 +138,7 @@ def test_080_mimetype_failures( ):
 
 
 def test_090_program_absence( ):
-    ''' Tests program absence error exceptions. '''
+    ''' Program absence error exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     species = 'editor'
@@ -148,7 +148,7 @@ def test_090_program_absence( ):
 
 
 def test_100_url_scheme_support( ):
-    ''' Tests URL scheme support exceptions. '''
+    ''' URL scheme support exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     url = 'ftp://example.com'
@@ -158,7 +158,7 @@ def test_100_url_scheme_support( ):
 
 
 def test_110_user_operation_cancellation( ):
-    ''' Tests user operation cancellation exceptions. '''
+    ''' User operation cancellation exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     cause = KeyboardInterrupt( )
@@ -169,7 +169,7 @@ def test_110_user_operation_cancellation( ):
 
 
 def test_120_exception_chaining( ):
-    ''' Tests exception chaining behavior. '''
+    ''' Exception chaining behavior. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     try:
@@ -182,7 +182,7 @@ def test_120_exception_chaining( ):
 
 
 def test_130_visible_attributes( ):
-    ''' Tests visibility of exception attributes. '''
+    ''' Visibility of exception attributes. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     cause = ValueError( 'test cause' )

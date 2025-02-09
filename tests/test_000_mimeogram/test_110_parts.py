@@ -25,7 +25,7 @@ from . import PACKAGE_NAME, cache_import_module
 
 
 def test_000_line_separators_enum( ):
-    ''' Tests line separator enum values and attributes. '''
+    ''' Line separator enum values and attributes. '''
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
 
     # Check enum values
@@ -35,7 +35,7 @@ def test_000_line_separators_enum( ):
 
 
 def test_010_line_separators_detection( ):
-    ''' Tests line separator detection from bytes. '''
+    ''' Line separator detection from bytes. '''
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
 
     # Test detection of different line separators
@@ -73,7 +73,7 @@ def test_010_line_separators_detection( ):
 
 
 def test_020_line_separators_normalization( ):
-    ''' Tests line separator normalization methods. '''
+    ''' Line separator normalization methods. '''
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
 
     # Test universal normalization
@@ -102,7 +102,7 @@ def test_020_line_separators_normalization( ):
 
 
 def test_100_part_immutability( ):
-    ''' Tests Part class immutability. '''
+    ''' Part class immutability. '''
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
     import dataclasses
     import pytest
@@ -130,7 +130,7 @@ def test_100_part_immutability( ):
 
 
 def test_110_part_creation( ):
-    ''' Tests creating Part instances with different parameters. '''
+    ''' Creating Part instances with different parameters. '''
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
 
     # Test with various valid inputs
