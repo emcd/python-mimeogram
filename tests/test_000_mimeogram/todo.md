@@ -2,12 +2,12 @@
 
 ## API Testing Progress
 
-### Foundation Layer (Complete: 1/2)
+### Foundation Layer (Complete: 2/2)
 - ✓ `exceptions.py` (100%)
-- `parts.py` (NEXT)
+- ✓ `parts.py` (100%)
 
 ### Parser/Formatter Layer (Complete: 0/2)
-- `parsers.py` (PENDING)
+- `parsers.py` (NEXT)
 - `formatters.py` (PENDING)
 
 ### Utility Layer (Complete: 0/4)
@@ -90,27 +90,6 @@ tests/
     test_620_prompt.py     # Prompt command tests
     test_630_cli.py        # Command-line interface tests
 ```
-
-### Completed Internal Modules (mimeogram.__)
-- `exceptions.py`: Exception hierarchy and behaviors (100%)
-- `generics.py`: Result type and variants (100%)
-- `dictedits.py`: Dictionary editing functionality (100%)
-- `asyncf.py`: Async utilities and error handling (100%)
-- `processes.py`: Process management utilities (100%)
-- `io.py`: File I/O operations (100%)
-- `inscription.py`: Logging and debug printing configuration (100%)
-- `application.py`: Application metadata handling (100%)
-- `distribution.py`: Package distribution info (65% - PyOxidizer paths untested)
-- `state.py`: Global state management (100%)
-- `configuration.py`: Configuration management (100%)
-- `environment.py`: Environment variable handling (100%)
-- `preparation.py`: Library initialization (100%)
-
-### Pending Internal Modules
-
-All core internal modules have test coverage now, with the exception of some
-PyOxidizer-specific code paths in distribution.py that would require a special
-test environment.
 
 ## Planned Features
 
