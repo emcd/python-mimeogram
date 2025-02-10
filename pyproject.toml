@@ -111,6 +111,7 @@ dependencies = [
   'pytest',
   'pytest-asyncio',
   'pytest-httpx',
+  'pytest-mock',
   'ruff',
   'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
   'sphinx',

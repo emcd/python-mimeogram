@@ -29,32 +29,52 @@ from . import __
 _scribe = __.produce_scribe( __name__ )
 
 
-def discover_pager( ) -> str:
-    ''' Discovers pager from environment and other places. '''
+def discover_pager( ) -> __.cabc.Callable[ [ str ], None ]:
+    ''' Discovers pager and returns executor function. '''
     from shutil import which
+    from subprocess import run # nosec B404
     # TODO: Better default for Windows.
     pager = __.os.environ.get( 'PAGER', 'less' )
     # TODO: Platform-specific list.
     for pager_ in ( pager, 'less', 'more' ):
-        if which( pager_ ): return pager_
-    from .exceptions import ProgramAbsenceError
-    raise ProgramAbsenceError( 'pager' )
+        if which( pager_ ):
+            pager = pager_
+            break
+    else: pager = ''
 
+    if pager:
 
-def display_content( content: str, *, suffix: str = '.txt' ) -> None:
-    ''' Displays content via system pager. '''
-    from .exceptions import PagerFailure, ProgramAbsenceError
-    try: pager = discover_pager( )
-    except ProgramAbsenceError:
-        _scribe.warning( "Could not find pager program for display." )
+        # TODO? async
+        def pager_executor( filename: str ) -> None:
+            ''' Executes pager with file. '''
+            run( ( pager, filename ), check = True ) # nosec B603
+
+        return pager_executor
+
+    # TODO? async
+    def console_display( filename: str ) -> None:
+        ''' Prints file to stdout and waits for ENTER key. '''
+        with open( filename, 'r', encoding = 'utf-8' ) as stream:
+            content = stream.read( )
         print( f"\n\n{content}\n\n" )
-        input( "Press Enter to continue..." )
-        return
-    import subprocess # nosec B404
+        if __.sys.stdin.isatty( ): input( "Press Enter to continue..." )
+
+    _scribe.warning( "Could not find pager program for display." )
+    return console_display
+
+
+def display_content(
+    content: str, *,
+    suffix: str = '.txt',
+    pager_discoverer: __.cabc.Callable[
+        [ ], __.cabc.Callable[ [ str ], None ] ] = discover_pager,
+) -> None:
+    ''' Displays content via discovered pager. '''
+    from .exceptions import PagerFailure
+    pager = pager_discoverer( )
     import tempfile
     with tempfile.NamedTemporaryFile( mode = 'w', suffix = suffix ) as tmp:
         tmp.write( content )
         tmp.flush( )
-        try: __.subprocess_execute( pager, tmp.name )
-        except subprocess.SubprocessError as exc:
-            raise PagerFailure( cause = exc ) from exc
+        try: pager( tmp.name )
+        except Exception as exc: raise PagerFailure( cause = exc ) from exc

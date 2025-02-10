@@ -29,9 +29,10 @@ from . import __
 _scribe = __.produce_scribe( __name__ )
 
 
-def discover_editor( ) -> str:
-    ''' Discovers editor from environment and other places. '''
+def discover_editor( ) -> __.cabc.Callable[ [ str ], str ]:
+    ''' Discovers editor and returns executor function. '''
     from shutil import which
+    from subprocess import run # nosec B404
     editor = (
             __.os.environ.get( 'VISUAL' )
         or  __.os.environ.get( 'EDITOR' )
@@ -39,27 +40,41 @@ def discover_editor( ) -> str:
         or  'nano' )
     # TODO: Platform-specific list.
     for editor_ in ( editor, 'nano' ):
-        if which( editor_ ): return editor_
+        if which( editor_ ):
+            editor = editor_
+            break
+    else: editor = ''
+
+    if editor:
+
+        # TODO? async
+        def editor_executor( filename: str ) -> str:
+            ''' Executes editor with file. '''
+            run( ( editor, filename ), check = True ) # nosec B603
+            with open( filename, 'r', encoding = 'utf-8' ) as stream:
+                return stream.read( )
+
+        return editor_executor
+
     from .exceptions import ProgramAbsenceError
     raise ProgramAbsenceError( 'editor' )
 
 
-def edit_content( content: str = '', *, suffix: str = '.md' ) -> str:
-    ''' Edits content via system editor. '''
+def edit_content(
+    content: str = '', *,
+    suffix: str = '.md',
+    editor_discoverer: __.cabc.Callable[
+        [ ], __.cabc.Callable[ [ str ], str ] ] = discover_editor,
+) -> str:
+    ''' Edits content via discovered editor. '''
     from .exceptions import EditorFailure, ProgramAbsenceError
-    try: editor = discover_editor( )
+    try: editor = editor_discoverer( )
     except ProgramAbsenceError:
         _scribe.exception( "Could not find editor program." )
         return content
-    import subprocess # nosec B404
     import tempfile
     with tempfile.NamedTemporaryFile( mode = 'r+', suffix = suffix ) as tmp:
         tmp.write( content )
         tmp.flush( )
-        try: __.subprocess_execute( editor, tmp.name )
-        except subprocess.SubprocessError as exc:
-            raise EditorFailure( cause = exc ) from exc
-        try: tmp.seek( 0 )
-        except Exception as exc: raise EditorFailure( cause = exc ) from exc
-        try: return tmp.read( )
+        try: return editor( tmp.name )
         except Exception as exc: raise EditorFailure( cause = exc ) from exc

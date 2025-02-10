@@ -6,14 +6,14 @@
 - ✓ `exceptions.py` (100%)
 - ✓ `parts.py` (100%)
 
-### Parser/Formatter Layer (Complete: 1/2)
+### Parser/Formatter Layer (Complete: 2/2)
 - ✓ `parsers.py` (100%)
-- `formatters.py` (NEXT)
+- ✓ `formatters.py` (100%)
 
-### Utility Layer (Complete: 0/4)
-- `display.py` (PENDING)
-- `edit.py` (PENDING)
-- `differences.py` (PENDING)
+### Utility Layer (Complete: 2/4)
+- ✓ `display.py` (42% - ignoring platform-specific parts)
+- ✓ `edit.py` (52% - ignoring platform-specific parts)
+- `differences.py` (NEXT)
 - `interactions.py` (PENDING)
 
 ### Filesystem Protection Layer (Complete: 0/5)

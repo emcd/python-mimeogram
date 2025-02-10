@@ -126,7 +126,7 @@ async def apply( auxdata: __.Globals, command: Command ) -> __.typx.Never:
 
 async def _acquire( auxdata: __.Globals, cmd: Command ) -> str:
     ''' Acquires content to parse from clipboard, file, or stdin. '''
-    options = auxdata.configuration.get( 'create', { } )
+    options = auxdata.configuration.get( 'apply', { } )
     if options.get( 'from-clipboard', False ):
         from pyperclip import paste
         content = paste( )
