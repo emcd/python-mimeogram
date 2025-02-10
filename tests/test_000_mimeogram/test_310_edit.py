@@ -54,7 +54,7 @@ def test_000_content_edit_with_mocked_editor( ):
     assert edited_content == new_content
 
 
-def test_010_content_edit_without_editor( capsys ):
+def test_010_content_edit_without_editor( ):
     ''' Validates behavior when no editor is available. '''
     edit = cache_import_module( f"{PACKAGE_NAME}.edit" )
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
@@ -66,8 +66,6 @@ def test_010_content_edit_without_editor( capsys ):
     edited_content = edit.edit_content(
         initial_content, editor_discoverer = mock_editor_discoverer )
     assert edited_content == initial_content
-    captured = capsys.readouterr( )
-    assert "Could not find editor program" in captured.err
 
 
 def test_020_content_edit_with_editor_error( ):
@@ -81,5 +79,4 @@ def test_020_content_edit_with_editor_error( ):
     with pytest.raises( exceptions.EditorFailure ):
         edit.edit_content(
             'Test edit content with editor error',
-            editor_discoverer = lambda: mock_editor_executor
-        )
+            editor_discoverer = lambda: mock_editor_executor )

@@ -22,6 +22,8 @@
 
 # pylint: disable=redefined-outer-name
 
+import builtins
+import logging
 
 from pathlib import Path
 
@@ -32,11 +34,6 @@ from platformdirs import PlatformDirs
 from . import PACKAGE_NAME, cache_import_module
 
 
-# Import state module
-state = cache_import_module( f"{PACKAGE_NAME}.__.state" )
-
-
-# Test Configurations
 BASIC_CONFIG = '''
 [example]
 key = "value"
@@ -52,6 +49,28 @@ CUSTOM_ENV = '''
 TEST_KEY=test_value
 TEST_PATH=/test/path
 '''
+
+
+@pytest.fixture( autouse = True )
+def reset_icecream( ):
+    ''' Reset Icecream state before each test. '''
+    import icecream
+    icecream.install( )  # Reset to defaults
+    icecream.ic.enable( )  # Ensure enabled initially
+    yield
+    # Cleanup by removing ic from builtins if it exists
+    if hasattr( builtins, 'ic' ):
+        delattr( builtins, 'ic' )
+
+
+@pytest.fixture( autouse = True )
+def reset_logging( ):
+    ''' Reset logging state before each test. '''
+    scribe = logging.getLogger( PACKAGE_NAME )
+    scribe.handlers.clear( )
+    scribe.propagate = False
+    scribe.setLevel( logging.NOTSET )
+    yield
 
 
 @pytest.fixture
@@ -87,17 +106,13 @@ async def test_010_basic_preparation( provide_tempdir, provide_exits ):
     ''' Basic preparation creates valid global state. '''
     application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     preparation = cache_import_module( f"{PACKAGE_NAME}.__.preparation" )
-
-    # Set up config file
     config_path = Path( provide_tempdir ) / 'config.toml'
     config_path.write_text( BASIC_CONFIG )
-
     app_info = application.Information( name = 'test-app' )
     state = await preparation.prepare(
         exits = provide_exits,
         application = app_info,
         configfile = config_path )
-
     assert 'test-app' == state.application.name
     assert 'value' == state.configuration[ 'example' ][ 'key' ]
     assert 42 == state.configuration[ 'example' ][ 'number' ]
@@ -113,20 +128,14 @@ async def test_020_environment_loading( # pylint: disable=too-many-locals
     import os
     application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     preparation = cache_import_module( f"{PACKAGE_NAME}.__.preparation" )
-
-    # Create the config structure
     config_dir = Path( provide_tempdir ) / 'config'
     config_dir.mkdir( parents = True, exist_ok = True )
     config_path = config_dir / 'config.toml'
     config_path.write_text( ENV_CONFIG )
-
-    # Create and set up the working directory with .env file
     work_dir = Path( provide_tempdir ) / 'work'
     work_dir.mkdir( parents = True, exist_ok = True )
     env_path = work_dir / '.env'
     env_path.write_text( CUSTOM_ENV )
-
-    # Change to the working directory and prepare
     original_path = os.getcwd()
     try:
         os.chdir( work_dir )
@@ -149,25 +158,19 @@ async def test_030_configuration_edits( provide_tempdir, provide_exits ):
     application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     dictedits = cache_import_module( f"{PACKAGE_NAME}.__.dictedits" )
     preparation = cache_import_module( f"{PACKAGE_NAME}.__.preparation" )
-
-    # Set up config file
     config_path = Path( provide_tempdir ) / 'config.toml'
     config_path.write_text( BASIC_CONFIG )
-
-    # Create configuration edits
     edits = (
         dictedits.SimpleEdit(
             address = ( 'example', 'key' ),
             value = 'edited' ),
     )
-
     app_info = application.Information( name = 'test-app' )
     state = await preparation.prepare(
         exits = provide_exits,
         application = app_info,
         configfile = config_path,
         configedits = edits )
-
     assert 'edited' == state.configuration[ 'example' ][ 'key' ]
     assert 42 == state.configuration[ 'example' ][ 'number' ]
 
@@ -178,24 +181,17 @@ async def test_040_inscription_control( provide_tempdir, provide_exits ):
     application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     inscription = cache_import_module( f"{PACKAGE_NAME}.__.inscription" )
     preparation = cache_import_module( f"{PACKAGE_NAME}.__.preparation" )
-
-    # Set up config file
     config_path = Path( provide_tempdir ) / 'config.toml'
     config_path.write_text( BASIC_CONFIG )
-
-    # Configure inscription control
     inscription_control = inscription.Control(
         mode = inscription.Modes.Null,
         level = 'error' )
-
     app_info = application.Information( name = 'test-app' )
     await preparation.prepare(
         exits = provide_exits,
         application = app_info,
         configfile = config_path,
         inscription = inscription_control )
-
-    # Verify logger configuration
     import logging
     logger = logging.getLogger( PACKAGE_NAME )
     assert logging.ERROR == logger.level
@@ -211,24 +207,16 @@ async def test_050_default_inscription( provide_tempdir, provide_exits ):
     application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     inscription = cache_import_module( f"{PACKAGE_NAME}.__.inscription" )
     preparation = cache_import_module( f"{PACKAGE_NAME}.__.preparation" )
-
-    # Set up config file
     config_path = Path( provide_tempdir ) / 'config.toml'
     config_path.write_text( BASIC_CONFIG )
-
-    # First verify inscription module's default behavior
     default_control = inscription.Control( )
     assert inscription.Modes.Null == default_control.mode
     assert default_control.level is None
-
-    # Now test preparation with default inscription
     app_info = application.Information( name = 'test-app' )
     await preparation.prepare(
         exits = provide_exits,
         application = app_info,
         configfile = config_path )
-
-    # Verify logger configuration
     import logging
     logger = logging.getLogger( PACKAGE_NAME )
     assert not logger.propagate
@@ -242,23 +230,16 @@ async def test_060_directory_locations( provide_tempdir, provide_exits ):
     ''' Preparation sets up correct directory locations. '''
     application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     preparation = cache_import_module( f"{PACKAGE_NAME}.__.preparation" )
-
-    # Set up config file
     config_path = Path( provide_tempdir ) / 'config.toml'
     config_path.write_text( BASIC_CONFIG )
-
     app_info = application.Information( name = 'test-app' )
     state = await preparation.prepare(
         exits = provide_exits,
         application = app_info,
         configfile = config_path )
-
-    # Verify directory locations
     assert state.provide_cache_location( ).exists( )
     assert state.provide_data_location( ).exists( )
     assert state.provide_state_location( ).exists( )
-
-    # Verify package data location
     package_data = state.distribution.provide_data_location( )
     assert isinstance( package_data, Path )
 
@@ -269,25 +250,20 @@ async def test_070_concurrent_initialization( provide_tempdir, provide_exits ):
     import asyncio
     application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     preparation = cache_import_module( f"{PACKAGE_NAME}.__.preparation" )
-
-    # Set up config file
+    state = cache_import_module( f"{PACKAGE_NAME}.__.state" )
     config_path = Path( provide_tempdir ) / 'config.toml'
     config_path.write_text( BASIC_CONFIG )
-
     app_info = application.Information( name = 'test-app' )
 
-    # Create a concurrent task
     async def concurrent_task( ):
         await asyncio.sleep( 0.1 )
         return 'concurrent task completed'
 
-    # Run preparation and concurrent task
     results = await asyncio.gather(
         preparation.prepare(
             exits = provide_exits,
             application = app_info,
             configfile = config_path ),
         concurrent_task( ) )
-
     assert isinstance( results[ 0 ], state.Globals )
     assert 'concurrent task completed' == results[ 1 ]

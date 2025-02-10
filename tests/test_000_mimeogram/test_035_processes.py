@@ -29,7 +29,7 @@ from . import cache_import_module
 def test_000_subprocess_execute_success( ):
     ''' subprocess_execute successfully runs commands. '''
     processes = cache_import_module( 'mimeogram.__.processes' )
-    result = processes.subprocess_execute( 'echo', 'test' )
+    result = processes.subprocess_execute( 'true' )
     assert result.returncode == 0
 
 
