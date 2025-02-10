@@ -24,32 +24,65 @@
 from __future__ import annotations
 
 from . import __
+from . import interfaces as _interfaces
 from . import parts as _parts
 
 
 _scribe = __.produce_scribe( __name__ )
 
 
-class DisplayOptions(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, )
+class ConsoleDisplay(
+    _interfaces.DifferencesDisplay, decorators = ( __.standard_dataclass, )
 ):
-    ''' Configuration for differences display. '''
+    ''' Default display of differences to console. '''
 
-    context_lines: int = 3
-    inline_threshold: int = 24 # TODO: Adjust to terminal height.
-    # TODO: colorize: bool = False
-    # TODO: emojify: bool = False
-    # TODO: show_whitespace: bool = False
-    # TODO: truncate_lines: bool = False
-    # TODO: wrap_lines: bool = False
+    async def __call__( self, lines: __.cabc.Sequence[ str ] ) -> None:
+        from .display import display_content
+        if self.inline_threshold >= len( lines ):
+            for line in lines: print( line )
+            return
+        diff = '\n'.join( lines )
+        display_content( diff, suffix = '.diff' )
+
+
+class ConsoleInteractor( _interfaces.DifferencesInteractor ):
+    ''' Default console-based interaction handler. '''
+
+    async def __call__(
+        self,
+        lines: __.cabc.Sequence[ str ],
+        display: _interfaces.DifferencesDisplay
+    ) -> bool:
+        # TODO: Display hunk number.
+        from readchar import readkey
+        await display( lines )
+        menu = "Apply this change? (y)es, (n)o, (v)iew"
+        while True:
+            print( f"\n{menu} > ", end = '' )
+            try: choice = readkey( ).lower( )
+            except ( EOFError, KeyboardInterrupt ):
+                print( ) # Add newline to avoid output mangling
+                return False
+            print( choice ) # Echo.
+            match choice:
+                case 'y': return True
+                case 'n': return False
+                case 'v': await display( lines )
+                case _:
+                    if choice.isprintable( ):
+                        print( f"Invalid choice: {choice}" )
+                    else: print( "Invalid choice." )
 
 
 async def select_segments(
-    part: _parts.Part, target: __.Path, revision: str
+    part: _parts.Part, target: __.Path, revision: str,
+    display: __.Absential[ _interfaces.DifferencesDisplay ] = __.absent,
+    interactor: __.Absential[ _interfaces.DifferencesInteractor ] = __.absent,
 ) -> str:
     ''' Selects which diff hunks to apply. '''
-    # TODO: Pass display options from configuration.
+    # TODO: Use global state for instance configuration.
+    if __.is_absent( display ): display = ConsoleDisplay( )
+    if __.is_absent( interactor ): interactor = ConsoleInteractor( )
     # TODO: Acquire target content from cache.
     original = (
         await __.acquire_text_file_async(
@@ -58,22 +91,15 @@ async def select_segments(
     if original == revision:
         print( "No changes" )
         return revision
-    try: revision_ = _select_segments( original, revision )
+    try:
+        revision_ = (
+            await _select_segments(
+                original, revision,
+                display = display, interactor = interactor ) )
     except Exception: # pylint: disable=broad-exception-caught
         _scribe.exception( "Could not process changes" )
         return revision
     return revision_
-
-
-def _display_differences(
-    lines: list[ str ], display_options: DisplayOptions
-) -> None:
-    from .display import display_content
-    if display_options.inline_threshold >= len( lines ):
-        for line in lines: print( line )
-        return
-    diff = '\n'.join( lines )
-    display_content( diff, suffix = '.diff' )
 
 
 def _format_segment( # pylint: disable=too-many-arguments,too-many-locals
@@ -103,38 +129,13 @@ def _format_segment( # pylint: disable=too-many-arguments,too-many-locals
     return diff
 
 
-def _prompt_segment_action(
-    lines: list[ str ], display_options: DisplayOptions
-) -> bool:
-    ''' Displays change and gets user decision. '''
-    # TODO: Display hunk number.
-    from readchar import readkey
-    _display_differences( lines, display_options )
-    menu = "Apply this change? (y)es, (n)o, (v)iew"
-    while True:
-        print( f"\n{menu} > ", end = '' )
-        try: choice = readkey( ).lower( )
-        except ( EOFError, KeyboardInterrupt ):
-            print( ) # Add newline to avoid output mangling
-            return False
-        print( choice ) # Echo.
-        match choice:
-            case 'y': return True
-            case 'n': return False
-            case 'v': _display_differences( lines, display_options )
-            case _:
-                if choice.isprintable( ): print( f"Invalid choice: {choice}" )
-                else: print( "Invalid choice." )
-
-
-def _select_segments( # pylint: disable=too-many-locals
+async def _select_segments( # pylint: disable=too-many-locals
     current: str,
     revision: str,
-    display_options: __.Absential[ DisplayOptions ] = __.absent,
+    display: _interfaces.DifferencesDisplay,
+    interactor: _interfaces.DifferencesInteractor,
 ) -> str:
     from patiencediff import PatienceSequenceMatcher # pyright: ignore
-    from .exceptions import DifferencesProcessFailure
-    if __.is_absent( display_options ): display_options = DisplayOptions( )
     current_lines = current.split( '\n' )
     revision_lines = revision.split( '\n' )
     matcher = PatienceSequenceMatcher( # pyright: ignore
@@ -144,15 +145,11 @@ def _select_segments( # pylint: disable=too-many-locals
         if op == 'equal': # pylint: disable=magic-value-comparison
             result.extend( current_lines[ i1:i2 ] )
             continue
-        try:
-            diff_lines = _format_segment(
-                current_lines, revision_lines,
-                i1, i2, j1, j2,
-                context_lines = display_options.context_lines )
-        except Exception as exc:
-            raise DifferencesProcessFailure( # noqa: TRY003
-                "Could not format change block." ) from exc
-        if not _prompt_segment_action( diff_lines, display_options ):
+        diff_lines = _format_segment(
+            current_lines, revision_lines,
+            i1, i2, j1, j2,
+            context_lines = display.context_lines )
+        if not await interactor( diff_lines, display ):
             result.extend( current_lines[ i1:i2 ] )
             continue
         result.extend( revision_lines[ j1:j2 ] )

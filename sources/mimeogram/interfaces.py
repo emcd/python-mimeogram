@@ -1,0 +1,62 @@
+# vim: set filetype=python fileencoding=utf-8:
+# -*- coding: utf-8 -*-
+
+#============================================================================#
+#                                                                            #
+#  Licensed under the Apache License, Version 2.0 (the "License");           #
+#  you may not use this file except in compliance with the License.          #
+#  You may obtain a copy of the License at                                   #
+#                                                                            #
+#      http://www.apache.org/licenses/LICENSE-2.0                            #
+#                                                                            #
+#  Unless required by applicable law or agreed to in writing, software       #
+#  distributed under the License is distributed on an "AS IS" BASIS,         #
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  #
+#  See the License for the specific language governing permissions and       #
+#  limitations under the License.                                            #
+#                                                                            #
+#============================================================================#
+
+
+''' Abstract bases and interfaces. '''
+# TODO: Main interactor and display.
+
+
+from __future__ import annotations
+
+from . import __
+
+
+class DifferencesDisplay( # pylint: disable=invalid-metaclass
+    __.typx.Protocol,
+    metaclass = __.ImmutableStandardProtocolDataclass,
+    decorators = ( __.standard_dataclass, __.typx.runtime_checkable )
+):
+    ''' Configuration for content differences display. '''
+
+    context_lines: int = 3
+    inline_threshold: int = 24 # TODO? Adjust to terminal height.
+    # TODO: colorize: bool = False
+    # TODO: emojify: bool = False
+    # TODO: show_whitespace: bool = False
+    # TODO: truncate_lines: bool = False
+    # TODO: wrap_lines: bool = False
+
+    @__.abc.abstractmethod
+    async def __call__( self, lines: __.cabc.Sequence[ str ] ) -> None:
+        ''' Displays differences segment. '''
+        raise NotImplementedError
+
+
+class DifferencesInteractor( # pylint: disable=invalid-metaclass
+    __.typx.Protocol,
+    metaclass = __.ImmutableProtocolClass
+):
+    ''' Interactions with content differences. '''
+
+    @__.abc.abstractmethod
+    async def __call__(
+        self, lines: __.cabc.Sequence[ str ], display: DifferencesDisplay
+    ) -> bool:
+        ''' Prompts for action on differences segment. '''
+        raise NotImplementedError
