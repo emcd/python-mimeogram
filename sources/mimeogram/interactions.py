@@ -24,38 +24,33 @@
 from __future__ import annotations
 
 from . import __
-from . import fsprotect as _fsprotect
+from . import interfaces as _interfaces
 from . import parts as _parts
 
 
-class Actions( __.enum.Enum ):
-    ''' Available actions for each part. '''
-
-    Apply =     'apply'     # Write to filesystem
-    Ignore =    'ignore'    # Skip
-
-
-async def display_content( part: _parts.Part, content: str ) -> None:
+async def _display_content( target: _parts.Target, content: str ) -> None:
     ''' Displays content in system pager. '''
-    from .display import display_content as display
+    from .display import display_content
     # Suffix from location for proper syntax highlighting.
-    suffix = __.Path( part.location ).suffix or '.txt'
-    display( content, suffix = suffix )
+    suffix = __.Path( target.part.location ).suffix or '.txt'
+    display_content( content, suffix = suffix )
 
 
-async def display_differences(
-    part: _parts.Part, target: __.Path, revision: str
+async def _display_differences(
+    target: _parts.Target, revision: str
 ) -> None:
     ''' Displays differences between content and target file. '''
     original = ''
-    if target.exists( ):
+    destination = target.destination
+    part = target.part
+    if destination.exists( ):
         from .exceptions import ContentAcquireFailure
         try:
             original = (
                 await __.acquire_text_file_async(
-                    target, charset = part.charset ) )
+                    destination, charset = part.charset ) )
         except Exception as exc:
-            raise ContentAcquireFailure( target ) from exc
+            raise ContentAcquireFailure( destination ) from exc
         original = part.linesep.normalize( original )
     diff = _calculate_differences( part, revision, original )
     if not diff:
@@ -65,47 +60,100 @@ async def display_differences(
     display( '\n'.join( diff ), suffix = '.diff' )
 
 
-async def edit_content( target: __.Path, content: str ) -> str:
+async def _edit_content( target: _parts.Target, content: str ) -> str:
     ''' Edits content in system editor. '''
-    from .edit import edit_content as edit
+    from .edit import edit_content
     # Suffix from location for proper syntax highlighting.
-    suffix = __.Path( target ).suffix or '.txt'
-    return edit( content, suffix = suffix )
+    suffix = __.Path( target.destination ).suffix or '.txt'
+    return edit_content( content, suffix = suffix )
 
 
-async def prompt_action( # pylint: disable=too-many-locals
-    part: _parts.Part, target: __.Path, protection: _fsprotect.Status
-) -> tuple[ Actions, str ]:
-    ''' Prompts user for action on current part. '''
-    # TODO? Track revision history.
-    # TODO: Support queuing of applies for parallel async update.
+def _prompt_action(
+    target: _parts.Target, content: str, protect: bool
+) -> str:
     from readchar import readkey
-    from .differences import select_segments
     from .exceptions import UserOperateCancellation
-    content = part.content
-    protect = protection.active
-    while True:
-        menu = _produce_actions_menu( part, content, protect )
-        print( f"\n{menu} > ", end = '' )
-        __.sys.stdout.flush( )
-        try: choice = readkey( ).lower( )
-        except ( EOFError, KeyboardInterrupt ) as exc:
-            print( ) # Add newline to avoid output mangling.
-            raise UserOperateCancellation( exc ) from exc
-        print( choice ) # Echo.
-        match choice:
-            case 'a' if not protect: return Actions.Apply, content
-            case 'd': await display_differences( part, target, content )
-            case 'e' if not protect:
-                content = await edit_content( target, content )
-            case 'i': return Actions.Ignore, content
-            case 'p' if protect: protect = False
-            case 's' if not protect:
-                content = await select_segments( part, target, content )
-            case 'v': await display_content( part, content )
-            case _:
-                if choice.isprintable( ): print( f"Invalid choice: {choice}" )
-                else: print( "Invalid choice." )
+    menu = _produce_actions_menu( target.part, content, protect )
+    print( f"\n{menu} > ", end = '' )
+    __.sys.stdout.flush( )
+    try: choice = readkey( ).lower( )
+    except ( EOFError, KeyboardInterrupt ) as exc:
+        print( ) # Add newline to avoid output mangling.
+        raise UserOperateCancellation( exc ) from exc
+    print( choice ) # Echo.
+    return choice
+
+
+async def _select_segments( target: _parts.Target, content: str ) -> str:
+    from .differences import select_segments
+    return await select_segments(
+        # TODO: Coalesce 'target' argument.
+        target.part, target.destination, content )
+
+
+def _validate_choice(
+    target: _parts.Target, choice: str # pylint: disable=unused-argument
+) -> None:
+    if choice.isprintable( ):
+        print( f"Invalid choice: {choice}" )
+    else: print( "Invalid choice." )
+
+
+class GenericInteractor(
+    _interfaces.PartInteractor,
+    decorators = ( __.standard_dataclass, ),
+):
+    ''' Default console-based interaction handler. '''
+
+    prompter: __.cabc.Callable[
+        [ _parts.Target, str, bool ], str ] = _prompt_action
+    cdisplayer: __.cabc.Callable[
+        [ _parts.Target, str ],
+        __.cabc.Coroutine[ None, None, None ] ] = _display_content
+    ddisplayer: __.cabc.Callable[
+        [ _parts.Target, str ],
+        __.cabc.Coroutine[ None, None, None ] ] = _display_differences
+    editor: __.cabc.Callable[
+        [ _parts.Target, str ],
+        __.cabc.Coroutine[ None, None, str ] ] = _edit_content
+    sselector: __.cabc.Callable[
+        [ _parts.Target, str ],
+        __.cabc.Coroutine[ None, None, str ] ] = _select_segments
+    validator: __.cabc.Callable[
+        [ _parts.Target, str ], None ] = _validate_choice
+
+    async def __call__(
+        self, target: _parts.Target
+    ) -> tuple[ _parts.Resolutions, str ]:
+        # TODO? Track revision history.
+        # TODO: Use copies of target object with updated content.
+        content = target.part.content
+        protect = target.protection.active
+        while True:
+            # pylint: disable=too-many-function-args
+            choice = self.prompter( target, content, protect )
+            match choice:
+                case 'a' if not protect:
+                    return _parts.Resolutions.Apply, content
+                case 'd': await self.ddisplayer( target, content )
+                case 'e' if not protect:
+                    content = await self.editor( target, content )
+                case 'i': return _parts.Resolutions.Ignore, content
+                case 'p' if protect: protect = False
+                case 's' if not protect:
+                    content = await self.sselector( target, content )
+                case 'v': await self.cdisplayer( target, content )
+                case _: self.validator( target, choice )
+            # pylint: enable=too-many-function-args
+
+
+async def interact(
+    target: _parts.Target,
+    interactor: __.Absential[ _interfaces.PartInteractor ] = __.absent,
+) -> tuple[ _parts.Resolutions, str ]:
+    ''' Performs interaction for part. '''
+    if __.is_absent( interactor ): interactor = GenericInteractor( )
+    return await interactor( target )
 
 
 def _calculate_differences(

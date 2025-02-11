@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 from . import __
+from . import fsprotect as _fsprotect
 
 
 class LineSeparators( __.enum.Enum ):
@@ -69,6 +70,13 @@ class LineSeparators( __.enum.Enum ):
         return content.replace( self.value, '\n' )
 
 
+class Resolutions( __.enum.Enum ):
+    ''' Available resolutions for each part. '''
+
+    Apply =     'apply'
+    Ignore =    'ignore'
+
+
 class Part(
     metaclass = __.ImmutableStandardDataclass,
     decorators = ( __.standard_dataclass, ),
@@ -82,3 +90,13 @@ class Part(
 
     # TODO? 'format' method
     # TODO? 'parse' method
+
+
+class Target(
+    metaclass = __.ImmutableStandardDataclass,
+    decorators = ( __.standard_dataclass, ),
+):
+    ''' Target information for mimeogram part. '''
+    part: Part
+    destination: __.Path
+    protection: _fsprotect.Status

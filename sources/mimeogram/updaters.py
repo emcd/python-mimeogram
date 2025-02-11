@@ -130,34 +130,32 @@ async def update( # pylint: disable=too-many-locals
     queue = Queue( )
     for part in parts:
         if part.location.startswith( 'mimeogram://' ): continue
-        target = _derive_location( part.location, base = base )
-        protection = protector.verify( target )
+        destination = _derive_location( part.location, base = base )
+        target = _parts.Target(
+            part = part,
+            destination = destination,
+            protection = protector.verify( destination ) )
         action, content = await update_part(
-            auxdata, part,
-            target = target, mode = mode, protection = protection )
-        if _interactions.Actions.Ignore is action: continue
-        queue.enqueue( part, target, content )
+            auxdata, target, mode = mode )
+        if _parts.Resolutions.Ignore is action: continue
+        queue.enqueue( target.part, target.destination, content )
     await queue.apply( )
 
 
 async def update_part(
-    auxdata: __.Globals,
-    part: _parts.Part,
-    target: __.Path,
-    mode: ReviewModes,
-    protection: _fsprotect.Status,
-) -> tuple[ _interactions.Actions, str ]:
+    auxdata: __.Globals, target: _parts.Target, mode: ReviewModes
+) -> tuple[ _parts.Resolutions, str ]:
     ''' Updates filesystem location from mimeogram part. '''
-    content = part.content
+    content = target.part.content
     if ReviewModes.Partitive is mode:
-        return await _interactions.prompt_action( part, target, protection )
+        return await _interactions.interact( target )
     options = auxdata.configuration.get( 'update-parts', { } )
-    if protection and not options.get( 'disable-protections', False ):
+    if target.protection and not options.get( 'disable-protections', False ):
         _scribe.warning(
-            f"Skipping protected path: {target} "
-            f"Reason: {protection.description}" )
-        return _interactions.Actions.Ignore, content
-    return _interactions.Actions.Apply, content
+            f"Skipping protected path: {target.destination} "
+            f"Reason: {target.protection.description}" )
+        return _parts.Resolutions.Ignore, content
+    return _parts.Resolutions.Apply, content
 
 
 def _derive_location(

@@ -25,12 +25,13 @@
 from __future__ import annotations
 
 from . import __
+from . import parts as _parts
 
 
 class DifferencesDisplay( # pylint: disable=invalid-metaclass
     __.typx.Protocol,
     metaclass = __.ImmutableStandardProtocolDataclass,
-    decorators = ( __.standard_dataclass, __.typx.runtime_checkable )
+    decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
 ):
     ''' Configuration for content differences display. '''
 
@@ -50,7 +51,7 @@ class DifferencesDisplay( # pylint: disable=invalid-metaclass
 
 class DifferencesInteractor( # pylint: disable=invalid-metaclass
     __.typx.Protocol,
-    metaclass = __.ImmutableProtocolClass
+    metaclass = __.ImmutableProtocolClass,
 ):
     ''' Interactions with content differences. '''
 
@@ -59,4 +60,19 @@ class DifferencesInteractor( # pylint: disable=invalid-metaclass
         self, lines: __.cabc.Sequence[ str ], display: DifferencesDisplay
     ) -> bool:
         ''' Prompts for action on differences segment. '''
+        raise NotImplementedError
+
+
+class PartInteractor( # pylint: disable=invalid-metaclass
+    __.typx.Protocol,
+    metaclass = __.ImmutableStandardProtocolDataclass,
+    decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
+):
+    ''' Interactions with mimeogram parts. '''
+
+    @__.abc.abstractmethod
+    async def __call__(
+        self, target: _parts.Target
+    ) -> tuple[ _parts.Resolutions, str ]:
+        ''' Prompts for action on mimeogram part. '''
         raise NotImplementedError
