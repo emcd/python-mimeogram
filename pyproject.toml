@@ -32,6 +32,7 @@ dependencies = [
   'tomli',
   'typing-extensions',
   'tyro',
+  'wcmatch',
 ]
 classifiers = [ # https://pypi.org/classifiers
   'Development Status :: 4 - Beta',

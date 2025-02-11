@@ -114,16 +114,18 @@ def provide_project_locations(
     ''' Provides IDE and VCS locations relative to project. '''
     from . import project as module
     project_sensitive = module.discover_sensitive_locations( )
+    # TODO: Consider whether these patterns are compatible with Windows.
     rules[ _core.Reasons.Concealment ] = Rule(
         paths = frozenset( ),
-        patterns = frozenset( f"**/{path}/**" for path in project_sensitive ) )
+        patterns = frozenset(
+            f"**/{path}/**" for path in project_sensitive ) )
 
 
 def _check_path_patterns( path: __.Path, patterns: frozenset[ str ] ) -> bool:
     ''' Checks if path matches any of the glob patterns. '''
-    from fnmatch import fnmatch
+    from wcmatch import glob
     str_path = str( path )
-    return any( fnmatch( str_path, pattern ) for pattern in patterns )
+    return glob.globmatch( str_path, list( patterns ), flags = glob.GLOBSTAR )
 
 
 def discover_platform_locations(

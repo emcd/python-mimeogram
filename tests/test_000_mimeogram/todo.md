@@ -16,14 +16,14 @@
 - ✓ `differences.py` (67% - ignoring console interaction)
 - ✓ `interactions.py` (53% - ignoring console interaction)
 
-### Filesystem Protection Layer (Complete: 0/4)
-- `fsprotect/core.py` (NEXT)
-- `fsprotect/home.py` (PENDING)
-- `fsprotect/project.py` (PENDING)
-- `fsprotect/cache.py` (PENDING)
+### Filesystem Protection Layer (Complete: 4/4)
+- ✓ `fsprotect/core.py` (100%)
+- ✓ `fsprotect/home.py` (100%)
+- ✓ `fsprotect/project.py` (100%)
+- ✓ `fsprotect/cache.py` (93% - ignoring platform-specific parts)
 
 ### Content Handler Layer (Complete: 0/2)
-- `acquirers.py` (PENDING)
+- `acquirers.py` (NEXT)
 - `updaters.py` (PENDING)
 
 ### CLI Layer (Complete: 0/4)
