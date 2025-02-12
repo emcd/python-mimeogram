@@ -26,16 +26,17 @@ from __future__ import annotations
 from .. import __
 
 
-class Reasons( __.enum.Enum ):
-    ''' Reasons why location may be protected. '''
+class Protector( # pylint: disable=invalid-metaclass
+    __.typx.Protocol,
+    metaclass = __.ImmutableStandardProtocolDataclass,
+    decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
+):
+    ''' Filesystem protection checker. '''
 
-    Concealment =       'Hidden file or directory'
-    Credentials =       'Credentials or secrets location'
-    CustomAddition =    'User-specified custom location'
-    OsDirectory =       'Operating system directory'
-    PlatformSensitive = 'Platform-sensitive location'
-    UserConfiguration = 'User configuration directory'
-    VersionControl =    'Version control internals'
+    @__.abc.abstractmethod
+    def verify( self, path: __.Path ) -> Status:
+        ''' Verifies if a path should be protected. '''
+        raise NotImplementedError
 
 
 class Status(
@@ -57,3 +58,15 @@ class Status(
         return (
             f"Protected: {self.reason.value}"
             if self.reason else 'Protected' )
+
+
+class Reasons( __.enum.Enum ):
+    ''' Reasons why location may be protected. '''
+
+    Concealment =       'Hidden file or directory'
+    Credentials =       'Credentials or secrets location'
+    CustomAddition =    'User-specified custom location'
+    OsDirectory =       'Operating system directory'
+    PlatformSensitive = 'Platform-sensitive location'
+    UserConfiguration = 'User configuration directory'
+    VersionControl =    'Version control internals'

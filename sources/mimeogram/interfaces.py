@@ -19,7 +19,6 @@
 
 
 ''' Abstract bases and interfaces. '''
-# TODO: Main interactor and display.
 
 
 from __future__ import annotations

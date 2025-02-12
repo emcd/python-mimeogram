@@ -26,6 +26,7 @@ from __future__ import annotations
 from . import __
 from . import fsprotect as _fsprotect
 from . import interactions as _interactions
+from . import interfaces as _interfaces
 from . import parts as _parts
 
 
@@ -118,15 +119,18 @@ class Queue(
 # pylint: enable=no-member,not-an-iterable
 
 
-async def update( # pylint: disable=too-many-locals
+async def update( # pylint: disable=too-many-arguments,too-many-locals
     auxdata: __.Globals,
     parts: __.cabc.Sequence[ _parts.Part ],
     mode: ReviewModes,
     base: __.Absential[ __.Path ] = __.absent,
+    interactor: __.Absential[ _interfaces.PartInteractor ] = __.absent,
+    protector: __.Absential[ _fsprotect.Protector ] = __.absent,
 ) -> None:
     ''' Updates filesystem locations from mimeogram. '''
     if __.is_absent( base ): base = __.Path( )
-    protector = _fsprotect.Cache.from_configuration( auxdata = auxdata )
+    if __.is_absent( protector ):
+        protector = _fsprotect.Cache.from_configuration( auxdata = auxdata )
     queue = Queue( )
     for part in parts:
         if part.location.startswith( 'mimeogram://' ): continue
@@ -136,19 +140,22 @@ async def update( # pylint: disable=too-many-locals
             destination = destination,
             protection = protector.verify( destination ) )
         action, content = await update_part(
-            auxdata, target, mode = mode )
+            auxdata, target, mode = mode, interactor = interactor )
         if _parts.Resolutions.Ignore is action: continue
         queue.enqueue( target.part, target.destination, content )
     await queue.apply( )
 
 
 async def update_part(
-    auxdata: __.Globals, target: _parts.Target, mode: ReviewModes
+    auxdata: __.Globals,
+    target: _parts.Target,
+    mode: ReviewModes,
+    interactor: __.Absential[ _interfaces.PartInteractor ] = __.absent,
 ) -> tuple[ _parts.Resolutions, str ]:
     ''' Updates filesystem location from mimeogram part. '''
     content = target.part.content
     if ReviewModes.Partitive is mode:
-        return await _interactions.interact( target )
+        return await _interactions.interact( target, interactor = interactor )
     options = auxdata.configuration.get( 'update-parts', { } )
     if target.protection and not options.get( 'disable-protections', False ):
         _scribe.warning(

@@ -24,4 +24,4 @@
 from __future__ import annotations
 
 from .cache import Cache, Rule
-from .core import Reasons, Status
+from .core import Protector, Reasons, Status

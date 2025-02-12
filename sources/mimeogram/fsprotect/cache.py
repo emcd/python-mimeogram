@@ -40,10 +40,7 @@ class Rule(
     patterns: frozenset[ str ] = frozenset( )
 
 
-class Cache(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Cache( _core.Protector, decorators = ( __.standard_dataclass, ) ):
     ''' Cache of protected paths and patterns for platform. '''
 
     rules: dict[ _core.Reasons, Rule ]
