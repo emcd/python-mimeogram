@@ -185,9 +185,12 @@ def _produce_fs_tasks(
 ) -> tuple[ __.cabc.Coroutine[ None, None, _parts.Part ], ...]:
     location_ = (
         __.Path( location ) if isinstance( location, str ) else location )
-    if location_.is_file( ): return ( _acquire_from_file( location_ ), )
-    files = _collect_directory_files( location_, recursive )
-    return tuple( _acquire_from_file( f ) for f in files )
+    if location_.is_file( ) or location_.is_symlink( ):
+        return ( _acquire_from_file( location_ ), )
+    if location_.is_dir( ):
+        files = _collect_directory_files( location_, recursive )
+        return tuple( _acquire_from_file( f ) for f in files )
+    raise _exceptions.ContentAcquireFailure( location )
 
 
 def _produce_http_task(
