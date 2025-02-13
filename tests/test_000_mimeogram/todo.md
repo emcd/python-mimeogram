@@ -22,13 +22,13 @@
 - ✓ `fsprotect/project.py` (100%)
 - ✓ `fsprotect/cache.py` (93% - ignoring platform-specific parts)
 
-### Content Handler Layer (Complete: 1/2)
+### Content Handler Layer (Complete: 2/2)
 - ✓ `acquirers.py` (92% - ignoring hard-to-produce defensive cases)
-- `updaters.py` (PENDING)
+- ✓ `updaters.py` (97% - ignoring hard-to-produce defensive cases)
 
-### CLI Layer (Complete: 0/4)
-- `create.py` (PENDING)
-- `apply.py` (PENDING)
+### CLI Layer (Complete: 1/4)
+- `create.py` (NEXT)
+- ✓ `apply.py` (87% - ignoring console interaction)
 - `prompt.py` (PENDING)
 - `cli.py` (PENDING)
 

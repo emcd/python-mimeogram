@@ -25,6 +25,7 @@
 from __future__ import annotations
 
 from . import __
+from . import parts as _parts
 from . import updaters as _updaters
 
 
@@ -94,29 +95,96 @@ class Command(
         if None is not self.force:
             edits.append( __.SimpleDictionaryEdit( # pyright: ignore
                 address = ( 'update-parts', 'disable-protections' ),
-                value = self.clip ) )
+                value = self.force ) )
         return tuple( edits )
 
 
-async def apply( auxdata: __.Globals, command: Command ) -> __.typx.Never:
+class ContentAcquirer( # pylint: disable=invalid-metaclass
+    __.typx.Protocol,
+    metaclass = __.ImmutableStandardProtocolDataclass,
+    decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
+):
+    ''' Acquires content for apply command. '''
+
+    @__.abc.abstractmethod
+    def stdin_is_tty( self ) -> bool:
+        ''' Checks if input is from a terminal. '''
+        raise NotImplementedError
+
+    @__.abc.abstractmethod
+    async def acquire_clipboard( self ) -> str:
+        ''' Acquires content from clipboard. '''
+        raise NotImplementedError
+
+    @__.abc.abstractmethod
+    async def acquire_file( self, path: str | __.Path ) -> str:
+        ''' Acquires content from file. '''
+        raise NotImplementedError
+
+    @__.abc.abstractmethod
+    async def acquire_stdin( self ) -> str:
+        ''' Acquires content from standard input. '''
+        raise NotImplementedError
+
+
+class StandardContentAcquirer(
+    ContentAcquirer, decorators = ( __.standard_dataclass, )
+):
+    ''' Standard implementation of content acquisition. '''
+
+    def stdin_is_tty( self ) -> bool:
+        return __.sys.stdin.isatty( )
+
+    async def acquire_clipboard( self ) -> str:
+        from pyperclip import paste
+        return paste( )
+
+    async def acquire_file( self, path: str | __.Path ) -> str:
+        return await __.acquire_text_file_async( path )
+
+    async def acquire_stdin( self ) -> str:
+        return __.sys.stdin.read( )
+
+
+async def apply( # pylint: disable=too-complex,too-many-statements
+    auxdata: __.Globals,
+    command: Command,
+    *,
+    acquirer: __.Absential[ ContentAcquirer ] = __.absent,
+    parser: __.Absential[
+        __.cabc.Callable[ [ str ], __.cabc.Sequence[ _parts.Part ] ]
+    ] = __.absent,
+    updater: __.Absential[
+        __.cabc.Callable[
+            [   __.Globals,
+                __.cabc.Sequence[ _parts.Part ],
+                _updaters.ReviewModes ],
+            __.cabc.Coroutine[ None, None, None ]
+        ]
+    ] = __.absent,
+) -> __.typx.Never:
     ''' Applies mimeogram. '''
-    review_mode = _determine_review_mode( command )
-    from .parsers import parse
-    from .updaters import update
-    try: mgtext = await _acquire( auxdata, command )
+    if __.is_absent( acquirer ):
+        acquirer = StandardContentAcquirer( )
+    if __.is_absent( parser ):
+        from .parsers import parse as parser
+    if __.is_absent( updater ):
+        from .updaters import update as updater
+    review_mode = _determine_review_mode( command, acquirer )
+    try: mgtext = await _acquire( auxdata, command, acquirer )
     except Exception as exc:
         _scribe.exception( "Could not acquire mimeogram to apply." )
         raise SystemExit( 1 ) from exc
     if not mgtext:
         _scribe.error( "Cannot apply empty mimeogram." )
         raise SystemExit( 1 )
-    try: parts = parse( mgtext )
+    try: parts = parser( mgtext )
     except Exception as exc:
         _scribe.exception( "Could not parse mimeogram." )
         raise SystemExit( 1 ) from exc
-    nomargs: dict[ str, __.typx.Any ] = dict( mode = review_mode )
+    nomargs: dict[ str, __.typx.Any ] = { }
     if command.base: nomargs[ 'base' ] = command.base
-    try: await update( auxdata, parts, **nomargs )
+    try: await updater( auxdata, parts, review_mode, **nomargs )
     except Exception as exc:
         _scribe.exception( "Could not apply mimeogram." )
         raise SystemExit( 1 ) from exc
@@ -124,29 +192,28 @@ async def apply( auxdata: __.Globals, command: Command ) -> __.typx.Never:
     raise SystemExit( 0 )
 
 
-async def _acquire( auxdata: __.Globals, cmd: Command ) -> str:
+async def _acquire(
+    auxdata: __.Globals, cmd: Command, acquirer: ContentAcquirer
+) -> str:
     ''' Acquires content to parse from clipboard, file, or stdin. '''
     options = auxdata.configuration.get( 'apply', { } )
     if options.get( 'from-clipboard', False ):
-        from pyperclip import paste
-        content = paste( )
+        content = await acquirer.acquire_clipboard( )
         if not content:
-            _scribe.error( "Clipboard is empty" )
+            _scribe.error( "Clipboard is empty." )
             raise SystemExit( 1 )
         _scribe.debug(
             "Read {} characters from clipboard.".format( len( content ) ) )
         return content
     match cmd.source:
-        case '-': return __.sys.stdin.read( )
-        case _:
-            # TODO: Use I/O module.
-            from aiofiles import open as open_
-            async with open_( cmd.source, 'r' ) as f:
-                return await f.read( )
+        case '-': return await acquirer.acquire_stdin( )
+        case _: return await acquirer.acquire_file( cmd.source )
 
 
-def _determine_review_mode( command: Command ) -> _updaters.ReviewModes:
-    on_tty = __.sys.stdin.isatty( )
+def _determine_review_mode(
+    command: Command, acquirer: ContentAcquirer
+) -> _updaters.ReviewModes:
+    on_tty = acquirer.stdin_is_tty( )
     if command.mode is None:
         if on_tty: return _updaters.ReviewModes.Partitive
         return _updaters.ReviewModes.Silent
