@@ -140,5 +140,5 @@
 ✓ LLM prompt command
 ✓ Prompt prepending
 ✓ Standalone executables
-□ Testing
+✓ Testing
 □ Documentation
