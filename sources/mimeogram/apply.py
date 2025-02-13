@@ -25,6 +25,7 @@
 from __future__ import annotations
 
 from . import __
+from . import interfaces as _interfaces
 from . import parts as _parts
 from . import updaters as _updaters
 
@@ -33,28 +34,27 @@ _scribe = __.produce_scribe( __name__ )
 
 
 class Command(
-    metaclass = __.ImmutableStandardDataclass,
+    _interfaces.CliCommand,
     decorators = ( __.standard_dataclass, __.standard_tyro_class ),
 ):
     ''' Applies mimeogram to filesystem locations. '''
-    # TODO: Inherit from abstract command.
 
     source: __.typx.Annotated[
         str, # TODO: str | Path
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             help = (
                 "Source file for mimeogram. "
                 "Defaults to stdin if '--clip' not specified." ) ),
     ] = '-'
     clip: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             aliases = ( '--clipboard', '--from-clipboard' ),
             help = "Read mimeogram from clipboard instead of file or stdin." ),
     ] = None
     mode: __.typx.Annotated[
         __.typx.Optional[ _updaters.ReviewModes ],
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             aliases = ( '--review-mode', ),
             help = (
                 "Controls how changes are reviewed. "
@@ -65,7 +65,7 @@ class Command(
     ] = None
     base: __.typx.Annotated[
         __.typx.Optional[ __.Path ],
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             aliases = ( '--base-directory', ),
             help = (
                 "Base directory for relative locations. "
@@ -73,12 +73,12 @@ class Command(
     ] = None
     # preview: __.typx.Annotated[
     #     __.typx.Optional[ bool ],
-    #     __.tyro.conf.arg( # pyright: ignore
+    #     __.tyro.conf.arg(
     #         help = "Show what would be changed without making changes." ),
     # ] = None
     force: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             help = 'Override protected path checks.' ),
     ] = None
 

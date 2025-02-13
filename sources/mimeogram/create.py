@@ -25,50 +25,50 @@
 from __future__ import annotations
 
 from . import __
+from . import interfaces as _interfaces
 
 
 _scribe = __.produce_scribe( __name__ )
 
 
 class Command(
-    metaclass = __.ImmutableStandardDataclass,
+    _interfaces.CliCommand,
     decorators = ( __.standard_dataclass, __.standard_tyro_class ),
 ):
     ''' Creates mimeogram from filesystem locations or URLs. '''
-    # TODO: Inherit from abstract command.
 
     sources: __.typx.Annotated[
         __.tyro.conf.Positional[ list[ str ] ],
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             help = "Filesystem locations or URLs.",
             prefix_name = False ),
     ]
     clip: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             aliases = ( '--clipboard', '--to-clipboard' ),
             help = "Copy mimeogram to clipboard." ),
     ] = None
     edit: __.typx.Annotated[
         bool,
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             aliases = ( '-e', '--edit-message' ),
             help = "Spawn editor to capture an introductory message." ),
     ] = False
     prepend_prompt: __.typx.Annotated[
         bool,
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             help = "Prepend mimeogram format instructions." ),
     ] = False
     recurse: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             aliases = ( '-r', '--recurse-directories', '--recursive' ),
             help = "Recurse into directories." ),
     ] = None
     strict: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             help = "Fail on invalid contents instead of skipping them." ),
     ] = None
 

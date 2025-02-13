@@ -25,21 +25,21 @@
 from __future__ import annotations
 
 from . import __
+from . import interfaces as _interfaces
 
 
 _scribe = __.produce_scribe( __name__ )
 
 
 class Command(
-    metaclass = __.ImmutableStandardDataclass,
+    _interfaces.CliCommand,
     decorators = ( __.standard_dataclass, __.standard_tyro_class ),
 ):
     ''' Provides LLM prompt text for mimeogram format. '''
-    # TODO: Inherit from abstract command.
 
     clip: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg( # pyright: ignore
+        __.tyro.conf.arg(
             aliases = ( '--clipboard', '--to-clipboard' ),
             help = "Copy prompt to clipboard." ),
     ] = None

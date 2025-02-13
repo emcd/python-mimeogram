@@ -27,6 +27,24 @@ from . import __
 from . import parts as _parts
 
 
+class CliCommand( # pylint: disable=invalid-metaclass
+    __.typx.Protocol,
+    metaclass = __.ImmutableStandardProtocolDataclass,
+    decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
+):
+    ''' CLI command. '''
+
+    @__.abc.abstractmethod
+    async def __call__( self, auxdata: __.Globals ) -> None:
+        ''' Executes command with global state. '''
+        raise NotImplementedError
+
+    @__.abc.abstractmethod
+    def provide_configuration_edits( self ) -> __.DictionaryEdits:
+        ''' Provides edits against configuration from options. '''
+        raise NotImplementedError
+
+
 class DifferencesDisplay( # pylint: disable=invalid-metaclass
     __.typx.Protocol,
     metaclass = __.ImmutableStandardProtocolDataclass,
