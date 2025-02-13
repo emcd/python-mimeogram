@@ -93,27 +93,12 @@ class Command(
         return tuple( edits )
 
 
-async def create( auxdata: __.Globals, cmd: Command ) -> __.typx.Never:
-    ''' Creates mimeogram. '''
-    from .acquirers import acquire
-    from .formatters import format_mimeogram
-    if cmd.edit: message = await _edit_message( )
-    else: message = None
-    try: parts = await acquire( auxdata, cmd.sources )
-    except Exception as exc:
-        _scribe.exception( "Could not acquire mimeogram parts." )
-        raise SystemExit( 1 ) from exc
-    mimeogram = format_mimeogram( parts, message = message )
-    # TODO? Pass prompt to 'format_mimeogram'.
-    if cmd.prepend_prompt:
-        mimeogram = await _prepend_prompt( auxdata, mimeogram )
-    options = auxdata.configuration.get( 'create', { } )
-    if options.get( 'to-clipboard', False ): _copy_to_clipboard( mimeogram )
-    else: print( mimeogram ) # TODO? Use output stream from configuration.
-    raise SystemExit( 0 )
+async def _acquire_prompt( auxdata: __.Globals ) -> str:
+    from .prompt import acquire_prompt
+    return await acquire_prompt( auxdata )
 
 
-def _copy_to_clipboard( mimeogram: str ) -> None:
+async def _copy_to_clipboard( mimeogram: str ) -> None:
     from pyperclip import copy
     try: copy( mimeogram )
     except Exception as exc:
@@ -130,7 +115,40 @@ async def _edit_message( ) -> str:
         raise SystemExit( 1 ) from exc
 
 
-async def _prepend_prompt( auxdata: __.Globals, mimeogram: str ) -> str:
-    from .prompt import acquire_prompt
-    prompt = await acquire_prompt( auxdata )
-    return f"{prompt}\n\n{mimeogram}"
+async def create( # pylint: disable=too-many-locals
+    auxdata: __.Globals,
+    command: Command, *,
+    editor: __.cabc.Callable[
+        [ ], __.cabc.Coroutine[ None, None, str ] ] = _edit_message,
+    clipcopier: __.cabc.Callable[
+        [ str ], __.cabc.Coroutine[ None, None, None ] ] = _copy_to_clipboard,
+    prompter: __.cabc.Callable[
+        [ __.Globals ],
+        __.cabc.Coroutine[ None, None, str ] ] = _acquire_prompt,
+) -> __.typx.Never:
+    ''' Creates mimeogram. '''
+    from .acquirers import acquire
+    from .formatters import format_mimeogram
+    if command.edit:
+        try: message = await editor( )
+        except Exception as exc:
+            _scribe.exception( "Could not acquire user message." )
+            raise SystemExit( 1 ) from exc
+    else: message = None
+    try: parts = await acquire( auxdata, command.sources )
+    except Exception as exc:
+        _scribe.exception( "Could not acquire mimeogram parts." )
+        raise SystemExit( 1 ) from exc
+    mimeogram = format_mimeogram( parts, message = message )
+    # TODO? Pass prompt to 'format_mimeogram'.
+    if command.prepend_prompt:
+        prompt = await prompter( auxdata )
+        mimeogram = f"{prompt}\n\n{mimeogram}"
+    options = auxdata.configuration.get( 'create', { } )
+    if options.get( 'to-clipboard', False ):
+        try: await clipcopier( mimeogram )
+        except Exception as exc:
+            _scribe.exception( "Could not copy mimeogram to clipboard." )
+            raise SystemExit( 1 ) from exc
+    else: print( mimeogram ) # TODO? Use output stream from configuration.
+    raise SystemExit( 0 )

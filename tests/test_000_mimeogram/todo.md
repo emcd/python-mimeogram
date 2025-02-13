@@ -26,10 +26,10 @@
 - ✓ `acquirers.py` (92% - ignoring hard-to-produce defensive cases)
 - ✓ `updaters.py` (97% - ignoring hard-to-produce defensive cases)
 
-### CLI Layer (Complete: 1/4)
-- `create.py` (NEXT)
+### CLI Layer (Complete: 2/4)
+- ✓ `create.py` (81% - ignoring console interaction)
 - ✓ `apply.py` (87% - ignoring console interaction)
-- `prompt.py` (PENDING)
+- `prompt.py` (NEXT)
 - `cli.py` (PENDING)
 
 ## Test Module Organization
