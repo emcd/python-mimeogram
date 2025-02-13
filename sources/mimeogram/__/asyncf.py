@@ -24,6 +24,7 @@
 from __future__ import annotations
 
 from . import imports as __
+from . import exceptions as _exceptions
 from . import generics as _generics
 
 
@@ -105,9 +106,7 @@ async def _gather_async_strict(
         if isawaitable( operand ): continue
         for operand_ in operands: # Cleanup.
             if iscoroutine( operand_ ): operand_.close( )
-        # TODO: Raise internal exception.
-        raise TypeError( # noqa: TRY003
-            f"Operand {operand!r} must be awaitable." )
+        raise _exceptions.AsyncAssertionFailure( operand )
     for operand in operands:
         awaitables.append( intercept_error_async( __.typx.cast(
             __.cabc.Awaitable[ __.typx.Any ], operand ) ) )

@@ -52,6 +52,13 @@ class AddressLocateFailure( Omnierror, LookupError ):
             f"in {subject}." )
 
 
+class AsyncAssertionFailure( Omnierror, AssertionError, TypeError ):
+    ''' Assertion of awaitability of entity failed. '''
+
+    def __init__( self, entity: __.typx.Any ):
+        super( ).__init__( f"Entity must be awaitable: {entity!r}" )
+
+
 class EntryAssertionFailure( Omnierror, AssertionError, KeyError ):
     ''' Assertion of entry in dictionary failed. '''
 
