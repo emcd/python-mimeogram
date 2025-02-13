@@ -86,9 +86,7 @@ def _prompt_action(
 
 async def _select_segments( target: _parts.Target, content: str ) -> str:
     from .differences import select_segments
-    return await select_segments(
-        # TODO: Coalesce 'target' argument.
-        target.part, target.destination, content )
+    return await select_segments( target, content )
 
 
 def _validate_choice(

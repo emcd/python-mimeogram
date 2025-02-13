@@ -75,7 +75,7 @@ class ConsoleInteractor( _interfaces.DifferencesInteractor ):
 
 
 async def select_segments(
-    part: _parts.Part, target: __.Path, revision: str,
+    target: _parts.Target, revision: str,
     display: __.Absential[ _interfaces.DifferencesDisplay ] = __.absent,
     interactor: __.Absential[ _interfaces.DifferencesInteractor ] = __.absent,
 ) -> str:
@@ -83,10 +83,11 @@ async def select_segments(
     # TODO: Use global state for instance configuration.
     if __.is_absent( display ): display = ConsoleDisplay( )
     if __.is_absent( interactor ): interactor = ConsoleInteractor( )
-    # TODO: Acquire target content from cache.
+    # TODO: Acquire destination content from cache.
+    part = target.part
     original = (
         await __.acquire_text_file_async(
-            target, charset = part.charset ) )
+            target.destination, charset = part.charset ) )
     original = part.linesep.normalize( original )
     if original == revision:
         print( "No changes" )

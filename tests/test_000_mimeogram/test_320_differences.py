@@ -19,6 +19,7 @@
 
 
 ''' Tests for differences module. '''
+# pylint: disable=too-many-locals
 
 
 from unittest.mock import patch
@@ -61,6 +62,7 @@ async def test_100_select_segments_empty_revision( provide_tempdir ):
     ''' Original content remains unchanged when revision matches. '''
     differences = cache_import_module( f"{PACKAGE_NAME}.differences" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     current = "test content"
     test_files = { "test.txt": current }
@@ -73,10 +75,14 @@ async def test_100_select_segments_empty_revision( provide_tempdir ):
             charset = "utf-8",
             linesep = parts.LineSeparators.LF,
             content = current )
+        target = parts.Target(
+            part = part,
+            destination = test_path,
+            protection = fsprotect.Status( path = test_path ) )
 
         with patch( 'builtins.print' ):  # Silence "No changes" output
             revision = await differences.select_segments(
-                part, test_path, current,
+                target, current,
                 display = MockDisplay( ),
                 interactor = AcceptInteractor( ) )
             assert revision == current
@@ -87,6 +93,7 @@ async def test_110_select_segments_with_changes( provide_tempdir ):
     ''' Change acceptance preserves modified content. '''
     differences = cache_import_module( f"{PACKAGE_NAME}.differences" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     current = "line 1\nline 2\nline 3"
     revision = "line 1\nmodified line\nline 3"
@@ -100,10 +107,14 @@ async def test_110_select_segments_with_changes( provide_tempdir ):
             charset = "utf-8",
             linesep = parts.LineSeparators.LF,
             content = current )
+        target = parts.Target(
+            part = part,
+            destination = test_path,
+            protection = fsprotect.Status( path = test_path ) )
 
         display = MockDisplay( )
         result = await differences.select_segments(
-            part, test_path, revision,
+            target, revision,
             display = display,
             interactor = AcceptInteractor( ) )
         assert result == revision
@@ -117,6 +128,7 @@ async def test_120_select_segments_reject_changes( provide_tempdir ):
     ''' Change rejection maintains original content. '''
     differences = cache_import_module( f"{PACKAGE_NAME}.differences" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     current = "line 1\nline 2\nline 3"
     revision = "line 1\nmodified line\nline 3"
@@ -130,10 +142,14 @@ async def test_120_select_segments_reject_changes( provide_tempdir ):
             charset = "utf-8",
             linesep = parts.LineSeparators.LF,
             content = current )
+        target = parts.Target(
+            part = part,
+            destination = test_path,
+            protection = fsprotect.Status( path = test_path ) )
 
         display = MockDisplay( )
         result = await differences.select_segments(
-            part, test_path, revision,
+            target, revision,
             display = display,
             interactor = RejectInteractor( ) )
         assert result == current
@@ -149,6 +165,7 @@ async def test_130_select_segments_multiple_changes( # pylint: disable=too-many-
     ''' Multiple changes handled correctly. '''
     differences = cache_import_module( f"{PACKAGE_NAME}.differences" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     current = "line 1\nline 2\nline 3\nline 4"
     revision = "modified 1\nline 2\nmodified 3\nline 4"
@@ -162,10 +179,14 @@ async def test_130_select_segments_multiple_changes( # pylint: disable=too-many-
             charset = "utf-8",
             linesep = parts.LineSeparators.LF,
             content = current )
+        target = parts.Target(
+            part = part,
+            destination = test_path,
+            protection = fsprotect.Status( path = test_path ) )
 
         display = MockDisplay( )
         result = await differences.select_segments(
-            part, test_path, revision,
+            target, revision,
             display = display,
             interactor = AcceptInteractor( ) )
         assert result == revision
@@ -250,6 +271,7 @@ async def test_140_select_segments_handles_errors( provide_tempdir ):
     ''' Processing errors preserve original revision. '''
     differences = cache_import_module( f"{PACKAGE_NAME}.differences" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     current = "line 1\nline 2\nline 3"
     revision = "line 1\nmodified line\nline 3"
@@ -270,10 +292,14 @@ async def test_140_select_segments_handles_errors( provide_tempdir ):
             charset = "utf-8",
             linesep = parts.LineSeparators.LF,
             content = current )
+        target = parts.Target(
+            part = part,
+            destination = test_path,
+            protection = fsprotect.Status( path = test_path ) )
 
         with patch( f"{PACKAGE_NAME}.differences._scribe.exception" ):
             result = await differences.select_segments(
-                part, test_path, revision,
+                target, revision,
                 display = ErrorDisplay( ),
                 interactor = AcceptInteractor( ) )
             assert result == revision  # Original revision preserved
