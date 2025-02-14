@@ -263,19 +263,6 @@ Best Practices 💫
   However, interactively applying a mimeogram has the advantage of allowing you
   to select hunks of a diff to apply, rather than the whole diff.
 
-LLM Platform Selection 🤖
--------------------------------------------------------------------------------
-
-* Use native project features when available:
-    * Claude.ai artifacts
-    * ChatGPT.com canvases
-    * Enables interactive editing in LLM interface
-    * May not need return mimeogram
-
-* For other platforms:
-    * Request return mimeogram format
-    * Review changes before applying
-
 
 Motivation
 ===============================================================================

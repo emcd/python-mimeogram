@@ -89,8 +89,8 @@ def execute( ):
     ''' Entrypoint for CLI execution. '''
     from asyncio import run
     config = (
-        #__.tyro.conf.OmitSubcommandPrefixes,
         __.tyro.conf.EnumChoicesFromValues,
+        __.tyro.conf.HelptextFromCommentsOff,
     )
     # default = Cli(
     #     application = _application.Information( ),

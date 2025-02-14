@@ -66,11 +66,11 @@ class Command(
             aliases = ( '-r', '--recurse-directories', '--recursive' ),
             help = "Recurse into directories." ),
     ] = None
-    strict: __.typx.Annotated[
-        __.typx.Optional[ bool ],
-        __.tyro.conf.arg(
-            help = "Fail on invalid contents instead of skipping them." ),
-    ] = None
+    # strict: __.typx.Annotated[
+    #     __.typx.Optional[ bool ],
+    #     __.tyro.conf.arg(
+    #         help = "Fail on invalid contents instead of skipping them." ),
+    # ] = None
 
     async def __call__( self, auxdata: __.Globals ) -> None:
         ''' Executes command to create mimeogram. '''
@@ -86,10 +86,10 @@ class Command(
             edits.append( __.SimpleDictionaryEdit( # pyright: ignore
                 address = ( 'acquire-parts', 'recurse-directories' ),
                 value = self.recurse ) )
-        if None is not self.strict:
-            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
-                address = ( 'acquire-parts', 'fail-on-invalid' ),
-                value = self.strict ) )
+        # if None is not self.strict:
+        #     edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+        #         address = ( 'acquire-parts', 'fail-on-invalid' ),
+        #         value = self.strict ) )
         return tuple( edits )
 
 
