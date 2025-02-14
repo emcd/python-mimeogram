@@ -44,65 +44,289 @@
    :alt: Python Versions
    :target: https://pypi.org/project/mimeogram/
 
+.. image:: ../../data/pictures/logo.svg
+   :alt: Mimeogram Logo
+   :width: 800
+   :align: center
 
-What and Why
+
+📦 A command-line tool for **exchanging collections of files with Large
+Language Models** - bundle multiple files into a single clipboard-ready
+document while preserving directory structure and metadata... good for code
+reviews, project sharing, and LLM interactions.
+
+
+Key Features ⭐
 ===============================================================================
 
-Exchange hierarchical file collections with Large Language Models.
+* 📋 **Clipboard Integration**: Seamless copying and pasting by default.
+* 🗂️ **Directory Structure**: Preserves hierarchical file organization.
+* 🔄 **Interactive Reviews**: Review and apply proposed changes one by one.
+* 🤖 **LLM Integration**: Built-in prompts and format instructions.
+* 🛡️ **Path Protection**: Safeguards against unintended modifications.
+
+
+Installation 📦
+===============================================================================
+
+Standalone Executable (Recommended)
+-------------------------------------------------------------------------------
+
+Download the latest standalone executable for your platform from `GitHub
+Releases <https://github.com/emcd/python-mimeogram/releases>`_. These
+executables have no dependencies and work out of the box.
+
+Python Package
+-------------------------------------------------------------------------------
+
+Executables Environment Manager
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install with `pipx <https://pipx.pypa.io/stable/installation/>`_:
+
+::
+
+    pipx install mimeogram
+
+(Pipx is preferred because it helps ensure that you have access to the
+``mimeogram`` executable througout your system rather than in any specific
+virtual environment.)
+
+
+Package Manager
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Install with `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_:
+
+::
+
+    uv pip install mimeogram
+
+Or, install with ``pip``:
+
+::
+
+    pip install mimeogram
+
+
+Examples 💡
+===============================================================================
+
+Working with LLM Interfaces (no project support)
+-------------------------------------------------------------------------------
+
+Use with Deepseek.com, API workbenches, GUIs which do not support projects,
+etc...:
+
+.. code-block:: bash
+
+    # Bundle files with mimeogram format instructions into clipboard.
+    mimeogram create src/*.py tests/*.py --prepend-prompt
+
+    # Interact with LLM until you are ready to apply results.
+
+    # Request mimeogram from LLM and copy it from browser to clipboard.
+
+    # Apply mimeogram parts from clipboard.
+    # (On terminal, this will be interactive by default.)
+    mimeogram apply
+
+
+Working with LLM Project GUIs
+-------------------------------------------------------------------------------
+
+E.g., Claude.ai or ChatGPT.com with models which support projects:
+
+.. code-block:: bash
+
+    # Copy mimeogram format instructions into clipboard.
+    mimeogram provide-prompt
+
+    # Paste mimeogram instructions into project instructions.
+
+    # Any new chats will be able to reuse the project instructions.
+
+.. code-block:: bash
+
+    # Simply create mimeograms for new chats without prepending instructions.
+    mimeogram create src/*.py tests/*.py
+
+    # Same workflow as chats without project support at this point.
+
+
+Command Options 🛠️
+===============================================================================
+
+Use ``--help`` with the ``mimeogram`` command or any of its subcommands to see
+a full list of possible arguments:
+
+.. code-block:: bash
+
+    mimeogram --help
+
+.. code-block:: bash
+
+    mimeogram apply --help
+
+Etc...
+
+
+Create Command
+-------------------------------------------------------------------------------
+
+Bundle files into clipboard:
+
+.. code-block:: bash
+
+    mimeogram create [OPTIONS] SOURCES...
+
+📋 Common options:
+
+* --edit, -e
+    Add message via editor.
+* --prepend-prompt
+    Include LLM instructions before mimeogram.
+* --recurse, -r
+    Include subdirectories and their contents. (Subject to Git ignore rules.)
+
+
+Apply Command
+-------------------------------------------------------------------------------
+
+Apply changes from clipboard:
+
+.. code-block:: bash
+
+    mimeogram apply [OPTIONS]
+
+📋 Common options:
+
+* --base DIRECTORY
+    Set base directory for relative paths in parts. (Working directory by
+    default.)
+* --mode silent
+    Apply all parts without review.
+* --force
+    Override protections against potentially dangerous writes.
+
+
+Configuration 🔧
+===============================================================================
+
+Default Location
+-------------------------------------------------------------------------------
+
+Mimeogram creates a configuration file on first run. You can find it at:
+
+* Linux: ``~/.config/mimeogram/general.toml``
+* macOS: ``~/Library/Application Support/mimeogram/general.toml``
+* Windows: ``%LOCALAPPDATA%\\mimeogram\\general.toml``
+
+Default Settings
+-------------------------------------------------------------------------------
+
+.. code-block:: toml
+
+    [apply]
+    from-clipboard = true    # Read from clipboard by default
+
+    [create]
+    to-clipboard = true      # Copy to clipboard by default
+
+    [prompt]
+    to-clipboard = true      # Copy prompts to clipboard
+
+    [acquire-parts]
+    fail-on-invalid = false  # Skip invalid files
+    recurse-directories = false
+
+    [update-parts]
+    disable-protections = false
+
+
+Best Practices 💫
+===============================================================================
+
+* Use ``--edit`` flag with ``create`` command to provide context to LLM. This
+  has the advantage of letting you use a favorite editor to form a message to
+  the LLM rather than a web GUI text area.
+* Keep changes focused and atomic. Chats with sprawling changes may be cause
+  LLM output windows to be exceeded when generating return mimeograms.
+* Submit related files together. Fewer conversation rounds related to shuffling
+  mimeograms mean more conversation rounds for productive discussion.
+* If the platform supports projects, set project instructions from ``mimeogram
+  provide-prompt``. These will be reused across all chats in the project,
+  making every one of its chats a mimeogram-aware one.
+* You may not need to create a return mimeogram to apply if you are using
+  Claude artifacts, ChatGPT canvases, or similar. You can simply copy the
+  final results and paste them into an editor buffer. This will save tokens.
+  However, interactively applying a mimeogram has the advantage of allowing you
+  to select hunks of a diff to apply, rather than the whole diff.
+
+LLM Platform Selection 🤖
+-------------------------------------------------------------------------------
+
+* Use native project features when available:
+    * Claude.ai artifacts
+    * ChatGPT.com canvases
+    * Enables interactive editing in LLM interface
+    * May not need return mimeogram
+
+* For other platforms:
+    * Request return mimeogram format
+    * Review changes before applying
+
 
 Motivation
--------------------------------------------------------------------------------
+===============================================================================
 
 Cost and Efficiency
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* Cost optimization through GUI-based LLM services vs API billing
-* Support for batch operations instead of file-by-file interactions
+-------------------------------------------------------------------------------
+* Cost optimization through GUI-based LLM services vs API billing.
+* Support for batch operations instead of file-by-file interactions.
 
 Technical Benefits
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* Preserves hierarchical directory structure
-* Version control friendly
-* Supports async workflows
-* Enables automation through text processing
+-------------------------------------------------------------------------------
+* Preserves hierarchical directory structure.
+* Version control friendly. (I.e., honors Git ignore files.)
+* Supports async/batch workflows.
 
 Flexibility and Accessibility
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-* IDE and platform agnostic
-* No premium subscriptions required
-* Works with LLM GUIs lacking project functionality
-* Can be used by CLIs and GUIs and passed directly via API
+-------------------------------------------------------------------------------
+* IDE and platform agnostic.
+* No premium subscriptions required.
+* Works with LLM GUIs lacking project functionality.
+* Mimeograms can be used by CLIs and GUIs and passed directly via API.
 
 Limitations and Alternatives
--------------------------------------------------------------------------------
+===============================================================================
 
-* LLMs must be prompted to understand and use mimeograms
-* Manual refresh needed (no automatic sync)
-* Cannot retract stale content from conversation history in provider GUIs
-* Consider dedicated tools (e.g., Cursor) for tighter collaboration
+* LLMs must be prompted to understand and use mimeograms.
+* Manual refresh of files needed (no automatic sync).
+* Cannot retract stale content from conversation history in provider GUIs.
+* Consider dedicated tools (e.g., Cursor) for tighter collaboration loops.
 
 Comparison
-----------
+-------------------------------------------------------------------------------
 
-+---------------------+-------------+------------+-------------+---------------+
-| Feature             | Mimeograms  | Projects   | Direct API  | Specialized   |
-|                     |             | (Web) [1]_ | Integration | IDEs [2]_     |
-+=====================+=============+============+=============+===============+
-| Cost Model          | Varies [3]_ | Flat rate  | Usage-based | Subscription  |
-+---------------------+-------------+------------+-------------+---------------+
-| Directory Structure | Yes         | No         | Yes [4]_    | Yes           |
-+---------------------+-------------+------------+-------------+---------------+
-| Real-time Updates   | No          | No         | Yes [4]_    | Yes           |
-+---------------------+-------------+------------+-------------+---------------+
-| IDE Integration     | Any         | Web only   | N/A         | N/A           |
-+---------------------+-------------+------------+-------------+---------------+
-| Setup Required      | CLI tool    | None       | SDK/Auth    | Full install  |
-+---------------------+-------------+------------+-------------+---------------+
-| Version Control     | Yes         | No         | Yes         | Yes           |
-+---------------------+-------------+------------+-------------+---------------+
-| Platform Support    | Universal   | Web        | Universal   | Limited       |
-+---------------------+-------------+------------+-------------+---------------+
-| Automation Support  | Yes         | No         | Yes         | Varies        |
-+---------------------+-------------+------------+-------------+---------------+
++---------------------+-------------+------------+-------------+--------------+
+| Feature             | Mimeograms  | Projects   | Direct API  | Specialized  |
+|                     |             | (Web) [1]_ | Integration | IDEs [2]_    |
++=====================+=============+============+=============+==============+
+| Cost Model          | Varies [3]_ | Flat rate  | Usage-based | Flat rate    |
++---------------------+-------------+------------+-------------+--------------+
+| Directory Structure | Yes         | No         | Yes [4]_    | Yes          |
++---------------------+-------------+------------+-------------+--------------+
+| IDE Integration     | Any         | Web only   | N/A         | N/A          |
++---------------------+-------------+------------+-------------+--------------+
+| Setup Required      | CLI tool    | None       | SDK/Auth    | Full install |
++---------------------+-------------+------------+-------------+--------------+
+| Version Control     | Yes         | No         | Yes [4]_    | Yes          |
++---------------------+-------------+------------+-------------+--------------+
+| Platform Support    | Universal   | Web        | Universal   | Limited      |
++---------------------+-------------+------------+-------------+--------------+
+| Automation Support  | Yes         | No         | Yes         | Varies       |
++---------------------+-------------+------------+-------------+--------------+
 
 .. [1] ChatGPT and Claude.ai subscription feature
 .. [2] `Cursor <https://www.cursor.com/>`_, etc...
@@ -110,10 +334,38 @@ Comparison
 .. [4] Requires custom implementation
 
 Notes:
+
 - "Direct API Integration" refers to custom applications providing I/O tools
-  for LLMs to use via APIs, such as the Anthropic or OpenAI API
-- Cost differences can be significant at scale
-- Real-time updates in specialized IDEs may require premium features
+  for LLMs to use via APIs, such as the Anthropic, Deepseek, or OpenAI API.
+- Cost differences can be significant at scale, especially when considering
+  cache misses against APIs.
+
+
+About the Name 📝
+===============================================================================
+
+The name "mimeogram" draws from multiple sources:
+
+* 📜 From Ancient Greek roots:
+    * μῖμος (*mîmos*, "mimic") + -γραμμα (*-gramma*, "written character, that
+      which is drawn")
+    * Like *mimeograph* but emphasizing textual rather than pictorial content.
+
+* 📨 From **MIME** (Multipurpose Internet Mail Extensions):
+    * Follows naming patterns from the Golden Age of Branding: Ford
+      Cruise-o-matic, Ronco Veg-O-Matic, etc....
+    * Reflects the MIME-inspired bundle format.
+
+* 📬 Echoes *telegram*:
+    * Emphasizes message transmission.
+    * Suggests structured communication.
+
+Note: Despite similar etymology, this project is distinct from the PyPI package
+*mimeograph*, which serves different purposes.
+
+Pronunciation? The one similar to _mimeograph_ seems to roll off the tongue
+more smoothly, though it is one more syllable than "mime-o-gram". Preferred
+IPA: /ˈmɪm.i.ˌoʊ.ɡræm/.
 
 
 `More Flair <https://www.imdb.com/title/tt0151804/characters/nm0431918>`_

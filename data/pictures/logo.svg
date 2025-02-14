@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 200">
+  <!-- Left Files -->
+  <g transform="translate(100,30)">
+    <!-- File 1 -->
+    <rect x="0" y="0" width="60" height="80" fill="#4a90e2" rx="4"/>
+    <rect x="10" y="20" width="40" height="4" fill="white"/>
+    <rect x="10" y="30" width="30" height="4" fill="white"/>
+    <rect x="10" y="40" width="35" height="4" fill="white"/>
+
+    <!-- File 2 -->
+    <rect x="20" y="30" width="60" height="80" fill="#5c6bc0" rx="4"/>
+    <rect x="30" y="50" width="40" height="4" fill="white"/>
+    <rect x="30" y="60" width="30" height="4" fill="white"/>
+    <rect x="30" y="70" width="35" height="4" fill="white"/>
+
+    <!-- File 3 -->
+    <rect x="40" y="60" width="60" height="80" fill="#7e57c2" rx="4"/>
+    <rect x="50" y="80" width="40" height="4" fill="white"/>
+    <rect x="50" y="90" width="30" height="4" fill="white"/>
+    <rect x="50" y="100" width="35" height="4" fill="white"/>
+  </g>
+
+  <!-- Flow Lines -->
+  <path d="M230,100 C330,100 350,50 400,50 S470,100 570,100"
+        fill="none" stroke="#4a90e2" stroke-width="3"/>
+  <path d="M230,110 C330,110 350,100 400,100 S470,110 570,110"
+        fill="none" stroke="#5c6bc0" stroke-width="3"/>
+  <path d="M230,120 C330,120 350,150 400,150 S470,120 570,120"
+        fill="none" stroke="#7e57c2" stroke-width="3"/>
+
+  <!-- Right Files (bundled) -->
+  <g transform="translate(600,40)">
+    <rect x="0" y="20" width="80" height="100" fill="#4a90e2" rx="4"/>
+    <rect x="10" y="40" width="60" height="4" fill="white"/>
+    <rect x="10" y="50" width="50" height="4" fill="white"/>
+    <rect x="10" y="60" width="55" height="4" fill="white"/>
+    <rect x="10" y="70" width="45" height="4" fill="white"/>
+    <rect x="10" y="80" width="50" height="4" fill="white"/>
+    <rect x="10" y="90" width="40" height="4" fill="white"/>
+  </g>
+
+  <!-- Human emoji -->
+  <text x="50" y="110" font-size="24">🧑</text>
+
+  <!-- Robot emoji -->
+  <text x="720" y="110" font-size="24">🤖</text>
+
+  <!-- Text -->
+  <text x="400" y="180" font-family="Arial, sans-serif" font-size="24" fill="#777777" text-anchor="middle">mimeogram</text>
+</svg>
