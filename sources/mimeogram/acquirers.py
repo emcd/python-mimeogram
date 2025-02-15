@@ -64,8 +64,7 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
         async with _aiofiles.open( location, 'rb' ) as f:
             content_bytes = await f.read( )
     except Exception as exc: raise ContentAcquireFailure( location ) from exc
-    mimetype = _detect_mimetype( content_bytes, location )
-    charset = _detect_charset( content_bytes )
+    mimetype, charset = _detect_mimetype_and_charset( content_bytes, location )
     if charset is None: raise ContentDecodeFailure( location, '???' )
     linesep = _parts.LineSeparators.detect_bytes( content_bytes )
     # TODO? Separate error for newline issues.
@@ -95,9 +94,12 @@ async def _acquire_via_http( # pylint: disable=too-many-locals
         response.headers.get( 'content-type', 'application/octet-stream' )
         .split( ';' )[ 0 ].strip( ) )
     content_bytes = response.content
-    if not _is_textual_mime( mimetype ):
-        mimetype = _detect_mimetype( content_bytes, url )
-    charset = response.encoding or 'utf-8' # TODO: Detect charset if missing.
+    charset = response.encoding or _detect_charset( content_bytes )
+    if charset is None: raise ContentDecodeFailure( url, '???' )
+    if not _is_textual_mimetype( mimetype ):
+        mimetype, _ = (
+            _detect_mimetype_and_charset(
+                content_bytes, url, charset = charset ) )
     linesep = _parts.LineSeparators.detect_bytes( content_bytes )
     # TODO? Separate error for newline issues.
     if linesep is None: raise ContentDecodeFailure( url, charset )
@@ -137,18 +139,6 @@ def _collect_directory_files(
     return paths
 
 
-def _detect_mimetype( content: bytes, location: str | __.Path ) -> str:
-    from magic import from_buffer
-    from .exceptions import (
-        MimetypeDetermineFailure, TextualMimetypeInvalidity )
-    try: mimetype = from_buffer( content, mime = True )
-    except Exception as exc:
-        raise MimetypeDetermineFailure( location ) from exc
-    if not _is_textual_mime( mimetype ):
-        raise TextualMimetypeInvalidity( location, mimetype )
-    return mimetype
-
-
 def _detect_charset( content: bytes ) -> str | None:
     # TODO: Pyright bug: `None is charset` != `charset is None`
     from chardet import detect
@@ -164,6 +154,35 @@ def _detect_charset( content: bytes ) -> str | None:
     return 'utf-8'
 
 
+def _detect_mimetype( content: bytes, location: str | __.Path ) -> str | None:
+    from mimetypes import guess_type
+    from puremagic import PureError, from_string # pyright: ignore
+    try: return from_string( content, mime = True )
+    except PureError:
+        return guess_type( str( location ) )[ 0 ]
+
+
+def _detect_mimetype_and_charset(
+    content: bytes,
+    location: str | __.Path, *,
+    mimetype: __.Absential[ str ] = __.absent,
+    charset: __.Absential[ str ] = __.absent,
+) -> tuple[ str, str | None ]:
+    from .exceptions import TextualMimetypeInvalidity
+    if __.is_absent( mimetype ):
+        mimetype_ = _detect_mimetype( content, location )
+    else: mimetype_ = mimetype
+    if __.is_absent( charset ):
+        charset_ = _detect_charset( content )
+    else: charset_ = charset
+    if not mimetype_:
+        if charset_: mimetype_ = 'text/plain' # pylint: disable=redefined-variable-type
+        else: mimetype_ = 'application/octet-stream'
+    if not _is_textual_mimetype( mimetype_ ):
+        raise TextualMimetypeInvalidity( location, mimetype_ )
+    return mimetype_, charset_
+
+
 # MIME types that are considered textual beyond those starting with 'text/'
 _TEXTUAL_MIME_TYPES = frozenset( (
     'application/json',
@@ -172,7 +191,7 @@ _TEXTUAL_MIME_TYPES = frozenset( (
     'application/javascript',
     'image/svg+xml',
 ) )
-def _is_textual_mime( mimetype: str ) -> bool:
+def _is_textual_mimetype( mimetype: str ) -> bool:
     ''' Checks if MIME type represents textual content. '''
     _scribe.debug( f"MIME type: {mimetype}" )
     if mimetype.startswith( ( 'text/', 'application/x-', 'text/x-' ) ):

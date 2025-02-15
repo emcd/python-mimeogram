@@ -126,10 +126,6 @@ def test_080_mimetype_failures( ):
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     location = Path( '/test/path' )
-    exc = exceptions.MimetypeDetermineFailure( location )
-    assert isinstance( exc, exceptions.Omnierror )
-    assert str( location ) in str( exc )
-
     mimetype = 'application/octet-stream'
     exc = exceptions.TextualMimetypeInvalidity( location, mimetype )
     assert isinstance( exc, exceptions.Omnierror )
