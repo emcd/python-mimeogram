@@ -42,11 +42,9 @@ class Information(
     ) -> __.typx.Self:
         ''' Acquires information about our package distribution. '''
         import sys
-        if hasattr( sys, 'oxidized' ): # PyOxidizer
-            location, name = (
-                await _acquire_pyoxidizer_information( package, exits ) )
-            return selfclass(
-                editable = False, location = location, name = name )
+        # Detect PyInstaller bundle.
+        if getattr( sys, 'frozen', False ) and hasattr( sys, '_MEIPASS' ):
+            project_anchor = __.Path( getattr( sys, '_MEIPASS' ) )
         from importlib.metadata import packages_distributions
         # https://github.com/pypa/packaging-problems/issues/609
         name = packages_distributions( ).get( package )
@@ -84,30 +82,9 @@ async def _acquire_development_information(
 async def _acquire_production_location(
     package: str, exits: __.ExitsAsync
 ) -> __.Path:
-    # TODO: 'importlib_resources' PR to fix 'as_file' type signature.
     # TODO: Python 3.12: importlib.resources
-    from importlib_resources import files, as_file # type: ignore
+    # TODO: 'importlib_resources' PR to fix 'as_file' type signature.
+    from importlib_resources import files, as_file # pyright: ignore
     # Extract package contents to temporary directory, if necessary.
     return exits.enter_context(
-        as_file( files( package ) ) ) # type: ignore
-
-
-async def _acquire_pyoxidizer_information( # pylint: disable=too-many-locals
-    package: str, exits: __.ExitsAsync
-) -> tuple[ __.Path, str ]:
-    import oxidized_importer
-    import sys
-    import tempfile
-    finder = next(
-        finder for finder in sys.meta_path
-        if isinstance( finder, oxidized_importer.OxidizedFinder ) ) # pyright: ignore
-    distribution = oxidized_importer.OxidizedDistribution.from_name( package ) # pyright: ignore
-    tmpdir = exits.enter_context( tempfile.TemporaryDirectory( ) ) # pylint: disable=consider-using-with
-    location = __.Path( tmpdir )
-    reader = finder.get_resource_reader( package ) # pyright: ignore
-    for resource in reader.contents( ): # pyright: ignore
-        content = reader.open_resource( resource ).read( ) # pyright: ignore
-        resource_ = location / resource # pyright: ignore
-        resource_.parent.mkdir( parents = True, exist_ok = True ) # pyright: ignore
-        resource_.write_bytes( content ) # pyright: ignore
-    return location, distribution.name # pyright: ignore
+        as_file( files( package ) ) ) # pyright: ignore

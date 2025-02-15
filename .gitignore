@@ -3,3 +3,5 @@
 __pycache__/
 bugs/
 build/
+dist/
+mimeogram.spec

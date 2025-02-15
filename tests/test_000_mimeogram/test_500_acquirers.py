@@ -259,9 +259,9 @@ async def test_520_nontextual_mime( provide_tempdir, provide_auxdata ):
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
-    # Create a small binary file
     binary_path = provide_tempdir / "binary.bin"
-    binary_path.write_bytes( bytes( range( 256 ) ) )  # Create binary file directly
+    # Create a binary file with random-looking but consistent content
+    binary_path.write_bytes( bytes( [ 0xFF, 0x00 ] * 128 ) )
 
     try:
         with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
@@ -271,15 +271,15 @@ async def test_520_nontextual_mime( provide_tempdir, provide_auxdata ):
         assert len( excinfo.value.exceptions ) == 1
         # Check that it's the right type of exception
         assert isinstance(
-            excinfo.value.exceptions[0],
+            excinfo.value.exceptions[ 0 ],
             exceptions.TextualMimetypeInvalidity )
         # Verify the error message includes path and mimetype
-        err_msg = str( excinfo.value.exceptions[0] )
+        err_msg = str( excinfo.value.exceptions[ 0 ] )
         assert str( binary_path ) in err_msg
         assert 'application/octet-stream' in err_msg
     finally:
-        if binary_path.exists():
-            binary_path.unlink()
+        if binary_path.exists( ):
+            binary_path.unlink( )
 
 
 # HTTP Tests

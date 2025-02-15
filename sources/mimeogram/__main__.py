@@ -21,7 +21,8 @@
 ''' Entrypoint. '''
 
 
-from .cli import execute
+# Note: Use absolute import for PyInstaller happiness.
+from mimeogram.cli import execute
 
 
 if '__main__' == __name__: execute( )
