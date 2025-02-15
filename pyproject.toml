@@ -1,6 +1,7 @@
 [build-system]
 requires = [
   'hatchling',
+  # 'hatch-pyinstaller',
 ]
 build-backend = 'hatchling.build'
 
@@ -21,7 +22,6 @@ dependencies = [
   'gitignorefile',
   'httpx',
   'importlib-resources',
-  # 'importlib-resources @ git+https://github.com/emcd/importlib_resources@as-file-traversable',
   'patiencediff',
   'platformdirs',
   'pyperclip',
@@ -85,6 +85,23 @@ output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
 # https://hatch.pypa.io/latest/config/metadata/
 [tool.hatch.build]
 directory = '.auxiliary/artifacts/hatch-build'
+# [tool.hatch.build.targets.pyinstaller]
+# only-include = [ 'sources/mimeogram', 'data' ]
+# flags = [
+#   '--add-data=pyproject.toml:.',
+#   '--add-data=data:data',
+#   '--clean',
+#   # '--distpath=.auxiliary/artifacts/hatch-build',
+#   '--name=mimeogram',
+#   '--onefile',
+# ]
+# log-level = "WARN"
+# require-runtime-dependencies = true
+# scriptname = 'sources/mimeogram/__main__.py'
+# # zip = true
+# [tool.hatch.build.targets.pyinstaller.sources]
+# 'sources/mimeogram' = 'mimeogram'
+# 'data' = 'mimeogram/data'
 [tool.hatch.build.targets.sdist]
 only-include = [ 'sources/mimeogram', 'data' ]
 strict-naming = false
@@ -105,12 +122,11 @@ dependencies = [
   'furo',
   'hypothesis',
   'icecream',
-  'oxidized-importer',
   'packaging',
   'pre-commit',
+  'pyinstaller',
   'pylint',
   'pylint-per-file-ignores',
-  'pyoxidizer',
   'pyright',
   'pytest',
   'pytest-asyncio',
@@ -150,7 +166,14 @@ linters = [
      sources/mimeogram''',
 ]
 packagers = [
-  'hatch build',
+  '''hatch build''',
+  '''pyinstaller --name mimeogram \
+      --clean \
+      --onefile \
+      --add-data=pyproject.toml:. \
+      --add-data=data:data \
+      --distpath=.auxiliary/artifacts/pyinstaller-build \
+      sources/mimeogram/__main__.py''',
 ]
 testers = [
   'coverage erase',
