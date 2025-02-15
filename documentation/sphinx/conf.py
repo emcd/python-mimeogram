@@ -79,8 +79,37 @@ nitpick_ignore = [
       "v, remove specified key and return the corresponding value." ),
     # Type annotation weirdnesses.
     ( 'py:class', "Doc" ),
+    ( 'py:class', "Suppress" ),
+    ( 'py:class', "absence.objects.AbsentSingleton" ),
+    ( 'py:class', "accretive.dictionaries.Dictionary" ),
+    ( 'py:class', "frigid.classes.Class" ),
+    ( 'py:class', "frigid.classes.ProtocolClass" ),
+    ( 'py:class', "frigid.dictionaries.Dictionary" ),
+    ( 'py:class', "frigid.objects.Object" ),
+    ( 'py:class', "mimeogram.__.application.Information" ),
+    ( 'py:class', "mimeogram.__.dictedits.Edit" ),
+    ( 'py:class', "mimeogram.__.dictedits.ElementsEntryEdit" ),
+    ( 'py:class', "mimeogram.__.dictedits.SimpleEdit" ),
+    ( 'py:class', "mimeogram.__.distribution.Information" ),
+    ( 'py:class', "mimeogram.__.generics.E" ),
+    ( 'py:class', "mimeogram.__.generics.T" ),
+    ( 'py:class', "mimeogram.__.generics.U" ),
+    ( 'py:class', "mimeogram.__.inscription.Control" ),
+    ( 'py:class', "mimeogram.__.inscription.Modes" ),
+    ( 'py:class', "mimeogram.__.state.DirectorySpecies" ),
+    ( 'py:class', "platformdirs.unix.Unix" ),
     ( 'py:class', "types.Annotated" ),
     ( 'py:class', "typing_extensions.Any" ),
+    ( 'py:class', "typing_extensions.Never" ),
+    ( 'py:class', "typing_extensions.Self" ),
+    ( 'py:class', "typing_extensions.TypeIs" ),
+    ( 'py:class', "tyro.conf._markers.CallableType" ),
+    ( 'py:obj', "mimeogram.__.generics.E" ),
+    ( 'py:obj', "mimeogram.__.generics.T" ),
+]
+nitpick_ignore_regex = [
+    ( r'py:class', r"mimeogram\.create\.Annotated\[.*\]" ),
+    ( r'py:obj', r"typing\.Annotated\[.*\]" ),
 ]
 
 # -- Options for linkcheck builder -------------------------------------------

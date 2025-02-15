@@ -63,7 +63,7 @@ Key Features ⭐
 * 🗂️ **Directory Structure**: Preserves hierarchical file organization.
 * 🔄 **Interactive Reviews**: Review and apply proposed changes one by one.
 * 🤖 **LLM Integration**: Built-in prompts and format instructions.
-* 🛡️ **Path Protection**: Safeguards against unintended modifications.
+* 🛡️ **Path Protection**: Safeguards against dangerous modifications.
 
 
 Installation 📦
