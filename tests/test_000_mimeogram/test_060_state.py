@@ -111,10 +111,15 @@ def test_130_globals_as_dictionary( provide_globals ):
 
 def test_140_provide_cache_location( provide_globals ):
     ''' Globals.provide_cache_location resolves cache paths. '''
+    import sys
     globals_obj = provide_globals
     base_path = globals_obj.provide_cache_location( )
     assert isinstance( base_path, Path )
-    assert base_path.name == 'test-app'
+
+    if sys.platform == 'win32':
+        assert 'Cache' in base_path.parts
+        assert 'test-app' in base_path.parent.parts
+    else: assert base_path.name == 'test-app'
 
     subdir_path = globals_obj.provide_cache_location( 'subdir', 'file.txt' )
     assert subdir_path.parts[ -2: ] == ( 'subdir', 'file.txt' )
@@ -122,10 +127,14 @@ def test_140_provide_cache_location( provide_globals ):
 
 def test_150_provide_data_location( provide_globals ):
     ''' Globals.provide_data_location resolves data paths. '''
+    import sys
     globals_obj = provide_globals
     base_path = globals_obj.provide_data_location( )
     assert isinstance( base_path, Path )
-    assert base_path.name == 'test-app'
+
+    if sys.platform == 'win32':
+        assert 'test-app' in base_path.parts
+    else: assert base_path.name == 'test-app'
 
     subdir_path = globals_obj.provide_data_location( 'subdir', 'file.txt' )
     assert subdir_path.parts[ -2: ] == ( 'subdir', 'file.txt' )
@@ -133,10 +142,14 @@ def test_150_provide_data_location( provide_globals ):
 
 def test_160_provide_state_location( provide_globals ):
     ''' Globals.provide_state_location resolves state paths. '''
+    import sys
     globals_obj = provide_globals
     base_path = globals_obj.provide_state_location( )
     assert isinstance( base_path, Path )
-    assert base_path.name == 'test-app'
+
+    if sys.platform == 'win32':
+        assert 'test-app' in base_path.parts
+    else: assert base_path.name == 'test-app'
 
     subdir_path = globals_obj.provide_state_location( 'subdir', 'file.txt' )
     assert subdir_path.parts[ -2: ] == ( 'subdir', 'file.txt' )
@@ -191,16 +204,25 @@ def test_180_provide_location_with_custom_paths( provide_globals ):
 
 def test_190_provide_location_with_variables( provide_globals ):
     ''' Globals.provide_location handles variable substitution. '''
+    import sys
     globals_obj = provide_globals
     state = cache_import_module( 'mimeogram.__.state' )
 
-    # Test home variable substitution
+    # Test home variable substitution with platform-aware paths
+    if sys.platform == 'win32':
+        path_template = '{user_home}\\AppData\\Local\\{application_name}'
+    else: path_template = '{user_home}/.local/share/{application_name}'
+
     globals_obj.configuration[ 'locations' ] = {
-        'data': '{user_home}/.local/share/{application_name}'
+        'data': path_template
     }
 
     path = globals_obj.provide_location( state.DirectorySpecies.Data )
-    assert path == Path.home( ) / '.local' / 'share' / 'test-app'
+    if sys.platform == 'win32':
+        assert 'AppData' in path.parts
+        assert 'Local' in path.parts
+        assert 'test-app' in path.parts
+    else: assert path == Path.home( ) / '.local' / 'share' / 'test-app'
 
     # Test platform directory variable substitution
     globals_obj.configuration[ 'locations' ] = { }

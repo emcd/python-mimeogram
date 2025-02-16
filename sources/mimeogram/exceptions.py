@@ -99,14 +99,6 @@ class MimeogramParseFailure( Omnierror ):
         super( ).__init__( f"Could not parse mimeogram. Reason: {reason}" )
 
 
-class MimetypeDetermineFailure( Omnierror ):
-    ''' Failure to determine MIME type for content at location. '''
-
-    def __init__( self, location: str | __.Path ):
-        super( ).__init__(
-            f"Could not determine MIME type for content at '{location}'." )
-
-
 class PagerFailure( Omnierror ):
     ''' Failure while operating pager. '''
 

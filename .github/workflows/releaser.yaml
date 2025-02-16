@@ -60,13 +60,14 @@ jobs:
       needs: [initialize, package]
       strategy:
         matrix:
+          # TEMP: Exclude Windows until various fixes.
           include:
             - os: ubuntu-latest
               platform-name: linux-x86_64
               suffix: ''
-            - os: windows-latest
-              platform-name: windows-x86_64
-              suffix: '.exe'
+            # - os: windows-latest
+            #   platform-name: windows-x86_64
+            #   suffix: '.exe'
             - os: macos-13
               platform-name: macos-x86_64
               suffix: ''
