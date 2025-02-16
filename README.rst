@@ -50,7 +50,7 @@
    :align: center
 
 
-📦 A command-line tool for **exchanging collections of files with Large
+📨 A command-line tool for **exchanging collections of files with Large
 Language Models** - bundle multiple files into a single clipboard-ready
 document while preserving directory structure and metadata... good for code
 reviews, project sharing, and LLM interactions.
@@ -264,28 +264,27 @@ Best Practices 💫
   to select hunks of a diff to apply, rather than the whole diff.
 
 
-Motivation
+Motivation 🎯
 ===============================================================================
 
-Cost and Efficiency
+Cost and Efficiency 💰
 -------------------------------------------------------------------------------
 * Cost optimization through GUI-based LLM services vs API billing.
 * Support for batch operations instead of file-by-file interactions.
 
-Technical Benefits
+Technical Benefits ✅
 -------------------------------------------------------------------------------
 * Preserves hierarchical directory structure.
 * Version control friendly. (I.e., honors Git ignore files.)
 * Supports async/batch workflows.
 
-Flexibility and Accessibility
+Platform Neutrality ☁️
 -------------------------------------------------------------------------------
 * IDE and platform agnostic.
 * No premium subscriptions required.
 * Works with LLM GUIs lacking project functionality.
-* Mimeograms can be used by CLIs and GUIs and passed directly via API.
 
-Limitations and Alternatives
+Limitations and Alternatives 🔀
 ===============================================================================
 
 * LLMs must be prompted to understand and use mimeograms.
@@ -293,7 +292,7 @@ Limitations and Alternatives
 * Cannot retract stale content from conversation history in provider GUIs.
 * Consider dedicated tools (e.g., Cursor) for tighter collaboration loops.
 
-Comparison
+Comparison ⚖️
 -------------------------------------------------------------------------------
 
 +---------------------+-------------+------------+-------------+--------------+
@@ -350,7 +349,7 @@ The name "mimeogram" draws from multiple sources:
 Note: Despite similar etymology, this project is distinct from the PyPI package
 *mimeograph*, which serves different purposes.
 
-Pronunciation? The one similar to _mimeograph_ seems to roll off the tongue
+Pronunciation? The one similar to *mimeograph* seems to roll off the tongue
 more smoothly, though it is one more syllable than "mime-o-gram". Preferred
 IPA: /ˈmɪm.i.ˌoʊ.ɡræm/.
 
