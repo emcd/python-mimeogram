@@ -295,34 +295,33 @@ Limitations and Alternatives 🔀
 Comparison ⚖️
 -------------------------------------------------------------------------------
 
-+---------------------+-------------+------------+-------------+--------------+
-| Feature             | Mimeograms  | Projects   | Direct API  | Specialized  |
-|                     |             | (Web) [1]_ | Integration | IDEs [2]_    |
-+=====================+=============+============+=============+==============+
-| Cost Model          | Varies [3]_ | Flat rate  | Usage-based | Flat rate    |
-+---------------------+-------------+------------+-------------+--------------+
-| Directory Structure | Yes         | No         | Yes [4]_    | Yes          |
-+---------------------+-------------+------------+-------------+--------------+
-| IDE Integration     | Any         | Web only   | N/A         | N/A          |
-+---------------------+-------------+------------+-------------+--------------+
-| Setup Required      | CLI tool    | None       | SDK/Auth    | Full install |
-+---------------------+-------------+------------+-------------+--------------+
-| Version Control     | Yes         | No         | Yes [4]_    | Yes          |
-+---------------------+-------------+------------+-------------+--------------+
-| Platform Support    | Universal   | Web        | Universal   | Limited      |
-+---------------------+-------------+------------+-------------+--------------+
-| Automation Support  | Yes         | No         | Yes         | Varies       |
-+---------------------+-------------+------------+-------------+--------------+
++---------------------+------------+------------+-------------+--------------+
+| Feature             | Mimeograms | Projects   | Direct API  | Specialized  |
+|                     |            | (Web) [1]_ | Integration | IDEs [2]_    |
++=====================+============+============+=============+==============+
+| Cost Model          | Flat rate  | Flat rate  | Usage-based | Flat rate    |
++---------------------+------------+------------+-------------+--------------+
+| Directory Structure | Yes        | No         | Yes [3]_    | Yes          |
++---------------------+------------+------------+-------------+--------------+
+| IDE Integration     | Any        | Web only   | N/A         | One          |
++---------------------+------------+------------+-------------+--------------+
+| Setup Required      | CLI tool   | None       | SDK/Auth    | Full install |
++---------------------+------------+------------+-------------+--------------+
+| Version Control     | Yes        | No         | Yes [3]_    | Yes          |
++---------------------+------------+------------+-------------+--------------+
+| Platform Support    | Universal  | Web        | Universal   | Limited      |
++---------------------+------------+------------+-------------+--------------+
+| Automation Support  | Yes        | No         | Yes         | Varies       |
++---------------------+------------+------------+-------------+--------------+
 
 .. [1] ChatGPT and Claude.ai subscription feature
 .. [2] `Cursor <https://www.cursor.com/>`_, etc...
-.. [3] Flat rate for GUI, usage-based for API
-.. [4] Requires custom implementation
+.. [3] Requires custom implementation
 
 Notes:
 
 - "Direct API Integration" refers to custom applications providing I/O tools
-  for LLMs to use via APIs, such as the Anthropic, Deepseek, or OpenAI API.
+  for LLMs to use via APIs, such as the Anthropic or OpenAI API.
 - Cost differences can be significant at scale, especially when considering
   cache misses against APIs.
 
