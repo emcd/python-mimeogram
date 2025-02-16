@@ -44,7 +44,7 @@
    :alt: Python Versions
    :target: https://pypi.org/project/mimeogram/
 
-.. image:: ../../data/pictures/logo.svg
+.. image:: https://raw.githubusercontent.com/emcd/python-mimeogram/master/data/pictures/logo.svg
    :alt: Mimeogram Logo
    :width: 800
    :align: center

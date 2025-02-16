@@ -96,12 +96,6 @@ Module ``mimeogram.__.preparation``
 .. automodule:: mimeogram.__.preparation
 
 
-Module ``mimeogram.__.processes``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.processes
-
-
 Module ``mimeogram.__.state``
 -------------------------------------------------------------------------------
 
