@@ -112,7 +112,7 @@ jobs:
         - name: Save Executable
           uses: actions/upload-artifact@v4
           with:
-            name: mimeogram-${{ matrix.platform-name }}
+            name: executables--${{ matrix.platform-name }}--${{ github.run_id }}
             path: .auxiliary/artifacts/pyinstaller-build/mimeogram-${{ matrix.platform-name }}${{ matrix.suffix }}
 
   publish-pypi:
@@ -163,26 +163,22 @@ jobs:
       - name: Restore Executables
         uses: actions/download-artifact@v4
         with:
-          pattern: mimeogram-*
-          path: ${{ env.DISTRIBUTIONS_PATH }}/executables
+          pattern: executables--*--${{ github.run_id }}
+          path: ${{ env.DISTRIBUTIONS_PATH }}
           merge-multiple: true
 
       - name: Generate Integrity Check Values
         run: |
           set -eu -o pipefail
           cd ${{ env.DISTRIBUTIONS_PATH }}
-          sha256sum *.tar.gz *.whl >SHA256SUMS.txt
-          cd executables
-          sha256sum * >>../SHA256SUMS.txt
+          sha256sum mimeogram-* >SHA256SUMS.txt
 
       - name: Sign Distributions
         uses: sigstore/gh-action-sigstore-python@v3.0.0
         with:
           inputs: >-
             ${{ env.DISTRIBUTIONS_PATH }}/SHA256SUMS.txt
-            ${{ env.DISTRIBUTIONS_PATH }}/*.tar.gz
-            ${{ env.DISTRIBUTIONS_PATH }}/*.whl
-            ${{ env.DISTRIBUTIONS_PATH }}/executables/*
+            ${{ env.DISTRIBUTIONS_PATH }}/mimeogram-*
 
       - name: Generate Release Notes
         run: |
@@ -203,5 +199,5 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           gh release upload '${{ github.ref_name }}' \
-            ${{ env.DISTRIBUTIONS_PATH }}/** \
+            ${{ env.DISTRIBUTIONS_PATH }}/* \
             --repo '${{ github.repository }}'
