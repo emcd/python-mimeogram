@@ -62,26 +62,16 @@ jobs:
         matrix:
           # TEMP: Exclude Windows until various fixes.
           include:
-            - os: ubuntu-latest
+            - os: ubuntu-22.04 # Earlier version for better Glibc compatibility.
               platform-name: linux-x86_64
-              suffix: ''
             # - os: windows-latest
             #   platform-name: windows-x86_64
-            #   suffix: '.exe'
             - os: macos-13
               platform-name: macos-x86_64
-              suffix: ''
             - os: macos-latest
               platform-name: macos-arm64
-              suffix: ''
       runs-on: ${{ matrix.os }}
       steps:
-
-        # - name: Restore Distributions
-        #   uses: actions/download-artifact@v4
-        #   with:
-        #     name: python-package-distributions--${{ github.run_id }}
-        #     path: ${{ env.DISTRIBUTIONS_PATH }}
 
         - name: Prepare Python
           uses: emcd/python-project-common/.github/actions/python-hatch@v1.8.1
@@ -90,7 +80,7 @@ jobs:
 
         # - name: Install UPX (Linux)
         #   if: runner.os == 'Linux'
-        #   run: sudo apt-get install -y upx
+        #   run: sudo apt-get install --yes upx
 
         - name: Install UPX (macOS)
           if: runner.os == 'macOS'
@@ -103,17 +93,17 @@ jobs:
         - name: Create Executable
           run: |
             hatch --env develop run \
-              pyinstaller --name mimeogram-${{ matrix.platform-name }} \
+              pyinstaller --name mimeogram-${GITHUB_REF_NAME}-${{ matrix.platform-name }} \
                 --clean --onefile \
                 --add-data=pyproject.toml:. --add-data=data:data \
-                --distpath=.auxiliary/artifacts/pyinstaller-build \
+                --distpath=.auxiliary/artifacts/pyinstaller \
                 sources/mimeogram/__main__.py
 
         - name: Save Executable
           uses: actions/upload-artifact@v4
           with:
             name: executables--${{ matrix.platform-name }}--${{ github.run_id }}
-            path: .auxiliary/artifacts/pyinstaller-build/mimeogram-${{ matrix.platform-name }}${{ matrix.suffix }}
+            path: .auxiliary/artifacts/pyinstaller/mimeogram-*
 
   publish-pypi:
     if: ${{ inputs.which-pypi == 'testpypi' || startsWith(github.ref, 'refs/tags/') }}
@@ -184,7 +174,11 @@ jobs:
         run: |
           hatch --env develop run \
             towncrier build --draft --version ${GITHUB_REF_NAME} \
-            > release-notes.rst
+            >.auxiliary/artifacts/tc-release-notes.rst
+          cat \
+            documentation/miscellany/executables.rst \
+            .auxiliary/artifacts/tc-release-notes.rst \
+            >.auxiliary/artifacts/release-notes.rst
 
       - name: Create Release
         env:
@@ -192,7 +186,7 @@ jobs:
         run: |
           gh release create '${{ github.ref_name }}' \
             --repo '${{ github.repository }}' \
-            --notes-file release-notes.rst
+            --notes-file .auxiliary/artifacts/release-notes.rst
 
       - name: Publish Artifacts
         env:
