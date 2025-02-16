@@ -7,7 +7,7 @@ build-backend = 'hatchling.build'
 
 [project]
 name = 'mimeogram'
-description = 'Exchange of MIME bundles with LLMs.'
+description = 'Exchange of file collections with LLMs.'
 dynamic = [ 'version' ]
 license = 'Apache-2.0'
 readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
