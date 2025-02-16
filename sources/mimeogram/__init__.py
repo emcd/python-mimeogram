@@ -38,7 +38,7 @@ from . import updaters
 # TODO: Export various module contents.
 
 
-__version__ = '1.0a1'
+__version__ = '1.0a2'
 
 
 def main( ):
