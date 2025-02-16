@@ -45,7 +45,8 @@ class Information(
         # Detect PyInstaller bundle.
         if getattr( sys, 'frozen', False ) and hasattr( sys, '_MEIPASS' ):
             project_anchor = __.Path( getattr( sys, '_MEIPASS' ) )
-        from importlib.metadata import packages_distributions
+        # TODO: Python 3.12: importlib.metadata
+        from importlib_metadata import packages_distributions
         # https://github.com/pypa/packaging-problems/issues/609
         name = packages_distributions( ).get( package )
         if name is None: # Development sources rather than distribution.

@@ -112,7 +112,7 @@ async def test_110_prepare_production( ):
     mock_file = MagicMock( )
 
     with patch(
-        'importlib.metadata.packages_distributions',
+        'importlib_metadata.packages_distributions',
         return_value = packages
     ), patch(
         'importlib_resources.files',
