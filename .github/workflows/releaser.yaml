@@ -173,7 +173,7 @@ jobs:
           cd ${{ env.DISTRIBUTIONS_PATH }}
           sha256sum *.tar.gz *.whl >SHA256SUMS.txt
           cd executables
-          sha256sum * >>../dist/SHA256SUMS.txt
+          sha256sum * >>../SHA256SUMS.txt
 
       - name: Sign Distributions
         uses: sigstore/gh-action-sigstore-python@v3.0.0
