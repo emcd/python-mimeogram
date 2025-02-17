@@ -10,7 +10,6 @@
 - Size Management
   - Line and token counting
   - Size estimation and warnings
-  - Memory usage monitoring
 
 ### Extensibility
 - Plugin/Extension System
@@ -31,7 +30,6 @@
 - Progress Feedback
   - Operation status indicators
   - Batch operation progress
-  - Background task status
 - Enhanced Error Handling
   - Detailed error context
   - Recovery suggestions
@@ -40,15 +38,12 @@
 ### Workflow Enhancements
 - Compound Operations
   - Edit-then-apply actions
-  - Batch operations with queuing
-  - Async fanout for applies
 - Content Management
   - File read caching
   - Session state save/restore
   - Original content restoration
 - Configuration
   - Environment variable support
-  - User-configurable defaults
   - Boilerplate patterns
 
 ## 3. System Integration
@@ -65,24 +60,18 @@
   - Metadata preservation
 - Version Control
   - VCS status integration
-  - Change tracking
 
 ### Performance
 - I/O Optimization
   - File operation caching
   - Directory traversal caching
   - Batch operations
-- Memory Management
-  - Large file handling
-  - Resource pooling
-  - Operation profiling
 
 ## 4. Distribution
 
 ### Standalone Executables
 - Build System
   - Multi-platform arm64 support
-  - PyOxidizer configuration
   - Size optimization
 - Code Signing
   - macOS notarization
@@ -94,33 +83,22 @@
   - Standard prompt library
   - Capability-based variants
   - User overrides
-  - Environment selection
 
 ## 5. Quality Assurance
 
 ### Testing
 - Core Functionality
-  - Unit tests
   - Integration tests
   - Platform verification
-  - Resource handling
 - Feature-Specific
   - Prompt system
-  - Path protection
   - Standalone executables
   - Format changes
 
 ### Documentation
 - User Guides
-  - Installation and setup
-  - Common workflows
   - Integration patterns
   - Troubleshooting
-- Technical Reference
-  - API documentation
-  - Type hints
-  - Configuration options
-  - Release notes
 
 ## Implementation Guidelines
 - Prioritize stability and correctness
@@ -128,17 +106,3 @@
 - Ensure cross-platform compatibility
 - Keep UX consistent and intuitive
 - Preserve backward compatibility
-
-## Release Checklist
-
-✓ Newline preservation
-✓ Charset handling
-✓ Single keystroke actions
-✓ Change queuing
-✓ Hunk selection
-✓ Path protection
-✓ LLM prompt command
-✓ Prompt prepending
-✓ Standalone executables
-✓ Testing
-□ Documentation

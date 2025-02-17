@@ -35,21 +35,10 @@ For effective collaboration:
 
 ## Best Practices
 
-1. Include complete context:
-   - File headers
-   - License information
-   - Import statements
-   - Required boilerplate
-
-2. Maintain package stability:
+1. Maintain package stability:
    - Group related changes when possible
    - Update dependencies together
    - Keep the package importable during changes
-
-3. Documentation:
-   - Update relevant docs with code changes
-   - Note any temporary limitations
-   - Document planned follow-up changes
 
 ## Working with LLMs
 

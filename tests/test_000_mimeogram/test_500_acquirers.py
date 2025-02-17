@@ -26,7 +26,6 @@ import exceptiongroup
 import os
 import sys
 
-import httpx
 import pytest
 
 from . import (
@@ -255,31 +254,211 @@ async def test_510_unsupported_scheme( provide_auxdata ):
 
 @pytest.mark.asyncio
 async def test_520_nontextual_mime( provide_tempdir, provide_auxdata ):
-    ''' Properly handles non-textual MIME types. '''
+    ''' Properly handles non-textual MIME types in both strict and non-strict
+        modes.
+    '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
-    binary_path = provide_tempdir / "binary.bin"
-    # Create a binary file with random-looking but consistent content
+    binary_path = provide_tempdir / 'binary.bin'
     binary_path.write_bytes( bytes( [ 0xFF, 0x00 ] * 128 ) )
 
     try:
+        # Test strict mode behavior
+        provide_auxdata.configuration[
+            'acquire-parts' ][ 'fail-on-invalid' ] = True
         with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
             await acquirers.acquire( provide_auxdata, [ binary_path ] )
 
-        # Check that we have exactly one exception in the group
         assert len( excinfo.value.exceptions ) == 1
-        # Check that it's the right type of exception
         assert isinstance(
             excinfo.value.exceptions[ 0 ],
             exceptions.TextualMimetypeInvalidity )
-        # Verify the error message includes path and mimetype
         err_msg = str( excinfo.value.exceptions[ 0 ] )
         assert str( binary_path ) in err_msg
         assert 'application/octet-stream' in err_msg
+
+        # Test non-strict mode behavior
+        provide_auxdata.configuration[
+            'acquire-parts' ][ 'fail-on-invalid' ] = False
+        results = await acquirers.acquire( provide_auxdata, [ binary_path ] )
+        assert len( results ) == 0
     finally:
-        if binary_path.exists( ):
-            binary_path.unlink( )
+        if binary_path.exists( ): binary_path.unlink( )
+
+
+@pytest.mark.asyncio
+async def test_530_strict_mode_handling( provide_tempdir, provide_auxdata ):
+    ''' Tests strict mode handling of invalid files. '''
+    acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
+    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
+
+    test_files = {
+        'valid.txt': 'Valid text content\n',
+        'binary.bin': bytes( [ 0xFF, 0x00 ] * 128 ),
+    }
+
+    valid_path = provide_tempdir / 'valid.txt'
+    binary_path = provide_tempdir / 'binary.bin'
+
+    valid_path.write_text( test_files[ 'valid.txt' ] )
+    binary_path.write_bytes( test_files[ 'binary.bin' ] )
+
+    try:
+        # Test strict mode
+        provide_auxdata.configuration[
+            'acquire-parts' ][ 'fail-on-invalid' ] = True
+        with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
+            await acquirers.acquire(
+                provide_auxdata, [ valid_path, binary_path ] )
+
+        assert len( excinfo.value.exceptions ) == 1
+        assert isinstance(
+            excinfo.value.exceptions[ 0 ],
+            exceptions.TextualMimetypeInvalidity )
+
+        # Test non-strict mode
+        provide_auxdata.configuration[
+            'acquire-parts' ][ 'fail-on-invalid' ] = False
+        results = await acquirers.acquire(
+            provide_auxdata, [ valid_path, binary_path ] )
+
+        assert len( results ) == 1
+        assert results[ 0 ].location == str( valid_path )
+        assert results[ 0 ].content == test_files[ 'valid.txt' ]
+
+    finally:
+        if valid_path.exists( ): valid_path.unlink( )
+        if binary_path.exists( ): binary_path.unlink( )
+
+
+@pytest.mark.asyncio
+async def test_540_strict_mode_multiple_failures( # pylint: disable=too-many-locals
+    provide_tempdir, provide_auxdata
+):
+    ''' Tests strict mode handling of multiple invalid files. '''
+    acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
+    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
+
+    test_files = {
+        'valid.txt': 'Valid text content\n',
+        'binary1.bin': bytes( [ 0xFF, 0x00 ] * 64 ),
+        'binary2.bin': bytes( [ 0x00, 0xFF ] * 64 ),
+    }
+
+    valid_path = provide_tempdir / 'valid.txt'
+    binary1_path = provide_tempdir / 'binary1.bin'
+    binary2_path = provide_tempdir / 'binary2.bin'
+
+    valid_path.write_text( test_files[ 'valid.txt' ] )
+    binary1_path.write_bytes( test_files[ 'binary1.bin' ] )
+    binary2_path.write_bytes( test_files[ 'binary2.bin' ] )
+
+    try:
+        # Test strict mode
+        provide_auxdata.configuration[
+            'acquire-parts' ][ 'fail-on-invalid' ] = True
+        with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
+            await acquirers.acquire(
+                provide_auxdata,
+                [ valid_path, binary1_path, binary2_path ] )
+
+        assert len( excinfo.value.exceptions ) == 2
+        for exc in excinfo.value.exceptions:
+            assert isinstance( exc, exceptions.TextualMimetypeInvalidity )
+
+        # Test non-strict mode
+        provide_auxdata.configuration[
+            'acquire-parts' ][ 'fail-on-invalid' ] = False
+        results = await acquirers.acquire(
+            provide_auxdata, [ valid_path, binary1_path, binary2_path ] )
+
+        assert len( results ) == 1
+        assert results[ 0 ].location == str( valid_path )
+        assert results[ 0 ].content == test_files[ 'valid.txt' ]
+
+    finally:
+        for path in ( valid_path, binary1_path, binary2_path ):
+            if path.exists( ): path.unlink( )
+
+
+@pytest.mark.asyncio
+async def test_550_strict_mode_http_failures( provide_auxdata, httpx_mock ):
+    ''' Tests strict mode handling of HTTP failures. '''
+    acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
+
+    valid_url = 'https://example.com/valid.txt'
+    binary_url = 'https://example.com/binary.bin'
+    error_url = 'https://example.com/error.txt'
+
+    # Test strict mode first
+    provide_auxdata.configuration[
+        'acquire-parts' ][ 'fail-on-invalid' ] = True
+
+    httpx_mock.add_response(
+        method = 'GET',
+        url = valid_url,
+        status_code = 200,
+        content = b'Valid content\n',
+        headers = { 'content-type': 'text/plain; charset=utf-8' } )
+
+    httpx_mock.add_response(
+        method = 'GET',
+        url = binary_url,
+        status_code = 200,
+        content = bytes( range( 256 ) ),
+        headers = { 'content-type': 'application/octet-stream' } )
+
+    httpx_mock.add_response(
+        method = 'GET',
+        url = error_url,
+        status_code = 500 )
+
+    with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
+        await acquirers.acquire(
+            provide_auxdata, [ valid_url, binary_url, error_url ] )
+
+    exceptions_by_type = {
+        type( exc ).__name__: exc
+        for exc in excinfo.value.exceptions }
+
+    assert len( exceptions_by_type ) == 2
+    assert 'TextualMimetypeInvalidity' in exceptions_by_type
+    assert 'ContentAcquireFailure' in exceptions_by_type
+    assert error_url in str(
+        exceptions_by_type[ 'ContentAcquireFailure' ] )
+
+    # Reset mocks for non-strict mode test
+    httpx_mock.reset( )
+
+    # Re-add the same responses for non-strict mode
+    httpx_mock.add_response(
+        method = 'GET',
+        url = valid_url,
+        status_code = 200,
+        content = b'Valid content\n',
+        headers = { 'content-type': 'text/plain; charset=utf-8' } )
+
+    httpx_mock.add_response(
+        method = 'GET',
+        url = binary_url,
+        status_code = 200,
+        content = bytes( range( 256 ) ),
+        headers = { 'content-type': 'application/octet-stream' } )
+
+    httpx_mock.add_response(
+        method = 'GET',
+        url = error_url,
+        status_code = 500 )
+
+    provide_auxdata.configuration[
+        'acquire-parts' ][ 'fail-on-invalid' ] = False
+    results = await acquirers.acquire(
+        provide_auxdata, [ valid_url, binary_url, error_url ] )
+
+    assert len( results ) == 1
+    assert results[ 0 ].location == valid_url
+    assert 'Valid content' in results[ 0 ].content
 
 
 # HTTP Tests
@@ -310,44 +489,84 @@ async def test_600_http_acquisition( provide_auxdata, httpx_mock ):
 
 @pytest.mark.asyncio
 async def test_610_http_error( provide_auxdata, httpx_mock ):
-    ''' Properly handles HTTP errors. '''
+    ''' Properly handles HTTP errors in both strict and non-strict modes. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
-    httpx_mock.add_exception( httpx.HTTPError( "HTTP Error" ) )
+    test_url = 'https://example.com/test.txt'
+    httpx_mock.add_response(
+        method = 'GET',
+        url = test_url,
+        status_code = 500 )
 
+    # Test strict mode
+    provide_auxdata.configuration[
+        'acquire-parts' ][ 'fail-on-invalid' ] = True
     with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
-        await acquirers.acquire(
-            provide_auxdata, [ "https://example.com/test.txt" ] )
+        await acquirers.acquire( provide_auxdata, [ test_url ] )
 
     assert len( excinfo.value.exceptions ) == 1
     assert isinstance(
-        excinfo.value.exceptions[0],
+        excinfo.value.exceptions[ 0 ],
         exceptions.ContentAcquireFailure )
-    assert "https://example.com/test.txt" in str( excinfo.value.exceptions[0] )
+    assert test_url in str( excinfo.value.exceptions[ 0 ] )
+
+    # Reset mock for non-strict mode test
+    httpx_mock.reset( )
+    httpx_mock.add_response(
+        method = 'GET',
+        url = test_url,
+        status_code = 500 )
+
+    # Test non-strict mode
+    provide_auxdata.configuration[
+        'acquire-parts' ][ 'fail-on-invalid' ] = False
+    results = await acquirers.acquire( provide_auxdata, [ test_url ] )
+    assert len( results ) == 0
 
 
 @pytest.mark.asyncio
 async def test_620_http_nontextual_mimetype( provide_auxdata, httpx_mock ):
-    ''' Properly handles non-textual MIME types in HTTP response. '''
+    ''' Properly handles non-textual MIME types in HTTP response in both strict
+        and non-strict modes.
+    '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
+    test_url = 'https://example.com/test.bin'
     httpx_mock.add_response(
-        url = "https://example.com/test.bin",
+        method = 'GET',
+        url = test_url,
         status_code = 200,
-        content = bytes(range(256)),  # Binary content that can't be UTF-8 decoded
+        content = bytes( [ 0xFF, 0x00 ] * 128 ),
         headers = { 'content-type': 'application/octet-stream' } )
 
+    # Test strict mode
+    provide_auxdata.configuration[
+        'acquire-parts' ][ 'fail-on-invalid' ] = True
     with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
-        await acquirers.acquire(
-            provide_auxdata, [ "https://example.com/test.bin" ] )
+        await acquirers.acquire( provide_auxdata, [ test_url ] )
 
     assert len( excinfo.value.exceptions ) == 1
     assert isinstance(
-        excinfo.value.exceptions[0],
+        excinfo.value.exceptions[ 0 ],
         exceptions.TextualMimetypeInvalidity )
-    assert "https://example.com/test.bin" in str( excinfo.value.exceptions[0] )
+    assert test_url in str( excinfo.value.exceptions[ 0 ] )
+
+    # Reset mock for non-strict mode test
+    httpx_mock.reset( )
+    httpx_mock.add_response(
+        method = 'GET',
+        url = test_url,
+        status_code = 200,
+        content = bytes( [ 0xFF, 0x00 ] * 128 ),
+        headers = { 'content-type': 'application/octet-stream' } )
+
+    # Test non-strict mode
+    provide_auxdata.configuration[
+        'acquire-parts' ][ 'fail-on-invalid' ] = False
+    results = await acquirers.acquire( provide_auxdata, [ test_url ] )
+    assert len( results ) == 0
 
 
 # VCS Directory Tests

@@ -42,6 +42,7 @@ async def gather_async(
     ] = False,
 ) -> tuple[ __.typx.Any, ... ]:
     ''' Gathers results from invocables concurrently and asynchronously. '''
+    # TODO: Overload signature for 'return_exceptions'.
     from exceptiongroup import ExceptionGroup # TODO: Python 3.11: builtin
     if ignore_nonawaitables:
         results = await _gather_async_permissive( operands )
