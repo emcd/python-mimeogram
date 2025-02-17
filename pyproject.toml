@@ -21,6 +21,7 @@ dependencies = [
   'frigid',
   'gitignorefile',
   'httpx',
+  'importlib-metadata',
   'importlib-resources',
   'patiencediff',
   'platformdirs',
@@ -85,23 +86,6 @@ output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
 # https://hatch.pypa.io/latest/config/metadata/
 [tool.hatch.build]
 directory = '.auxiliary/artifacts/hatch-build'
-# [tool.hatch.build.targets.pyinstaller]
-# only-include = [ 'sources/mimeogram', 'data' ]
-# flags = [
-#   '--add-data=pyproject.toml:.',
-#   '--add-data=data:data',
-#   '--clean',
-#   # '--distpath=.auxiliary/artifacts/hatch-build',
-#   '--name=mimeogram',
-#   '--onefile',
-# ]
-# log-level = "WARN"
-# require-runtime-dependencies = true
-# scriptname = 'sources/mimeogram/__main__.py'
-# # zip = true
-# [tool.hatch.build.targets.pyinstaller.sources]
-# 'sources/mimeogram' = 'mimeogram'
-# 'data' = 'mimeogram/data'
 [tool.hatch.build.targets.sdist]
 only-include = [ 'sources/mimeogram', 'data' ]
 strict-naming = false
@@ -172,7 +156,7 @@ packagers = [
       --onefile \
       --add-data=pyproject.toml:. \
       --add-data=data:data \
-      --distpath=.auxiliary/artifacts/pyinstaller-build \
+      --distpath=.auxiliary/artifacts/pyinstaller \
       sources/mimeogram/__main__.py''',
 ]
 testers = [
