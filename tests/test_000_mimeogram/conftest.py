@@ -20,9 +20,12 @@
 
 ''' Test fixtures. '''
 
+# pylint: disable=redefined-outer-name
+
 
 import os
 import pathlib
+import platform
 import tempfile
 from typing import Iterator
 
@@ -37,10 +40,37 @@ def provide_tempdir( ) -> Iterator[ pathlib.Path ]:
 
 
 @pytest.fixture
-def provide_tempenv( ) -> Iterator[ dict[ str, str ] ]:
-    ''' Provides isolated environment variables. '''
+def provide_tempenv(
+    provide_tempdir: pathlib.Path
+) -> Iterator[ dict[ str, str ] ]:
+    ''' Provides isolated environment variables with test home directory. '''
+    test_home = pathlib.Path( provide_tempdir ) / 'home'
+    test_home.mkdir( parents = True, exist_ok = True )
+    ( test_home / '.config' ).mkdir( exist_ok = True )
+    ( test_home / 'Documents' ).mkdir( exist_ok = True )
+
+    # Back up original environment
     original = os.environ.copy( )
+
+    # Start with clean environment
     os.environ.clear( )
+
+    # Set up minimal test environment
+    test_home_str = str( test_home.resolve( ) )  # Get absolute path
+
+    if platform.system( ) == 'Windows':
+        # Windows prioritizes USERPROFILE
+        os.environ[ 'USERPROFILE' ] = test_home_str
+        # Split into drive and path for HOMEDRIVE/HOMEPATH
+        drive, path = os.path.splitdrive( test_home_str )
+        os.environ[ 'HOMEDRIVE' ] = drive
+        os.environ[ 'HOMEPATH' ] = path
+    else:
+        # Unix-like systems primarily use HOME
+        os.environ[ 'HOME' ] = test_home_str
+
     yield os.environ # pyright: ignore
+
+    # Restore original environment
     os.environ.clear( )
     os.environ.update( original )
