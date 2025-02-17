@@ -66,11 +66,12 @@ class Command(
             aliases = ( '-r', '--recurse-directories', '--recursive' ),
             help = "Recurse into directories." ),
     ] = None
-    # strict: __.typx.Annotated[
-    #     __.typx.Optional[ bool ],
-    #     __.tyro.conf.arg(
-    #         help = "Fail on invalid contents instead of skipping them." ),
-    # ] = None
+    strict: __.typx.Annotated[
+        __.typx.Optional[ bool ],
+        __.tyro.conf.arg(
+            aliases = ( '--fail-on-invalid', ),
+            help = "Fail on invalid contents? True, fail. False, skip." ),
+    ] = None
 
     async def __call__( self, auxdata: __.Globals ) -> None:
         ''' Executes command to create mimeogram. '''
@@ -86,10 +87,10 @@ class Command(
             edits.append( __.SimpleDictionaryEdit( # pyright: ignore
                 address = ( 'acquire-parts', 'recurse-directories' ),
                 value = self.recurse ) )
-        # if None is not self.strict:
-        #     edits.append( __.SimpleDictionaryEdit( # pyright: ignore
-        #         address = ( 'acquire-parts', 'fail-on-invalid' ),
-        #         value = self.strict ) )
+        if None is not self.strict:
+            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+                address = ( 'acquire-parts', 'fail-on-invalid' ),
+                value = self.strict ) )
         return tuple( edits )
 
 
@@ -115,7 +116,7 @@ async def _edit_message( ) -> str:
         raise SystemExit( 1 ) from exc
 
 
-async def create( # pylint: disable=too-many-locals
+async def create( # pylint: disable=too-complex,too-many-locals,too-many-statements
     auxdata: __.Globals,
     command: Command, *,
     editor: __.cabc.Callable[
@@ -127,6 +128,7 @@ async def create( # pylint: disable=too-many-locals
         __.cabc.Coroutine[ None, None, str ] ] = _acquire_prompt,
 ) -> __.typx.Never:
     ''' Creates mimeogram. '''
+    from exceptiongroup import ExceptionGroup
     from .acquirers import acquire
     from .formatters import format_mimeogram
     if command.edit:
@@ -135,7 +137,14 @@ async def create( # pylint: disable=too-many-locals
             _scribe.exception( "Could not acquire user message." )
             raise SystemExit( 1 ) from exc
     else: message = None
+    # TODO: Factor into '__.exceptions.report_eg_members'.
     try: parts = await acquire( auxdata, command.sources )
+    except ExceptionGroup as excg: # pyright: ignore
+        for exc in excg.exceptions: # pyright: ignore
+            _scribe.error( # noqa: TRY400
+                "Could not acquire mimeogram parts.",
+                exc_info = exc ) # pyright: ignore
+        raise SystemExit( 1 ) from None
     except Exception as exc:
         _scribe.exception( "Could not acquire mimeogram parts." )
         raise SystemExit( 1 ) from exc

@@ -34,13 +34,13 @@ from . import parts as _parts
 _scribe = __.produce_scribe( __name__ )
 
 
-async def acquire(
+async def acquire( # pylint: disable=too-many-locals
     auxdata: __.Globals, sources: __.cabc.Sequence[ str | __.Path ]
 ) -> __.cabc.Sequence[ _parts.Part ]:
     ''' Acquires content from multiple sources. '''
     from urllib.parse import urlparse
     options = auxdata.configuration.get( 'acquire-parts', { } )
-    # strict = options.get( 'fail-on-invalid', False )
+    strict = options.get( 'fail-on-invalid', False )
     recursive = options.get( 'recurse-directories', False )
     tasks: list[ __.cabc.Coroutine[ None, None, _parts.Part ] ] = [ ]
     for source in sources:
@@ -54,7 +54,16 @@ async def acquire(
                 tasks.append( _produce_http_task( str( source ) ) )
             case _:
                 raise _exceptions.UrlSchemeNoSupport( str( source ) )
-    return await __.gather_async( *tasks )
+    if strict: return await __.gather_async( *tasks )
+    results = await __.gather_async( *tasks, return_exceptions = True )
+    # TODO: Factor into '__.generics.extract_results_filter_errors'.
+    values: list[ _parts.Part ] = [ ]
+    for result in results:
+        if result.is_error( ):
+            _scribe.warning( str( result.error ) )
+            continue
+        values.append( result.extract( ) )
+    return tuple( values )
 
 
 async def _acquire_from_file( location: __.Path ) -> _parts.Part:
@@ -124,18 +133,17 @@ def _collect_directory_files(
     import gitignorefile
     cache = gitignorefile.Cache( )
     paths: list[ __.Path ] = [ ]
+    _scribe.debug( f"Collecting files in directory: {directory}" )
     for entry in directory.iterdir( ):
         if entry.is_dir( ) and entry.name in _VCS_DIRS:
             _scribe.debug( f"Ignoring VCS directory: {entry}" )
             continue
-        path = entry.resolve( )
-        path_str = str( path )
-        if cache( path_str ):
+        if cache( str( entry ) ):
             _scribe.debug( f"Ignoring path (matched by .gitignore): {entry}" )
             continue
         if entry.is_dir( ) and recursive:
-            paths.extend( _collect_directory_files( path, recursive ) )
-        elif entry.is_file( ): paths.append( path )
+            paths.extend( _collect_directory_files( entry, recursive ) )
+        elif entry.is_file( ): paths.append( entry )
     return paths
 
 
@@ -158,7 +166,7 @@ def _detect_mimetype( content: bytes, location: str | __.Path ) -> str | None:
     from mimetypes import guess_type
     from puremagic import PureError, from_string # pyright: ignore
     try: return from_string( content, mime = True )
-    except PureError:
+    except ( PureError, ValueError ):
         return guess_type( str( location ) )[ 0 ]
 
 
@@ -202,8 +210,7 @@ def _is_textual_mimetype( mimetype: str ) -> bool:
 def _produce_fs_tasks(
     location: str | __.Path, recursive: bool = False
 ) -> tuple[ __.cabc.Coroutine[ None, None, _parts.Part ], ...]:
-    location_ = (
-        __.Path( location ) if isinstance( location, str ) else location )
+    location_ = __.Path( location )
     if location_.is_file( ) or location_.is_symlink( ):
         return ( _acquire_from_file( location_ ), )
     if location_.is_dir( ):
