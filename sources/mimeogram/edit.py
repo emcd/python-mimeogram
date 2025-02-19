@@ -60,7 +60,7 @@ def discover_editor( ) -> __.cabc.Callable[ [ str ], str ]:
     raise ProgramAbsenceError( 'editor' )
 
 
-def edit_content(
+def edit_content( # pylint: disable=too-many-locals
     content: str = '', *,
     suffix: str = '.md',
     editor_discoverer: __.cabc.Callable[
@@ -73,8 +73,19 @@ def edit_content(
         _scribe.exception( "Could not find editor program." )
         return content
     import tempfile
-    with tempfile.NamedTemporaryFile( mode = 'r+', suffix = suffix ) as tmp:
+    from pathlib import Path
+    # Using delete = False to handle file cleanup manually. This ensures
+    # the file handle is properly closed before the editor attempts to read it,
+    # which is particularly important on Windows where open files cannot be
+    # simultaneously accessed by other processes without a read share.
+    with tempfile.NamedTemporaryFile(
+        mode = 'w', suffix = suffix, delete = False
+    ) as tmp:
+        filename = tmp.name
         tmp.write( content )
-        tmp.flush( )
-        try: return editor( tmp.name )
-        except Exception as exc: raise EditorFailure( cause = exc ) from exc
+    try: return editor( filename ) # noqa: TRY101
+    except Exception as exc: raise EditorFailure( cause = exc ) from exc
+    finally:
+        try: Path( filename ).unlink( )
+        except Exception: # pylint: disable=broad-exception-caught
+            _scribe.exception( f"Failed to cleanup {filename}" )

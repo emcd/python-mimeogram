@@ -44,10 +44,12 @@ async def acquire( # pylint: disable=too-many-locals
     recursive = options.get( 'recurse-directories', False )
     tasks: list[ __.cabc.Coroutine[ None, None, _parts.Part ] ] = [ ]
     for source in sources:
+        path = __.Path( source )
         url_parts = (
             urlparse( source ) if isinstance( source, str )
             else urlparse( str( source ) ) )
-        match url_parts.scheme:
+        scheme = 'file' if path.drive else url_parts.scheme
+        match scheme:
             case '' | 'file':
                 tasks.extend( _produce_fs_tasks( source, recursive ) )
             case 'http' | 'https':

@@ -181,7 +181,9 @@ def _derive_location(
     from .exceptions import LocationInvalidity
     try: url = urlparse( location )
     except Exception as exc: raise LocationInvalidity( location ) from exc
-    match url.scheme:
+    path = __.Path( location )
+    scheme = 'file' if path.drive else url.scheme
+    match scheme:
         case '' | 'file': pass
         case _: raise LocationInvalidity( location )
     location_ = __.Path( ospath.expanduser( ospath.expandvars( url.path ) ) )
@@ -201,18 +203,25 @@ async def _update_content_atomic(
     from aiofiles.tempfile import NamedTemporaryFile
     location.parent.mkdir( parents = True, exist_ok = True )
     content = linesep.nativize( content )
+    has_error = False
     async with NamedTemporaryFile(
         delete = False,
         dir = location.parent,
         suffix = f"{location.suffix}.tmp",
     ) as stream:
         filename = str( stream.name )
-        try:
-            await stream.write( content.encode( charset ) )
-            await os.replace( filename, str( location ) )
-        except Exception as exc:
-            from .exceptions import ContentUpdateFailure
-            raise ContentUpdateFailure( location ) from exc
-        finally:
-            if await os.path.exists( filename ):
-                await os.remove( filename )
+        try: await stream.write( content.encode( charset ) )
+        except Exception: # pylint: disable=broad-exception-caught
+            has_error = True
+    # Windows: Replace must happen after file handle is closed.
+    if not has_error:
+        try: await os.replace( filename, str( location ) )
+        except Exception: # pylint: disable=broad-exception-caught
+            has_error = True
+    if await os.path.exists( filename ):
+        try: await os.remove( filename )
+        except Exception: # pylint: disable=broad-exception-caught
+            _scribe.warning( f"Could not remove temporary file: {filename}" )
+    if has_error:
+        from .exceptions import ContentUpdateFailure
+        raise ContentUpdateFailure( location )

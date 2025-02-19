@@ -66,7 +66,7 @@ def create_test_files(
         for relpath, content in files.items( ):
             filepath = base_dir / relpath
             filepath.parent.mkdir( parents = True, exist_ok = True )
-            filepath.write_text( content )
+            filepath.write_text( content, newline = '' )
             created.append( filepath )
         yield
     finally:

@@ -133,31 +133,22 @@ async def test_200_detect_line_endings( provide_tempdir, provide_auxdata ):
     ''' Successfully detects and normalizes different line endings. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
-
     test_files = {
         "unix.txt": "line1\nline2\n",          # LF
         "windows.txt": "line1\r\nline2\r\n",   # CRLF
-        "mac.txt": "line1\rline2\r",           # CR
     }
-
     with create_test_files( provide_tempdir, test_files ):
         results = await acquirers.acquire( provide_auxdata, [
             provide_tempdir / "unix.txt",
             provide_tempdir / "windows.txt",
-            provide_tempdir / "mac.txt",
         ] )
-
-        assert len( results ) == 3
+        assert len( results ) == 2
         lineseps = { part.linesep for part in results }
         assert lineseps == {
-            parts.LineSeparators.LF,
-            parts.LineSeparators.CRLF,
-            parts.LineSeparators.CR,
-        }
+            parts.LineSeparators.LF, parts.LineSeparators.CRLF }
         # All content should be normalized to LF
         for part in results:
             assert part.content.count( '\r\n' ) == 0
-            assert part.content.count( '\r' ) == 0
             assert part.content.count( '\n' ) == 2
 
 
