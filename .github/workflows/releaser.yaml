@@ -90,13 +90,13 @@ jobs:
           run: choco install upx
 
         - name: Create Executable
+          env:
+            _PYI_EXECUTABLE_NAME: mimeogram-${{ github.ref_name }}-${{ matrix.platform-name }}
           run: |
             hatch --env develop run \
-              pyinstaller --name mimeogram-${GITHUB_REF_NAME}-${{ matrix.platform-name }} \
-                --clean --onefile \
-                --add-data=pyproject.toml:. --add-data=data:data \
-                --distpath=.auxiliary/artifacts/pyinstaller \
-                sources/mimeogram/__main__.py
+              pyinstaller \
+                --clean --distpath=.auxiliary/artifacts/pyinstaller \
+                pyinstaller.spec
 
         - name: Save Executable
           uses: actions/upload-artifact@v4
