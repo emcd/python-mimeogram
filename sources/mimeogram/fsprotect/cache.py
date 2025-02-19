@@ -62,15 +62,18 @@ class Cache( _core.Protector, decorators = ( __.standard_dataclass, ) ):
             defaults_disablement = disables,
             rules_supercession = supercedes )
 
-    def verify( self, path: __.Path ) -> _core.Status:
+    def verify( self, path: __.Path ) -> _core.Status: # pylint: disable=too-many-locals
         ''' Verifies if a path should be protected using cached data. '''
-        path = path.resolve( )
+        path = _normalize_path( path )
         _scribe.debug( f"Path: {path}" )
+
         if any( part in self.defaults_disablement for part in path.parts ):
             return _core.Status( path = path, active = False )
+
         for dir_path, ( ignore, protect ) in self.rules_supercession.items( ):
-            if not path.is_relative_to( dir_path ): continue
-            rel_path = path.relative_to( dir_path )
+            dir_path_ = _normalize_path( dir_path )
+            if not path.is_relative_to( dir_path_ ): continue
+            rel_path = path.relative_to( dir_path_ )
             if _check_path_patterns( rel_path, ignore ):
                 return _core.Status( path = path, active = False )
             if _check_path_patterns( rel_path, protect ):
@@ -78,9 +81,11 @@ class Cache( _core.Protector, decorators = ( __.standard_dataclass, ) ):
                     path = path,
                     reason = _core.Reasons.PlatformSensitive,
                     active = True )
+
         for reason, rule in self.rules.items( ):
             for protected_path in rule.paths:
-                if path.is_relative_to( protected_path ):
+                protected_path_ = _normalize_path( protected_path )
+                if path.is_relative_to( protected_path_ ):
                     return _core.Status(
                         path = path,
                         reason = reason,
@@ -90,6 +95,7 @@ class Cache( _core.Protector, decorators = ( __.standard_dataclass, ) ):
                     path = path,
                     reason = reason,
                     active = True )
+
         return _core.Status( path = path, active = False )
 
 
@@ -152,7 +158,26 @@ def discover_platform_locations(
 def _expand_location( path: str ) -> __.Path:
     ''' Expands path with home directory and environment variables. '''
     expanded = __.os.path.expanduser( __.os.path.expandvars( path ) )
-    return __.Path( expanded )
+    if (    __.sys.platform == 'win32' # pylint: disable=magic-value-comparison
+            and expanded.startswith( '/' )
+            and not expanded.startswith( '//' ) # Skip UNC paths
+    ):
+        expanded = expanded.lstrip( '/' )
+        path_obj = __.Path( expanded )
+        if not path_obj.is_absolute( ):
+            path_obj = __.Path( __.Path.cwd( ).drive + '/' + expanded )
+    else: path_obj = __.Path( expanded )
+    return _normalize_path( path_obj.resolve( ) )
+
+
+def _normalize_path( path: __.Path ) -> __.Path:
+    ''' Normalizes path for consistent comparison across platforms. '''
+    resolved = path.resolve( )
+    if __.sys.platform == 'win32' and resolved.drive: # pylint: disable=magic-value-comparison
+        return __.Path(
+            resolved.drive.lower( )
+            + str( resolved )[ len( resolved.drive ): ] )
+    return resolved
 
 
 def _process_configuration(

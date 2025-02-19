@@ -21,6 +21,7 @@
 ''' Tests for environment module. '''
 
 # pylint: disable=redefined-outer-name,too-many-try-statements
+# pylint: disable=unused-argument
 
 
 import os
@@ -70,7 +71,11 @@ def provide_test_state(
         name = 'test-dist',
         location = project_dir,
         editable = True )
-    config = { 'locations': { 'environment': '{user_configuration}/.env' } }
+    config = {
+        'locations': {
+            'environment': '{user_configuration}/.env'
+        }
+    }
 
     return state.Globals(
         application = app_info,
@@ -94,7 +99,11 @@ def provide_noneditable_state(
         name = 'test-dist',
         location = provide_tempdir,
         editable = False )
-    config = { 'locations': { 'environment': '{user_configuration}/.env' } }
+    config = {
+        'locations': {
+            'environment': '{user_configuration}/.env'
+        }
+    }
 
     return state.Globals(
         application = app_info,
@@ -314,11 +323,7 @@ async def test_140_normal_no_template(
 async def test_210_no_env_files( provide_noneditable_state ):
     ''' Update handles missing .env files gracefully. '''
     environment = cache_import_module( f"{PACKAGE_NAME}.__.environment" )
-
-    # Ensure environment is empty
-    provide_noneditable_state.exits.clear( )
     initial_env = provide_noneditable_state.exits.copy( )
-
     await environment.update( provide_noneditable_state )
     assert initial_env == provide_noneditable_state.exits
 

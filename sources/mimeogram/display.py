@@ -33,12 +33,14 @@ def discover_pager( ) -> __.cabc.Callable[ [ str ], None ]:
     ''' Discovers pager and returns executor function. '''
     from shutil import which
     from subprocess import run # nosec B404
-    # TODO: Better default for Windows.
     pager = __.os.environ.get( 'PAGER', 'less' )
-    # TODO: Platform-specific list.
     for pager_ in ( pager, 'less', 'more' ):
-        if which( pager_ ):
-            pager = pager_
+        if ( pager := which( pager_ ) ):
+            match __.sys.platform:
+                case 'win32':
+                    # Windows 'more.com' does not support UTF-8.
+                    if pager.lower( ).endswith( '\\more.com' ): continue
+                case _: pass
             break
     else: pager = ''
 
@@ -73,8 +75,19 @@ def display_content(
     from .exceptions import PagerFailure
     pager = pager_discoverer( )
     import tempfile
-    with tempfile.NamedTemporaryFile( mode = 'w', suffix = suffix ) as tmp:
+    from pathlib import Path
+    # Using delete = False to handle file cleanup manually. This ensures
+    # the file handle is properly closed before the pager attempts to read it,
+    # which is particularly important on Windows where open files cannot be
+    # simultaneously accessed by other processes without a read share.
+    with tempfile.NamedTemporaryFile(
+        mode = 'w', suffix = suffix, delete = False, encoding = 'utf-8'
+    ) as tmp:
+        filename = tmp.name
         tmp.write( content )
-        tmp.flush( )
-        try: pager( tmp.name )
-        except Exception as exc: raise PagerFailure( cause = exc ) from exc
+    try: pager( filename )
+    except Exception as exc: raise PagerFailure( cause = exc ) from exc
+    finally:
+        try: Path( filename ).unlink( )
+        except Exception: # pylint: disable=broad-exception-caught
+            _scribe.exception( f"Failed to cleanup {filename}" )

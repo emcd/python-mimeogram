@@ -151,13 +151,10 @@ linters = [
 ]
 packagers = [
   '''hatch build''',
-  '''pyinstaller --name mimeogram \
+  '''pyinstaller \
       --clean \
-      --onefile \
-      --add-data=pyproject.toml:. \
-      --add-data=data:data \
       --distpath=.auxiliary/artifacts/pyinstaller \
-      sources/mimeogram/__main__.py''',
+      pyinstaller.spec''',
 ]
 testers = [
   'coverage erase',

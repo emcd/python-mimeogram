@@ -28,6 +28,14 @@ import pytest
 from . import PACKAGE_NAME, cache_import_module
 
 
+def _nativize_path( path_str: str ) -> str:
+    ''' Converts path string to platform-native format. '''
+    import sys
+    if sys.platform == 'win32' and path_str.startswith( '/' ):
+        return f"C:{path_str}"
+    return path_str
+
+
 def test_100_rule_initialization( ):
     ''' Rule initializes with paths and optional patterns. '''
     cache = cache_import_module( f"{PACKAGE_NAME}.fsprotect.cache" )
@@ -254,9 +262,12 @@ def test_410_from_configuration_custom_additions( ):
     cache = cache_import_module( f"{PACKAGE_NAME}.fsprotect.cache" )
     core = cache_import_module( f"{PACKAGE_NAME}.fsprotect.core" )
 
+    test_path = _nativize_path( '/custom/path' )
+    config_path = _nativize_path( '/test/config' )
+
     test_config = {
         'protection': {
-            'additional-locations': [ '/custom/path' ],
+            'additional-locations': [ test_path ],
             'additional-patterns': [ '**/*.secret' ],
         }
     }
@@ -267,14 +278,14 @@ def test_410_from_configuration_custom_additions( ):
             self.configuration = test_config
             self.directories = mock_directories = (
                 type( 'MockDirectories', ( ), { } )( ) )
-            mock_directories.user_config_path = '/test/config'
+            mock_directories.user_config_path = config_path
 
     auxdata = MockAuxdata( )
     cache_obj = cache.Cache.from_configuration( auxdata )
 
     # Check custom additions are present
     custom_rule = cache_obj.rules[ core.Reasons.CustomAddition ]
-    assert Path( '/custom/path' ) in custom_rule.paths
+    assert Path( test_path ) in custom_rule.paths
     assert '**/*.secret' in custom_rule.patterns
 
 
@@ -307,10 +318,13 @@ def test_430_from_configuration_rules_supercession( ):
     ''' Cache processes rules supercession configuration. '''
     cache = cache_import_module( f"{PACKAGE_NAME}.fsprotect.cache" )
 
+    workspace_path = _nativize_path( '/workspace' )
+    config_path = _nativize_path( '/test/config' )
+
     test_config = {
         'protection': {
             'rules-supercession': {
-                '/workspace': {
+                workspace_path: {
                     'ignore': [ '.git', '.vscode' ],
                     'protect': [ '**/*secret*' ],
                 }
@@ -324,14 +338,14 @@ def test_430_from_configuration_rules_supercession( ):
             self.configuration = test_config
             self.directories = mock_directories = (
                 type( 'MockDirectories', ( ), { } )( ) )
-            mock_directories.user_config_path = '/test/config'
+            mock_directories.user_config_path = config_path
 
     auxdata = MockAuxdata( )
     cache_obj = cache.Cache.from_configuration( auxdata )
 
     # Check supercession rules
     supercession = cache_obj.rules_supercession
-    workspace_rules = supercession[ Path( '/workspace' ) ]
+    workspace_rules = supercession[ Path( workspace_path ) ]
     assert '.git' in workspace_rules[ 0 ]  # ignore patterns
     assert '.vscode' in workspace_rules[ 0 ]
     assert '**/*secret*' in workspace_rules[ 1 ]  # protect patterns

@@ -33,34 +33,39 @@ def discover_editor( ) -> __.cabc.Callable[ [ str ], str ]:
     ''' Discovers editor and returns executor function. '''
     from shutil import which
     from subprocess import run # nosec B404
-    editor = (
-            __.os.environ.get( 'VISUAL' )
-        or  __.os.environ.get( 'EDITOR' )
-        # TODO: Better default for Windows.
-        or  'nano' )
-    # TODO: Platform-specific list.
-    for editor_ in ( editor, 'nano' ):
-        if which( editor_ ):
-            editor = editor_
-            break
+    editor = __.os.environ.get( 'VISUAL' ) or  __.os.environ.get( 'EDITOR' )
+    for editor_ in filter(
+        None,
+        # Editors, ranked by "friendliness", not by personal preference.
+        ( editor, 'code', 'nano', 'emacs', 'nvim', 'vim' )
+    ):
+        if ( editor := which( editor_ ) ): break
     else: editor = ''
+    match editor:
+        case 'code': posargs = ( '--wait', )
+        case _: posargs = ( )
 
     if editor:
 
         # TODO? async
         def editor_executor( filename: str ) -> str:
             ''' Executes editor with file. '''
-            run( ( editor, filename ), check = True ) # nosec B603
+            run( ( editor, *posargs, filename ), check = True ) # nosec B603
             with open( filename, 'r', encoding = 'utf-8' ) as stream:
                 return stream.read( )
 
         return editor_executor
 
+    _scribe.error(
+        "No suitable text editor found. "
+        "Please install a console-based editor "
+        "or set the 'EDITOR' environment variable to your preferred editor." )
+    # TODO: Add suggestions.
     from .exceptions import ProgramAbsenceError
     raise ProgramAbsenceError( 'editor' )
 
 
-def edit_content(
+def edit_content( # pylint: disable=too-many-locals
     content: str = '', *,
     suffix: str = '.md',
     editor_discoverer: __.cabc.Callable[
@@ -69,12 +74,21 @@ def edit_content(
     ''' Edits content via discovered editor. '''
     from .exceptions import EditorFailure, ProgramAbsenceError
     try: editor = editor_discoverer( )
-    except ProgramAbsenceError:
-        _scribe.exception( "Could not find editor program." )
-        return content
+    except ProgramAbsenceError: return content
     import tempfile
-    with tempfile.NamedTemporaryFile( mode = 'r+', suffix = suffix ) as tmp:
+    from pathlib import Path
+    # Using delete = False to handle file cleanup manually. This ensures
+    # the file handle is properly closed before the editor attempts to read it,
+    # which is particularly important on Windows where open files cannot be
+    # simultaneously accessed by other processes without a read share.
+    with tempfile.NamedTemporaryFile(
+        mode = 'w', suffix = suffix, delete = False, encoding = 'utf-8'
+    ) as tmp:
+        filename = tmp.name
         tmp.write( content )
-        tmp.flush( )
-        try: return editor( tmp.name )
-        except Exception as exc: raise EditorFailure( cause = exc ) from exc
+    try: return editor( filename ) # noqa: TRY101
+    except Exception as exc: raise EditorFailure( cause = exc ) from exc
+    finally:
+        try: Path( filename ).unlink( )
+        except Exception: # pylint: disable=broad-exception-caught
+            _scribe.exception( f"Failed to cleanup {filename}" )

@@ -60,12 +60,11 @@ jobs:
       needs: [initialize, package]
       strategy:
         matrix:
-          # TEMP: Exclude Windows until various fixes.
           include:
             - os: ubuntu-22.04 # Earlier version for better Glibc compatibility.
               platform-name: linux-x86_64
-            # - os: windows-latest
-            #   platform-name: windows-x86_64
+            - os: windows-latest
+              platform-name: windows-x86_64
             - os: macos-13
               platform-name: macos-x86_64
             - os: macos-latest
@@ -91,13 +90,14 @@ jobs:
           run: choco install upx
 
         - name: Create Executable
+          env:
+            _PYI_EXECUTABLE_NAME: mimeogram-${{ github.ref_name }}-${{ matrix.platform-name }}
           run: |
             hatch --env develop run \
-              pyinstaller --name mimeogram-${GITHUB_REF_NAME}-${{ matrix.platform-name }} \
-                --clean --onefile \
-                --add-data=pyproject.toml:. --add-data=data:data \
-                --distpath=.auxiliary/artifacts/pyinstaller \
-                sources/mimeogram/__main__.py
+              pyinstaller \
+                --clean --distpath=.auxiliary/artifacts/pyinstaller \
+                pyinstaller.spec
+            .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} --help
 
         - name: Save Executable
           uses: actions/upload-artifact@v4
