@@ -97,6 +97,7 @@ jobs:
               pyinstaller \
                 --clean --distpath=.auxiliary/artifacts/pyinstaller \
                 pyinstaller.spec
+            .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} --help
 
         - name: Save Executable
           uses: actions/upload-artifact@v4
