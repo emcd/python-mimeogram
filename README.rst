@@ -264,6 +264,26 @@ Best Practices 💫
   to select hunks of a diff to apply, rather than the whole diff.
 
 
+Troubleshooting 🔍
+===============================================================================
+
+Possible Issues
+-------------------------------------------------------------------------------
+
+* **Clipboard Operations Fail**: Check if your clipboard manager is running and
+  accessible. On Linux, ensure ``xclip`` or ``xsel`` is installed.
+
+* **Oversized Mimeograms**: If LLMs truncate responses:
+    * Reduce the number of files per mimeogram.
+    * Split changes across multiple conversations.
+    * Focus on smaller, atomic changes.
+
+* **Invalid Part Errors**: If parts fail to apply:
+    * Check file permissions.
+    * Verify file paths are correct relative to working directory.
+    * Use ``--base`` option to set correct base directory.
+
+
 Motivation 🎯
 ===============================================================================
 
@@ -324,6 +344,19 @@ Notes:
   for LLMs to use via APIs, such as the Anthropic or OpenAI API.
 - Cost differences can be significant at scale, especially when considering
   cache misses against APIs.
+
+
+Contributing 🤝
+===============================================================================
+
+Contributions welcome. Please see the `contribution guide
+<https://github.com/emcd/python-mimeogram/tree/master/documentation/sphinx/contribution>`_
+for:
+
+* Code of conduct
+* Development setup
+* Coding guidelines
+* Documentation standards
 
 
 About the Name 📝

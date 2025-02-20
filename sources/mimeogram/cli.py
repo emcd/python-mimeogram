@@ -26,10 +26,28 @@ from __future__ import annotations
 from . import __
 from . import apply as _apply
 from . import create as _create
+from . import interfaces as _interfaces
 from . import prompt as _prompt
 
 
 _scribe = __.produce_scribe( __name__ )
+
+
+class VersionCommand(
+    _interfaces.CliCommand,
+    decorators = ( __.standard_dataclass, __.standard_tyro_class ),
+):
+    ''' Prints version information. '''
+
+    async def __call__( self, auxdata: __.Globals ) -> None:
+        ''' Executes command to print version information. '''
+        from . import __version__ # pylint: disable=cyclic-import
+        print( f"{__package__} {__version__}" )
+        raise SystemExit( 0 )
+
+    def provide_configuration_edits( self ) -> __.DictionaryEdits:
+        ''' Provides edits against configuration from options. '''
+        return ( )
 
 
 class Cli(
@@ -58,6 +76,11 @@ class Cli(
             _prompt.Command,
             __.tyro.conf.subcommand( # pyright: ignore
                 'provide-prompt', prefix_name = False ),
+        ],
+        __.typx.Annotated[
+            VersionCommand,
+            __.tyro.conf.subcommand( # pyright: ignore
+                'version', prefix_name = False ),
         ],
     ]
 
