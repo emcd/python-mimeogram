@@ -93,11 +93,13 @@ jobs:
           env:
             _PYI_EXECUTABLE_NAME: mimeogram-${{ github.ref_name }}-${{ matrix.platform-name }}
           run: |
+            set -eu -o pipefail
             hatch --env develop run \
               pyinstaller \
                 --clean --distpath=.auxiliary/artifacts/pyinstaller \
                 pyinstaller.spec
             .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} --help
+          shell: bash
 
         - name: Save Executable
           uses: actions/upload-artifact@v4
@@ -172,6 +174,7 @@ jobs:
 
       - name: Generate Release Notes
         run: |
+          set -eu -o pipefail
           hatch --env develop run \
             towncrier build --draft --version ${GITHUB_REF_NAME} \
             >.auxiliary/artifacts/tc-release-notes.rst
