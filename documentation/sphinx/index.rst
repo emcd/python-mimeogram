@@ -27,6 +27,7 @@ Table of Contents
    :maxdepth: 2
 
    examples/index
+   operation
    api
    changelog
    contribution/index

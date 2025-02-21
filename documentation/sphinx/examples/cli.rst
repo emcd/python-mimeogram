@@ -32,13 +32,18 @@ Bundle specific files into a mimeogram:
 
 .. code-block:: bash
 
-    # Bundle Python files from src directory
     mimeogram create src/*.py
 
-    # Bundle multiple file types
-    mimeogram create src/*.py tests/*.py README.rst
+Bundle multiple types of files, each with its content type detected:
 
-    # Bundle with recursion into directories
+.. code-block:: bash
+
+    mimeogram create src/*.py README.rst
+
+Recurse into subdirectories (subject to Git ignore rules):
+
+.. code-block:: bash
+
     mimeogram create --recurse-directories=True src/ tests/
 
 By default, the mimeogram will be copied to the clipboard. To print to stdout
@@ -46,7 +51,6 @@ instead:
 
 .. code-block:: bash
 
-    # Print to stdout instead of copying to clipboard
     mimeogram create --clipboard=False src/*.py
 
 Adding Context
@@ -56,47 +60,58 @@ Add a message to provide context to the LLM:
 
 .. code-block:: bash
 
-    # Opens your default editor for message input
     mimeogram create --edit-message src/*.py
 
 For LLM interfaces without project support, include format instructions:
 
 .. code-block:: bash
 
-    # Add format instructions before mimeogram
     mimeogram create --prepend-prompt src/*.py
-
-    # Combine with message
-    mimeogram create --edit-message --prepend-prompt src/*.py
 
 
 Applying Mimeograms
 ===============================================================================
 
-Non-Interactive Application
+Basic File Unpacking
 -------------------------------------------------------------------------------
 
-Apply changes without review (suitable for scripts or CI):
+Apply changes from clipboard (default):
 
 .. code-block:: bash
 
-    # Apply from clipboard (default)
     mimeogram apply
 
-    # Apply from stdin
+Apply changes from standard input:
+
+.. code-block:: bash
+
     mimeogram apply --clipboard=False
 
-    # Apply from file
+Apply changes from file:
+
+.. code-block:: bash
+
     mimeogram apply --clipboard=False changes.mimeogram
 
-    # Apply to different base directory
+Apply changes relative to a different base directory than the current working
+directory:
+
+.. code-block:: bash
+
     mimeogram apply --base-directory /path/to/project
+
+Apply changes in non-interactive mode:
+
+.. code-block:: bash
+
+    mimeogram apply --review-mode=silent /path/to/project
+
 
 Interactive Review
 -------------------------------------------------------------------------------
 
-By default, when running on a terminal, mimeogram will enter interactive review
-mode. For each file, you'll see a menu like this:
+By default, when running on a terminal, you will be presented with interactive
+review mode. For each file, you'll see a menu like this:
 
 .. code-block:: text
 
@@ -105,12 +120,12 @@ mode. For each file, you'll see a menu like this:
 
 Available actions:
 
-- ``a``: Apply the changes as-is
-- ``d``: Show diff between current and proposed content
-- ``e``: Edit the proposed content
-- ``i``: Skip this file
-- ``s``: Interactively select which changes to apply
-- ``v``: View the proposed content
+- ``a``: Apply the proposed content as-is.
+- ``d``: Show differences between current and proposed content.
+- ``e``: Edit the proposed content.
+- ``i``: Skip this file.
+- ``s``: Interactively select which proposed changes to apply.
+- ``v``: View the proposed content.
 
 For protected paths, you'll see a modified menu:
 
@@ -143,70 +158,21 @@ Setting Project Instructions
 ===============================================================================
 
 For LLM interfaces that support project-level instructions (like Claude.ai or
-ChatGPT), you can set up mimeogram format instructions once:
+ChatGPT), you can setup the mimeogram format prompt once and reuse it
+thereafter.
+
+Copy instructions to clipboard (default behavior):
 
 .. code-block:: bash
 
-    # Copy instructions to clipboard (default behavior)
     mimeogram provide-prompt
 
-    # Print to stdout instead
+Print to stdout instead:
+
+.. code-block:: bash
+
     mimeogram provide-prompt --clipboard=False
 
 Then paste these into your project instructions. All subsequent chats will
 understand mimeograms without needing to include the format instructions in
 each message.
-
-
-Common Workflows
-===============================================================================
-
-Code Review
--------------------------------------------------------------------------------
-
-When asking an LLM to review code:
-
-.. code-block:: bash
-
-    # Bundle files with context
-    mimeogram create --edit-message src/*.py tests/*.py
-
-    # Paste into LLM chat
-    # ... interact with LLM ...
-
-    # Apply suggested changes interactively
-    mimeogram apply
-
-Project Setup
--------------------------------------------------------------------------------
-
-When getting help setting up a new project:
-
-.. code-block:: bash
-
-    # Set format instructions in project
-    mimeogram provide-prompt
-    # Paste into project instructions
-
-    # Send current project state
-    mimeogram create --recurse-directories=True .
-    # Paste into chat
-
-    # Apply scaffolding interactively
-    mimeogram apply
-
-Bug Investigation
--------------------------------------------------------------------------------
-
-When getting help with a bug:
-
-.. code-block:: bash
-
-    # Bundle relevant files with explanation
-    mimeogram create --edit-message src/buggy.py tests/test_buggy.py
-
-    # After LLM suggests fixes
-    mimeogram apply
-
-    # Select specific hunks if the fix is partially correct
-    # Use 's' in the interactive menu
