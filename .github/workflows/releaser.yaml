@@ -70,6 +70,8 @@ jobs:
             - os: macos-latest
               platform-name: macos-arm64
       runs-on: ${{ matrix.os }}
+      env:
+        _PYI_EXECUTABLE_NAME: mimeogram-${{ github.ref_name }}-${{ matrix.platform-name }}
       steps:
 
         - name: Prepare Python
@@ -90,16 +92,22 @@ jobs:
           run: choco install upx
 
         - name: Create Executable
-          env:
-            _PYI_EXECUTABLE_NAME: mimeogram-${{ github.ref_name }}-${{ matrix.platform-name }}
           run: |
-            set -eu -o pipefail
             hatch --env develop run \
               pyinstaller \
                 --clean --distpath=.auxiliary/artifacts/pyinstaller \
                 pyinstaller.spec
+          shell: bash
+
+        - name: Validate Executable (Non-Windows)
+          if: runner.os != 'Windows'
+          run: |
             .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} --help
           shell: bash
+
+        # TODO: Validate executable on Windows.
+        #       Need to find feasible way to address:
+        #         https://github.com/tartley/colorama/issues/319
 
         - name: Save Executable
           uses: actions/upload-artifact@v4

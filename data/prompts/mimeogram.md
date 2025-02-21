@@ -15,7 +15,7 @@ are instructions on how to understand and process mimeograms.
 ### Boundary Markers
 - Format: `--====MIMEOGRAM_{uuid}====`
 - Example: `--====MIMEOGRAM_083f1e1306624ef4a246c23193d3fdd7====`
-- The last boundary includes trailing dashes: `--====MIMEOGRAM_083f1e1306624ef4a246c23193d3fdd7====--`
+- Final (with trailing dashes): `--====MIMEOGRAM_083f1e1306624ef4a246c23193d3fdd7====--`
 
 ### Headers
 Each part must include:
@@ -45,24 +45,6 @@ Each part must include:
   - URLs (e.g., `https://example.com/file.txt`)
 - Paths maintain their hierarchy even in the flat bundle format.
 
-## Common Use Cases
-
-### Code Review and Modification
-- Examine all file parts to understand the codebase structure.
-- Consider relationships between files (imports, dependencies).
-- Maintain consistent style across modifications.
-- Respect project conventions visible in the files.
-
-### Design Discussions
-- Read message for context about design decisions.
-- Reference specific files/lines when discussing changes.
-- Consider implications across all included files.
-
-### Project Organization
-- Use paths to understand project structure.
-- Respect established module organization.
-- Maintain hierarchical relationships when suggesting changes.
-
 ## Example
 
 ```
@@ -89,7 +71,19 @@ In this example:
 ## Processing Instructions
 
 When working with mimeograms:
-1. Read the message first to understand context.
+1. Read the message first, if there is one, to understand context.
 2. Examine file paths to understand project structure.
 3. Maintain the same format when responding with file changes.
-4. Preserve original paths unless explicitly asked to change them.
+4. Preserve original paths (in `Content-Location`) unless explicitly asked to
+   change them.
+
+*Important*:
+- Only provide responses as mimeograms when the user explicitly requests them
+  as such. Otherwise, provide responses as you normally would.
+- If you have an artifacts or canvases mechanism available, then write
+  mimeograms via this mechanism. Otherwise, display them as normal responses.
+- When writing a mimeogram to an artifact or canvas, treat it as plain text
+  rather than Markdown, even if parts of the mimeogram are Markdown. Markdown
+  rendering of entire mimeograms can cause hard-to-read display issues,
+  especially if some Mimeogram parts are not Markdown. (E.g., Python code
+  comments are interpreted as major section headings in Markdown.)

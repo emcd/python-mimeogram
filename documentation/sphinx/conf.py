@@ -123,7 +123,10 @@ linkcheck_ignore = [
     r'https://github\.com/emcd/python-mimeogram',
     r'https://github\.com/emcd/python-mimeogram/.*',
     # Package does not exist during initial development.
-    r'https://pypi.org/project/mimeogram/',
+    r'https://pypi\.org/project/mimeogram/',
+    # Some LLM chat interfaces do not like to be touched by bots.
+    r'https://chat\.deepseek\.com/',
+    r'https://chatgpt\.com/',
 ]
 
 # -- Options for HTML output -------------------------------------------------

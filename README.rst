@@ -112,102 +112,103 @@ Or, install with ``pip``:
 Examples 💡
 ===============================================================================
 
-Working with LLM Interfaces (no project support)
+Below are some simple examples. Please see the `examples documentation
+<https://github.com/emcd/python-mimeogram/blob/master/documentation/sphinx/examples/cli.rst>`_
+for more detailed usage patterns.
+
+Working with Simple LLM Interfaces
 -------------------------------------------------------------------------------
 
-Use with Deepseek.com, API workbenches, GUIs which do not support projects,
-etc...:
+Use with API workbenches and with LLM GUIs which do not support persistent
+user-customized instructions (e.g., `DeepSeek <https://chat.deepseek.com/>`_
+and `Google Gemini <https://gemini.google.com/>`_):
 
-.. code-block:: bash
+* Bundle files with mimeogram format instructions into clipboard.
 
-    # Bundle files with mimeogram format instructions into clipboard.
-    mimeogram create src/*.py tests/*.py --prepend-prompt
+  .. code-block:: bash
 
-    # Interact with LLM until you are ready to apply results.
+      mimeogram create src/*.py tests/*.py --prepend-prompt
 
-    # Request mimeogram from LLM and copy it from browser to clipboard.
+* Paste instructions and mimeogram into prompt text area in browser.
 
-    # Apply mimeogram parts from clipboard.
-    # (On terminal, this will be interactive by default.)
-    mimeogram apply
+* Interact with LLM until you are ready to apply results.
+
+* Request mimeogram from LLM and copy it from browser to clipboard.
+
+* Apply mimeogram parts from clipboard. (On a terminal, this will be
+  interactive by default.)
+
+  .. code-block:: bash
+
+      mimeogram apply
 
 
-Working with LLM Project GUIs
+Working with LLM Project Interfaces
 -------------------------------------------------------------------------------
 
-E.g., Claude.ai or ChatGPT.com with models which support projects:
+Some LLM service providers have the concept of projects. These allow you to
+organize chats and persist a set of instructions across chats. Projects might
+only be available for certain models. Examples of LLM service providers, which
+support projects with some of their models, are `Claude <https://claude.ai/>`_
+and `ChatGPT <https://chatgpt.com/>`_.
 
-.. code-block:: bash
+In these cases, you can take advantage of the project instructions so that you
+do not need to include mimeogram instructions with each new chat:
 
-    # Copy mimeogram format instructions into clipboard.
-    mimeogram provide-prompt
+* Copy mimeogram format instructions into clipboard.
 
-    # Paste mimeogram instructions into project instructions.
+  .. code-block:: bash
 
-    # Any new chats will be able to reuse the project instructions.
+      mimeogram provide-prompt
 
-.. code-block:: bash
+* Paste mimeogram prompt into project instructions and save the update. Any new
+  chats will be able to reuse the project instructions hereafter.
 
-    # Simply create mimeograms for new chats without prepending instructions.
-    mimeogram create src/*.py tests/*.py
+* Simply create mimeograms for new chats without prepending instructions.
 
-    # Same workflow as chats without project support at this point.
+  .. code-block:: bash
 
+      mimeogram create src/*.py tests/*.py
 
-Command Options 🛠️
-===============================================================================
-
-Use ``--help`` with the ``mimeogram`` command or any of its subcommands to see
-a full list of possible arguments:
-
-.. code-block:: bash
-
-    mimeogram --help
-
-.. code-block:: bash
-
-    mimeogram apply --help
-
-Etc...
+* Same workflow as chats without project support at this point: interact with
+  LLM, request mimeogram (as necessary), apply mimeogram (as necessary).
 
 
-Create Command
+Interactive Review
 -------------------------------------------------------------------------------
 
-Bundle files into clipboard:
+During application of a mimeogram, you will be, by default, presented with the
+chance to review each part to apply. For each part, you will see a menu like
+this:
 
-.. code-block:: bash
+.. code-block:: text
 
-    mimeogram create [OPTIONS] SOURCES...
+    src/example.py [2.5K]
+    Action? (a)pply, (d)iff, (e)dit, (i)gnore, (s)elect hunks, (v)iew >
 
-📋 Common options:
-
-* --edit, -e
-    Add message via editor.
-* --prepend-prompt
-    Include LLM instructions before mimeogram.
-* --recurse, -r
-    Include subdirectories and their contents. (Subject to Git ignore rules.)
+Choosing ``a`` to select the ``apply`` action will cause the part to be queued
+for application once the reivew of all parts is complete. All queued parts are
+applied simultaneously to prevent thrash in IDEs and language servers as
+interdependent files are reevaluated.
 
 
-Apply Command
+Filesystem Protection
 -------------------------------------------------------------------------------
 
-Apply changes from clipboard:
+If an LLM proposes the alteration of a sensitive file, such as one which may
+contain credentials or affect the operating system, then the program makes an
+attempt to flag this:
 
-.. code-block:: bash
+.. code-block:: text
 
-    mimeogram apply [OPTIONS]
+    ~/.config/sensitive.conf [1.2K] [PROTECTED]
+    Action? (d)iff, (i)gnore, (p)ermit changes, (v)iew >
 
-📋 Common options:
+If, upon review of the proposed changes, you believe that they are safe, then
+you can choose ``p`` to permit them, followed by ``a`` to apply them.
 
-* --base DIRECTORY
-    Set base directory for relative paths in parts. (Working directory by
-    default.)
-* --mode silent
-    Apply all parts without review.
-* --force
-    Override protections against potentially dangerous writes.
+We take AI safety seriously. Please review all LLM-generated content, whether
+it is flagged for a sensitive destination or not.
 
 
 Configuration 🔧
@@ -242,46 +243,6 @@ Default Settings
 
     [update-parts]
     disable-protections = false
-
-
-Best Practices 💫
-===============================================================================
-
-* Use ``--edit`` flag with ``create`` command to provide context to LLM. This
-  has the advantage of letting you use a favorite editor to form a message to
-  the LLM rather than a web GUI text area.
-* Keep changes focused and atomic. Chats with sprawling changes may be cause
-  LLM output windows to be exceeded when generating return mimeograms.
-* Submit related files together. Fewer conversation rounds related to shuffling
-  mimeograms mean more conversation rounds for productive discussion.
-* If the platform supports projects, set project instructions from ``mimeogram
-  provide-prompt``. These will be reused across all chats in the project,
-  making every one of its chats a mimeogram-aware one.
-* You may not need to create a return mimeogram to apply if you are using
-  Claude artifacts, ChatGPT canvases, or similar. You can simply copy the
-  final results and paste them into an editor buffer. This will save tokens.
-  However, interactively applying a mimeogram has the advantage of allowing you
-  to select hunks of a diff to apply, rather than the whole diff.
-
-
-Troubleshooting 🔍
-===============================================================================
-
-Possible Issues
--------------------------------------------------------------------------------
-
-* **Clipboard Operations Fail**: Check if your clipboard manager is running and
-  accessible. On Linux, ensure ``xclip`` or ``xsel`` is installed.
-
-* **Oversized Mimeograms**: If LLMs truncate responses:
-    * Reduce the number of files per mimeogram.
-    * Split changes across multiple conversations.
-    * Focus on smaller, atomic changes.
-
-* **Invalid Part Errors**: If parts fail to apply:
-    * Check file permissions.
-    * Verify file paths are correct relative to working directory.
-    * Use ``--base`` option to set correct base directory.
 
 
 Motivation 🎯
