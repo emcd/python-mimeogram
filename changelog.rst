@@ -2,38 +2,21 @@
 
 .. towncrier release notes start
 
-Mimeogram 1.0 (2025-02-14)
+Mimeogram 1.0 (2025-02-22)
 ==========================
 
 Features
 --------
 
-- Add ``mimeogram create`` command for bundling files into clipboard-ready
-  documents:
+- Add Git ignore rule integration to avoid processing unwanted files.
+- Add `mimeogram apply` command with interactive review, hunk selection, file editing, and atomic file updates.
+- Add `mimeogram create` command for bundling files into clipboard-ready documents with preserved directory structure, Git ignore rule support, and integrated message editing.
+- Add `mimeogram provide-prompt` command for generating format instructions and setting up LLM project-level support.
+- Add atomic file updates with automatic rollback on errors.
+- Add filesystem protection system to prevent accidental modification of sensitive paths.
 
-  * Preserves directory structure and file metadata
-  * Supports recursive directory traversal
-  * Honors Git ignore rules
-  * Includes editor integration for adding context messages
-  * Provides format instructions for LLMs
 
-- Add ``mimeogram apply`` command for applying changes from mimeograms:
+Supported Platforms
+-------------------
 
-  * Interactive review mode on terminals
-  * Hunk-by-hunk selection of changes
-  * File content editor integration
-  * Protected path detection
-  * Atomic file updates
-
-- Add ``mimeogram provide-prompt`` command for setting up LLM projects:
-
-  * Generates format instructions
-  * Enables project-level mimeogram support in LLM interfaces
-  * Single-command setup for new projects
-
-- Add filesystem protection system to prevent accidental modification of
-  sensitive paths
-
-- Add atomic file updates with automatic rollback on errors
-
-- Add Git ignore rule integration to avoid processing unwanted files
+- Add support for CPython 3.10 through 3.13.
