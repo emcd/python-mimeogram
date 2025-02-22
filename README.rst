@@ -120,8 +120,8 @@ Working with Simple LLM Interfaces
 -------------------------------------------------------------------------------
 
 Use with API workbenches and with LLM GUIs which do not support persistent
-user-customized instructions (e.g., `DeepSeek <https://chat.deepseek.com/>`_
-and `Google Gemini <https://gemini.google.com/>`_):
+user-customized instructions (e.g., `DeepSeek <https://chat.deepseek.com/>`_,
+`Google Gemini <https://gemini.google.com/>`_, `Grok <https://grok.com>`_):
 
 * Bundle files with mimeogram format instructions into clipboard.
 
@@ -141,6 +141,11 @@ and `Google Gemini <https://gemini.google.com/>`_):
   .. code-block:: bash
 
       mimeogram apply
+
+Note that, if you do not want the LLM to return mimeograms to you, most of the
+current generation of LLMs are smart enough to understand the format without
+instructions. Thus, you can save tokens by not explicitly providing mimeogram
+instructions.
 
 
 Working with LLM Project Interfaces
@@ -296,7 +301,7 @@ Comparison ⚖️
 +---------------------+------------+------------+-------------+--------------+
 
 .. [1] ChatGPT and Claude.ai subscription feature
-.. [2] `Cursor <https://www.cursor.com/>`_, etc...
+.. [2] `Cursor <https://www.cursor.com/en>`_, etc...
 .. [3] Requires custom implementation
 
 Notes:
