@@ -71,11 +71,6 @@ class Command(
                 "Base directory for relative locations. "
                 "Defaults to current working directory." ) ),
     ] = None
-    # preview: __.typx.Annotated[
-    #     __.typx.Optional[ bool ],
-    #     __.tyro.conf.arg(
-    #         help = "Show what would be changed without making changes." ),
-    # ] = None
     force: __.typx.Annotated[
         __.typx.Optional[ bool ],
         __.tyro.conf.arg(
@@ -146,7 +141,7 @@ class StandardContentAcquirer(
         return __.sys.stdin.read( )
 
 
-async def apply( # pylint: disable=too-complex,too-many-statements
+async def apply( # pylint: disable=too-complex
     auxdata: __.Globals,
     command: Command,
     *,
@@ -171,23 +166,19 @@ async def apply( # pylint: disable=too-complex,too-many-statements
     if __.is_absent( updater ):
         from .updaters import update as updater
     review_mode = _determine_review_mode( command, acquirer )
-    try: mgtext = await _acquire( auxdata, command, acquirer )
-    except Exception as exc:
-        _scribe.exception( "Could not acquire mimeogram to apply." )
-        raise SystemExit( 1 ) from exc
+    with __.report_exceptions(
+        _scribe, "Could not acquire mimeogram to apply."
+    ): mgtext = await _acquire( auxdata, command, acquirer )
     if not mgtext:
         _scribe.error( "Cannot apply empty mimeogram." )
         raise SystemExit( 1 )
-    try: parts = parser( mgtext )
-    except Exception as exc:
-        _scribe.exception( "Could not parse mimeogram." )
-        raise SystemExit( 1 ) from exc
+    with __.report_exceptions( _scribe, "Could not parse mimeogram." ):
+        parts = parser( mgtext )
     nomargs: dict[ str, __.typx.Any ] = { }
     if command.base: nomargs[ 'base' ] = command.base
-    try: await updater( auxdata, parts, review_mode, **nomargs )
-    except Exception as exc:
-        _scribe.exception( "Could not apply mimeogram." )
-        raise SystemExit( 1 ) from exc
+    with __.report_exceptions( _scribe, "Could not apply mimeogram." ):
+        await updater( auxdata, parts, review_mode, **nomargs )
+    # TODO: If all parts ignored or inapplicable, then do not mention success.
     _scribe.info( "Successfully applied mimeogram" )
     raise SystemExit( 0 )
 

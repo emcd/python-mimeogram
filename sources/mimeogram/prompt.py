@@ -67,17 +67,14 @@ async def acquire_prompt( auxdata: __.Globals ) -> str:
 
 async def provide_prompt( auxdata: __.Globals ) -> None:
     ''' Provides mimeogram prompt text. '''
-    try: prompt = await acquire_prompt( auxdata )
-    except Exception as exc:
-        _scribe.exception( "Could not acquire prompt text." )
-        raise SystemExit( 1 ) from exc
+    with __.report_exceptions( _scribe, "Could not acquire prompt text." ):
+        prompt = await acquire_prompt( auxdata )
     options = auxdata.configuration.get( 'prompt', { } )
     if options.get( 'to-clipboard', False ):
         from pyperclip import copy
-        try: copy( prompt )
-        except Exception as exc:
-            _scribe.exception( "Could not copy prompt to clipboard." )
-            raise SystemExit( 1 ) from exc
+        with __.report_exceptions(
+            _scribe, "Could not copy prompt to clipboard."
+        ): copy( prompt )
         _scribe.info( "Copied prompt to clipboard." )
     else: print( prompt ) # TODO? Use output stream from configuration.
     raise SystemExit( 0 )

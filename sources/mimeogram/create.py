@@ -101,22 +101,16 @@ async def _acquire_prompt( auxdata: __.Globals ) -> str:
 
 async def _copy_to_clipboard( mimeogram: str ) -> None:
     from pyperclip import copy
-    try: copy( mimeogram )
-    except Exception as exc:
-        _scribe.exception( "Could not copy mimeogram to clipboard." )
-        raise SystemExit( 1 ) from exc
+    copy( mimeogram )
     _scribe.info( "Copied mimeogram to clipboard." )
 
 
 async def _edit_message( ) -> str:
     from .edit import edit_content
-    try: return edit_content( )
-    except Exception as exc:
-        _scribe.exception( "Could not acquire user message." )
-        raise SystemExit( 1 ) from exc
+    return edit_content( )
 
 
-async def create( # pylint: disable=too-complex,too-many-locals,too-many-statements
+async def create( # pylint: disable=too-complex,too-many-locals
     auxdata: __.Globals,
     command: Command, *,
     editor: __.cabc.Callable[
@@ -128,26 +122,16 @@ async def create( # pylint: disable=too-complex,too-many-locals,too-many-stateme
         __.cabc.Coroutine[ None, None, str ] ] = _acquire_prompt,
 ) -> __.typx.Never:
     ''' Creates mimeogram. '''
-    from exceptiongroup import ExceptionGroup
     from .acquirers import acquire
     from .formatters import format_mimeogram
+    with __.report_exceptions(
+        _scribe, "Could not acquire mimeogram parts."
+    ): parts = await acquire( auxdata, command.sources )
     if command.edit:
-        try: message = await editor( )
-        except Exception as exc:
-            _scribe.exception( "Could not acquire user message." )
-            raise SystemExit( 1 ) from exc
+        with __.report_exceptions(
+            _scribe, "Could not acquire user message."
+        ): message = await editor( )
     else: message = None
-    # TODO: Factor into '__.exceptions.report_eg_members'.
-    try: parts = await acquire( auxdata, command.sources )
-    except ExceptionGroup as excg: # pyright: ignore
-        for exc in excg.exceptions: # pyright: ignore
-            _scribe.error( # noqa: TRY400
-                "Could not acquire mimeogram parts.",
-                exc_info = exc ) # pyright: ignore
-        raise SystemExit( 1 ) from None
-    except Exception as exc:
-        _scribe.exception( "Could not acquire mimeogram parts." )
-        raise SystemExit( 1 ) from exc
     mimeogram = format_mimeogram( parts, message = message )
     # TODO? Pass prompt to 'format_mimeogram'.
     if command.prepend_prompt:
@@ -155,9 +139,8 @@ async def create( # pylint: disable=too-complex,too-many-locals,too-many-stateme
         mimeogram = f"{prompt}\n\n{mimeogram}"
     options = auxdata.configuration.get( 'create', { } )
     if options.get( 'to-clipboard', False ):
-        try: await clipcopier( mimeogram )
-        except Exception as exc:
-            _scribe.exception( "Could not copy mimeogram to clipboard." )
-            raise SystemExit( 1 ) from exc
+        with __.report_exceptions(
+            _scribe, "Could not copy mimeogram to clipboard."
+        ): await clipcopier( mimeogram )
     else: print( mimeogram ) # TODO? Use output stream from configuration.
     raise SystemExit( 0 )
