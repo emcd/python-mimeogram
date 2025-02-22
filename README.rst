@@ -179,6 +179,20 @@ do not need to include mimeogram instructions with each new chat:
   LLM, request mimeogram (as necessary), apply mimeogram (as necessary).
 
 
+Remote URLs
+-------------------------------------------------------------------------------
+
+You can also create mimeograms from remote URLs:
+
+.. code-block:: bash
+
+     mimeogram create https://raw.githubusercontent.com/BurntSushi/aho-corasick/refs/heads/master/src/dfa.rs
+
+Both local and remote files may be bundled together in the same mimeogram.
+
+However, there is no ability to apply a mimeogram to remote URLs.
+
+
 Interactive Review
 -------------------------------------------------------------------------------
 
