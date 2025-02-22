@@ -14,8 +14,12 @@ are instructions on how to understand and process mimeograms.
 
 ### Boundary Markers
 - Format: `--====MIMEOGRAM_{uuid}====`
-- Example: `--====MIMEOGRAM_083f1e1306624ef4a246c23193d3fdd7====`
-- Final (with trailing dashes): `--====MIMEOGRAM_083f1e1306624ef4a246c23193d3fdd7====--`
+    - `uuid` is a 32-character hexadecimal UUID, conforming to IETF RFC 4122.
+    - Non-hexadecimal or malformed UUIDs (e.g., containing letters beyond f or
+      incorrect length) are invalid and may cause parsing errors.
+- Examples:
+    - Initial/Partitional: `--====MIMEOGRAM_083f1e1306624ef4a246c23193d3fdd7====`
+    - Final: `--====MIMEOGRAM_083f1e1306624ef4a246c23193d3fdd7====--`
 
 ### Headers
 Each part must include:
@@ -24,6 +28,8 @@ Each part must include:
    - For files: original filesystem path or URL
 2. `Content-Type`: Original MIME type, charset, and newline marker
    - Example: `Content-Type: text/x-python; charset=utf-8; linesep=LF`
+
+Omitting either header renders the part invalid.
 
 ### Content
 - Follows headers after a blank line.
