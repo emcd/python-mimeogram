@@ -25,6 +25,11 @@
 '''
 
 
+import contextlib as _contextlib
+import logging as _logging
+
+import exceptiongroup as _exceptiongroup
+
 from . import imports as __
 
 
@@ -72,3 +77,31 @@ class OperationInvalidity( Omnierror, RuntimeError ):
     def __init__( self, subject: str, name: str ):
         super( ).__init__(
             f"Could not perform operation '{name}' on {subject}." )
+
+
+@_contextlib.contextmanager
+def report_exceptions(
+    scribe: _logging.Logger,
+    message: str,
+    eclass: type[ BaseException ] = SystemExit,
+    eposargs: __.cabc.Sequence[ __.typx.Any ] = ( 1, ),
+) -> __.cabc.Generator[ None, None, None ]:
+    ''' Intercepts and reports exceptions.
+
+        By default, raises ``SystemExit( 1 )``.
+    '''
+    level = scribe.getEffectiveLevel( )
+    try: yield
+    except _exceptiongroup.ExceptionGroup as excg: # pyright: ignore
+        scribe.error( message ) # noqa: TRY400
+        for exc in excg.exceptions: # pyright: ignore
+            if level <= _logging.DEBUG:
+                nomargs = dict( exc_info = exc ) # pyright: ignore
+            else: nomargs = { }
+            scribe.error( # noqa: TRY400
+                f"\tCause: {exc}", **nomargs ) # pyright: ignore
+        if eclass: raise eclass( *eposargs ) from None
+    except Exception as exc: # pylint: disable=broad-exception-caught
+        if level <= _logging.DEBUG: scribe.exception( f"{message}" )
+        else: scribe.error( f"{message} Cause: {exc}" ) # noqa: TRY400
+        if eclass: raise eclass( *eposargs ) from None
