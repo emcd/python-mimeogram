@@ -59,11 +59,11 @@ reviews, project sharing, and LLM interactions.
 Key Features ⭐
 ===============================================================================
 
+* 🔄 **Interactive Reviews**: Review and apply LLM-proposed changes one by one.
 * 📋 **Clipboard Integration**: Seamless copying and pasting by default.
 * 🗂️ **Directory Structure**: Preserves hierarchical file organization.
-* 🔄 **Interactive Reviews**: Review and apply proposed changes one by one.
-* 🤖 **LLM Integration**: Built-in prompts and format instructions.
 * 🛡️ **Path Protection**: Safeguards against dangerous modifications.
+* 🤖 **LLM Integration**: Built-in prompts and format instructions.
 
 
 Installation 📦
@@ -287,12 +287,11 @@ Platform Neutrality ☁️
 Limitations and Alternatives 🔀
 ===============================================================================
 
-* LLMs must be prompted to understand and use mimeograms.
 * Manual refresh of files needed (no automatic sync).
 * Cannot retract stale content from conversation history in provider GUIs.
 * Consider dedicated tools (e.g., Cursor) for tighter collaboration loops.
 
-Comparison ⚖️
+Comparison of General Approaches ⚖️
 -------------------------------------------------------------------------------
 
 +---------------------+------------+------------+-------------+--------------+
@@ -326,17 +325,64 @@ Notes:
   cache misses against APIs.
 
 
-Contributing 🤝
+Comparison with Similar Tools ⚖️
+-------------------------------------------------------------------------------
+
+- `ai-digest <https://github.com/khromov/ai-digest>`_
+- `dump_dir <https://github.com/fargusplumdoodle/dump_dir/>`_
+- `Gitingest <https://github.com/cyclotruc/gitingest>`_
+- `Repomix <https://github.com/yamadashy/repomix>`_
+
+Mimeogram is unique among file collection tools for LLMs in offering round-trip
+support - the ability to not just collect files but also apply changes proposed
+by LLMs.
+
+`Full Comparison of Tools
+<https://github.com/emcd/python-mimeogram/tree/master/documentation/sphinx/comparisons.rst>`_
+
+Features Matrix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
++--------------------+-----------+-----------+------------+-----------+
+| Feature            | Mimeogram | Gitingest | Repomix    | dump_dir  |
++====================+===========+===========+============+===========+
+| Round Trips        | ✓         |           |            |           |
++--------------------+-----------+-----------+------------+-----------+
+| Clipboard Support  | ✓         |           | ✓          | ✓         |
++--------------------+-----------+-----------+------------+-----------+
+| Remote URL Support | ✓         | ✓         | ✓          |           |
++--------------------+-----------+-----------+------------+-----------+
+| Security Checks    | ✓         |           | ✓          |           |
++--------------------+-----------+-----------+------------+-----------+
+
+Content Selection Approaches
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Tools in this space generally follow one of two approaches: filesystem-oriented
+or repository-oriented.
+
+Tools, like ``mimeogram``, ``dump_dir``, and ``ai-digest``, are oriented around
+files and directories. You start with nothing and select what is needed. This
+approach offers more precise control over context window usage and is better
+suited for targeted analysis or specific features.
+
+Tools, like ``gitingest`` and ``repomix``, are oriented around code
+repositories. You start with an entire repository and then filter out unneeded
+files and directories. This approach is better for full project comprehension
+but requires careful configuration to avoid exceeding LLM context window
+limits.
+
+
+Contribution 🤝
 ===============================================================================
 
-Contributions welcome. Please see the `contribution guide
+Contribution welcome. Please see the `contribution guide
 <https://github.com/emcd/python-mimeogram/tree/master/documentation/sphinx/contribution>`_
 for:
 
-* Code of conduct
-* Development setup
-* Coding guidelines
-* Documentation standards
+* Code of Conduct
+* Development Setup
+* Coding Guidelines
 
 
 About the Name 📝

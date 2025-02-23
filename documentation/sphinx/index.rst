@@ -29,6 +29,7 @@ Table of Contents
    examples/index
    operation
    api
+   comparisons
    changelog
    contribution/index
    license
