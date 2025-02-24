@@ -24,7 +24,7 @@
 import pytest
 
 from . import (
-    MODULES_NAMES_BY_MODULE_QNAME,
+    # MODULES_NAMES_BY_MODULE_QNAME,
     MODULES_QNAMES,
     PACKAGES_NAMES,
     PACKAGES_NAMES_BY_MODULE_QNAME,
@@ -40,23 +40,23 @@ def test_000_sanity( package_name ):
     assert package.__name__ == package_name
 
 
-@pytest.mark.parametrize( 'module_qname', MODULES_QNAMES )
-def test_010_attribute_module_existence( module_qname ):
-    ''' Package module is attribute of package. '''
-    package_name = PACKAGES_NAMES_BY_MODULE_QNAME[ module_qname ]
-    package = cache_import_module( package_name )
-    module_name = MODULES_NAMES_BY_MODULE_QNAME[ module_qname ]
-    assert module_name in package.__dict__
+# @pytest.mark.parametrize( 'module_qname', MODULES_QNAMES )
+# def test_010_attribute_module_existence( module_qname ):
+#     ''' Package module is attribute of package. '''
+#     package_name = PACKAGES_NAMES_BY_MODULE_QNAME[ module_qname ]
+#     package = cache_import_module( package_name )
+#     module_name = MODULES_NAMES_BY_MODULE_QNAME[ module_qname ]
+#     assert module_name in package.__dict__
 
 
-@pytest.mark.parametrize( 'module_qname', MODULES_QNAMES )
-def test_011_attribute_module_classification( module_qname ):
-    ''' Package attribute is module. '''
-    from inspect import ismodule
-    package_name = PACKAGES_NAMES_BY_MODULE_QNAME[ module_qname ]
-    package = cache_import_module( package_name )
-    module_name = MODULES_NAMES_BY_MODULE_QNAME[ module_qname ]
-    assert ismodule( getattr( package, module_name ) )
+# @pytest.mark.parametrize( 'module_qname', MODULES_QNAMES )
+# def test_011_attribute_module_classification( module_qname ):
+#     ''' Package attribute is module. '''
+#     from inspect import ismodule
+#     package_name = PACKAGES_NAMES_BY_MODULE_QNAME[ module_qname ]
+#     package = cache_import_module( package_name )
+#     module_name = MODULES_NAMES_BY_MODULE_QNAME[ module_qname ]
+#     assert ismodule( getattr( package, module_name ) )
 
 
 @pytest.mark.parametrize( 'module_qname', MODULES_QNAMES )

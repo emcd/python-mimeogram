@@ -1,15 +1,18 @@
 # Changes here will be overwritten by Copier
-_commit: v1.9
+_commit: v1.10
 _src_path: gh:emcd/python-project-common
 author_email: emcd@users.noreply.github.com
 author_name: Eric McDonald
-description: Exchange of MIME bundles with LLMs.
+description: Exchange of file collections with LLMs.
 development_status: 4 - Beta
 distribution_name: mimeogram
+enable_cli: true
+enable_executables: true
 enable_property_tests: true
 enable_publication: true
 enable_rust_extension: false
 gh_owner: emcd
+include_data_resources: true
 inject_docstring_utils: false
 inject_exceptions: true
 inject_foundations: true

@@ -18,7 +18,7 @@
 #============================================================================#
 
 
-''' Exchange of MIME bundles with LLMs. '''
+''' Exchange of file collections with LLMs. '''
 
 
 from . import __
@@ -29,11 +29,13 @@ from . import create
 from . import differences
 from . import display
 from . import edit
-from . import exceptions
 from . import formatters
 from . import interactions
 from . import parsers
 from . import updaters
+# --- BEGIN: Injected by Copier ---
+from . import exceptions
+# --- END: Injected by Copier ---
 
 # TODO: Export various module contents.
 
@@ -43,7 +45,8 @@ __version__ = '1.1a0'
 
 def main( ):
     ''' Entrypoint. '''
-    cli.execute( )
+    from .cli import execute
+    execute( )
 
 
 __.reclassify_modules_as_immutable( __name__ )

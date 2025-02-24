@@ -24,7 +24,7 @@ jobs:
 
   test:
     needs: [initialize]
-    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@v1.9
+    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@v1.10
     with:
       matrix-exclusions: '${{ needs.initialize.outputs.matrix-exclusions }}'
       platforms: '${{ needs.initialize.outputs.platforms }}'
@@ -34,7 +34,7 @@ jobs:
 
   report:
     needs: [initialize, test]
-    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@v1.9
+    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@v1.10
     with:
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
 
@@ -44,76 +44,17 @@ jobs:
       contents: write
       id-token: write
       pages: write
-    uses: emcd/python-project-common/.github/workflows/xrepo--documenter.yaml@v1.9
+    uses: emcd/python-project-common/.github/workflows/xrepo--documenter.yaml@v1.10
     with:
       include-reports: true
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
 
   package:
     needs: [initialize, docsgen]
-    uses: emcd/python-project-common/.github/workflows/xrepo--packager.yaml@v1.9
+    uses: emcd/python-project-common/.github/workflows/xrepo--packager.yaml@v1.10
     with:
       artifacts-path: '.auxiliary/artifacts/hatch-build' # TODO: Use environment.
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
-
-  create-executables:
-      needs: [initialize, package]
-      strategy:
-        matrix:
-          include:
-            - os: ubuntu-22.04 # Earlier version for better Glibc compatibility.
-              platform-name: linux-x86_64
-            - os: windows-latest
-              platform-name: windows-x86_64
-            - os: macos-13
-              platform-name: macos-x86_64
-            - os: macos-latest
-              platform-name: macos-arm64
-      runs-on: ${{ matrix.os }}
-      env:
-        _PYI_EXECUTABLE_NAME: mimeogram-${{ github.ref_name }}-${{ matrix.platform-name }}
-      steps:
-
-        - name: Prepare Python
-          uses: emcd/python-project-common/.github/actions/python-hatch@v1.8.1
-          with:
-            python-version: ${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}
-
-        # - name: Install UPX (Linux)
-        #   if: runner.os == 'Linux'
-        #   run: sudo apt-get install --yes upx
-
-        - name: Install UPX (macOS)
-          if: runner.os == 'macOS'
-          run: brew install upx
-
-        - name: Install UPX (Windows)
-          if: runner.os == 'Windows'
-          run: choco install upx
-
-        - name: Create Executable
-          run: |
-            hatch --env develop run \
-              pyinstaller \
-                --clean --distpath=.auxiliary/artifacts/pyinstaller \
-                pyinstaller.spec
-          shell: bash
-
-        - name: Validate Executable (Non-Windows)
-          if: runner.os != 'Windows'
-          run: |
-            .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} --help
-          shell: bash
-
-        # TODO: Validate executable on Windows.
-        #       Need to find feasible way to address:
-        #         https://github.com/tartley/colorama/issues/319
-
-        - name: Save Executable
-          uses: actions/upload-artifact@v4
-          with:
-            name: executables--${{ matrix.platform-name }}--${{ github.run_id }}
-            path: .auxiliary/artifacts/pyinstaller/mimeogram-*
 
   publish-pypi:
     if: ${{ inputs.which-pypi == 'testpypi' || startsWith(github.ref, 'refs/tags/') }}
@@ -140,9 +81,73 @@ jobs:
           print-hash: true
           skip-existing: ${{ inputs.which-pypi == 'testpypi' }}
 
+  create-executables:
+      needs: [initialize, package]
+      strategy:
+        matrix:
+          include:
+            - os: ubuntu-22.04 # Earlier version for better Glibc compatibility.
+              platform-name: linux-x86_64
+            - os: windows-latest
+              platform-name: windows-x86_64
+            - os: macos-13
+              platform-name: macos-x86_64
+            - os: macos-latest
+              platform-name: macos-arm64
+      runs-on: ${{ matrix.os }}
+      env:
+        _PYI_EXECUTABLE_NAME: mimeogram-${{ github.ref_name }}-${{ matrix.platform-name }}
+      steps:
+        - name: Prepare Python
+          uses: emcd/python-project-common/.github/actions/python-hatch@v1.10
+          with:
+            python-version: ${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}
+
+        # - name: Install UPX (Linux)  # Pre-installed on GHA Ubuntu runners
+        #   if: ${{ runner.os == 'Linux' }}
+        #   run: sudo apt-get install --yes upx
+
+        - name: Install UPX (macOS)
+          if: ${{ runner.os == 'macOS' }}
+          run: brew install upx
+
+        - name: Install UPX (Windows)
+          if: ${{ runner.os == 'Windows' }}
+          run: choco install upx
+
+        - name: Create Executable
+          run: |
+            hatch --env develop run \
+              pyinstaller \
+                --clean --distpath=.auxiliary/artifacts/pyinstaller \
+                pyinstaller.spec
+          shell: bash
+
+        - name: Validate Executable (Non-Windows)
+          if: ${{ runner.os != 'Windows' }}
+          run: |
+            .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} --help
+          shell: bash
+
+        # TODO: Validate executable on Windows.
+        #       Need to find feasible way to address:
+        #         https://github.com/tartley/colorama/issues/319
+
+        - name: Save Executable
+          uses: actions/upload-artifact@v4
+          with:
+            name: executables--${{ matrix.platform-name }}--${{ github.run_id }}
+            path: .auxiliary/artifacts/pyinstaller/mimeogram-*
+
   publish-github:
     if: ${{ startsWith(github.ref, 'refs/tags/') }}
-    needs: [initialize, package, create-executables, publish-pypi]
+    needs:
+      - initialize
+      - package
+      - publish-pypi
+      # --- BEGIN: Injected by Copier ---
+      - create-executables
+      # --- END: Injected by Copier ---
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -150,7 +155,7 @@ jobs:
     steps:
 
       - name: Prepare Python
-        uses: emcd/python-project-common/.github/actions/python-hatch@v1.9
+        uses: emcd/python-project-common/.github/actions/python-hatch@v1.10
         with:
           python-version: ${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}
 
