@@ -33,6 +33,7 @@ dependencies = [
   'python-dotenv',
   'readchar',
   'rich',
+  'tiktoken',
   'tomli',
   'typing-extensions',
   'wcmatch',

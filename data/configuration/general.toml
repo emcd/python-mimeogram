@@ -4,6 +4,7 @@ format-version = 1
 from-clipboard = true
 
 [create]
+count-tokens = true
 to-clipboard = true
 
 [prompt]
@@ -15,3 +16,6 @@ recurse-directories = false
 
 [update-parts]
 disable-protections = false
+
+[tokenizers]
+default = 'tiktoken'

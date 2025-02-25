@@ -26,6 +26,7 @@ from __future__ import annotations
 
 from . import __
 from . import interfaces as _interfaces
+from . import tokenizers as _tokenizers
 
 
 _scribe = __.produce_scribe( __name__ )
@@ -48,6 +49,11 @@ class Command(
         __.tyro.conf.arg(
             aliases = ( '--clipboard', '--to-clipboard' ),
             help = "Copy mimeogram to clipboard." ),
+    ] = None
+    count_tokens: __.typx.Annotated[
+        __.typx.Optional[ bool ],
+        __.tyro.conf.arg(
+            help = "Count total tokens in mimeogram." ),
     ] = None
     edit: __.typx.Annotated[
         bool,
@@ -72,6 +78,16 @@ class Command(
             aliases = ( '--fail-on-invalid', ),
             help = "Fail on invalid contents? True, fail. False, skip." ),
     ] = None
+    tokenizer: __.typx.Annotated[
+        __.typx.Optional[ _tokenizers.Tokenizers ],
+        __.tyro.conf.arg(
+            help = "Which tokenizer to use for counting?" ),
+    ] = None
+    tokenizer_variant: __.typx.Annotated[
+        __.typx.Optional[ str ],
+        __.tyro.conf.arg(
+            help = "Which tokenizer variant to use for counting?" ),
+    ] = None
 
     async def __call__( self, auxdata: __.Globals ) -> None:
         ''' Executes command to create mimeogram. '''
@@ -83,6 +99,10 @@ class Command(
         if None is not self.clip:
             edits.append( __.SimpleDictionaryEdit( # pyright: ignore
                 address = ( 'create', 'to-clipboard' ), value = self.clip ) )
+        if None is not self.count_tokens:
+            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+                address = ( 'create', 'count-tokens' ),
+                value = self.count_tokens ) )
         if None is not self.recurse:
             edits.append( __.SimpleDictionaryEdit( # pyright: ignore
                 address = ( 'acquire-parts', 'recurse-directories' ),
@@ -91,6 +111,10 @@ class Command(
             edits.append( __.SimpleDictionaryEdit( # pyright: ignore
                 address = ( 'acquire-parts', 'fail-on-invalid' ),
                 value = self.strict ) )
+        if None is not self.tokenizer:
+            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+                address = ( 'tokenizers', 'default' ),
+                value = self.tokenizer ) )
         return tuple( edits )
 
 
@@ -138,9 +162,28 @@ async def create( # pylint: disable=too-complex,too-many-locals
         prompt = await prompter( auxdata )
         mimeogram = f"{prompt}\n\n{mimeogram}"
     options = auxdata.configuration.get( 'create', { } )
+    if options.get( 'count-tokens', False ):
+        with __.report_exceptions(
+            _scribe, "Could not count mimeogram tokens."
+        ):
+            tokenizer = await _tokenizer_from_command( auxdata, command )
+            tokens_count = await tokenizer.count( mimeogram )
+            _scribe.info( f"Total mimeogram size is {tokens_count} tokens." )
     if options.get( 'to-clipboard', False ):
         with __.report_exceptions(
             _scribe, "Could not copy mimeogram to clipboard."
         ): await clipcopier( mimeogram )
     else: print( mimeogram ) # TODO? Use output stream from configuration.
     raise SystemExit( 0 )
+
+
+async def _tokenizer_from_command(
+    auxdata: __.Globals, command: Command
+) -> _tokenizers.Tokenizer:
+    options = auxdata.configuration.get( 'tokenizers', { } )
+    name = (
+        command.tokenizer.value if command.tokenizer
+        else options.get( 'default', 'tiktoken' ) )
+    variant = command.tokenizer_variant
+    args = dict( variant = variant ) if variant else { }
+    return await _tokenizers.Tokenizers.produce( name, **args )
