@@ -49,6 +49,11 @@ class Command(
             aliases = ( '--clipboard', '--to-clipboard' ),
             help = "Copy mimeogram to clipboard." ),
     ] = None
+    count_tokens: __.typx.Annotated[
+        __.typx.Optional[ bool ],
+        __.tyro.conf.arg(
+            help = "Count total tokens in mimeogram." ),
+    ] = None
     edit: __.typx.Annotated[
         bool,
         __.tyro.conf.arg(
