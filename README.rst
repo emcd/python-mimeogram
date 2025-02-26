@@ -298,18 +298,18 @@ Comparison of General Approaches ⚖️
 -------------------------------------------------------------------------------
 
 +---------------------+------------+------------+-------------+--------------+
-| Feature             | Mimeograms | Projects   | Direct API  | Specialized  |
-|                     |            | (Web) [1]_ | Integration | IDEs [2]_    |
+| Feature             | Mimeograms | Projects   | Agents and  | Specialized  |
+|                     |            | (Web) [1]_ | Tools [3]_  | IDEs [2]_    |
 +=====================+============+============+=============+==============+
 | Cost Model          | Flat rate  | Flat rate  | Usage-based | Flat rate    |
 +---------------------+------------+------------+-------------+--------------+
-| Directory Structure | Yes        | No         | Yes [3]_    | Yes          |
+| Directory Structure | Yes        | No         | Yes [4]_    | Yes          |
 +---------------------+------------+------------+-------------+--------------+
 | IDE Integration     | Any        | Web only   | N/A         | One          |
 +---------------------+------------+------------+-------------+--------------+
 | Setup Required      | CLI tool   | None       | SDK/Auth    | Full install |
 +---------------------+------------+------------+-------------+--------------+
-| Version Control     | Yes        | No         | Yes [3]_    | Yes          |
+| Version Control     | Yes        | No         | Yes [4]_    | Yes          |
 +---------------------+------------+------------+-------------+--------------+
 | Platform Support    | Universal  | Web        | Universal   | Limited      |
 +---------------------+------------+------------+-------------+--------------+
@@ -318,11 +318,12 @@ Comparison of General Approaches ⚖️
 
 .. [1] ChatGPT and Claude.ai subscription feature
 .. [2] `Cursor <https://www.cursor.com/en>`_, etc...
-.. [3] Requires custom implementation
+.. [3] `Claude Code <https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview>`_, etc...
+.. [4] Requires custom implementation
 
 Notes:
 
-- "Direct API Integration" refers to custom applications providing I/O tools
+- "Agents and Tools" refers to custom applications providing I/O tools
   for LLMs to use via APIs, such as the Anthropic or OpenAI API.
 - Cost differences can be significant at scale, especially when considering
   cache misses against APIs.
