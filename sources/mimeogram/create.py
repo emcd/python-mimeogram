@@ -86,7 +86,11 @@ class Command(
     tokenizer_variant: __.typx.Annotated[
         __.typx.Optional[ str ],
         __.tyro.conf.arg(
-            help = "Which tokenizer variant to use for counting?" ),
+            help = (
+                "Which tokenizer variant to use for counting?\n"
+                "For 'tiktoken': 'cl100k_base', 'o200k_base', etc....\n"
+                "Not all tokenizers have variants.\n"
+                "If not specified, then the default variant is used." ) ),
     ] = None
 
     async def __call__( self, auxdata: __.Globals ) -> None:

@@ -63,7 +63,6 @@ Key Features ⭐
 * 📋 **Clipboard Integration**: Seamless copying and pasting by default.
 * 🗂️ **Directory Structure**: Preserves hierarchical file organization.
 * 🛡️ **Path Protection**: Safeguards against dangerous modifications.
-* 🤖 **LLM Integration**: Built-in prompts and format instructions.
 
 
 Installation 📦
@@ -115,6 +114,25 @@ Examples 💡
 Below are some simple examples. Please see the `examples documentation
 <https://github.com/emcd/python-mimeogram/blob/master/documentation/sphinx/examples/cli.rst>`_
 for more detailed usage patterns.
+
+::
+
+    usage: mimeogram [-h] [OPTIONS] {create,apply,provide-prompt,version}
+
+    Mimeogram: hierarchical data exchange between humans and LLMs.
+
+    ╭─ options ────────────────────────────────────────────────────────────────────╮
+    │ -h, --help              show this help message and exit                      │
+    │ --configfile {None}|STR                                                      │
+    │                         (default: None)                                      │
+    ╰──────────────────────────────────────────────────────────────────────────────╯
+    ╭─ subcommands ────────────────────────────────────────────────────────────────╮
+    │ {create,apply,provide-prompt,version}                                        │
+    │     create              Creates mimeogram from filesystem locations or URLs. │
+    │     apply               Applies mimeogram to filesystem locations.           │
+    │     provide-prompt      Provides LLM prompt text for mimeogram format.       │
+    │     version             Prints version information.                          │
+    ╰──────────────────────────────────────────────────────────────────────────────╯
 
 Working with Simple LLM Interfaces
 -------------------------------------------------------------------------------
