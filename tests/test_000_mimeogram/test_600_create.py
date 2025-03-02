@@ -293,6 +293,48 @@ async def test_250_create_acquisition_failure( provide_tempdir ):
     assert exc_info.value.code == 1
 
 
+# @pytest.mark.asyncio
+# async def test_260_calculate_tokens_during_create( provide_tempdir ):
+#     ''' Token counting during mimeogram creation succeeds without error. '''
+#     create = cache_import_module( f"{PACKAGE_NAME}.create" )
+#     tokenizers = cache_import_module( f"{PACKAGE_NAME}.tokenizers" )
+#     test_content = "test content\n"
+#     test_path = provide_tempdir / "test.txt"
+#     test_files = { "test.txt": test_content }
+#     with create_test_files( provide_tempdir, test_files ):
+#         cmd = create.Command(
+#             sources = [ str( test_path ) ],
+#             count_tokens = True,
+#             tokenizer = tokenizers.Tokenizers.Tiktoken,
+#             tokenizer_variant = "cl100k_base" )
+#         with pytest.raises( SystemExit ) as exc_info:
+#             await create.create(
+#                 MagicMock( configuration = { "create": { "count-tokens": True } } ),
+#                 cmd )
+#         assert exc_info.value.code == 0
+
+
+# @pytest.mark.asyncio
+# async def test_270_validate_token_counting_invalid_tokenizer( provide_tempdir ):
+#     ''' Invalid tokenizer variant fails during token counting. '''
+#     create = cache_import_module( f"{PACKAGE_NAME}.create" )
+#     tokenizers = cache_import_module( f"{PACKAGE_NAME}.tokenizers" )
+#     test_content = "test content\n"
+#     test_path = provide_tempdir / "test.txt"
+#     test_files = { "test.txt": test_content }
+#     with create_test_files( provide_tempdir, test_files ):
+#         cmd = create.Command(
+#             sources = [ str( test_path ) ],
+#             count_tokens = True,
+#             tokenizer = tokenizers.Tokenizers.Tiktoken,
+#             tokenizer_variant = "invalid_variant" )
+#         with pytest.raises( SystemExit ) as exc_info:
+#             await create.create(
+#                 MagicMock( configuration = { "create": { "count-tokens": True } } ),
+#                 cmd )
+#         assert exc_info.value.code == 1
+
+
 @pytest.mark.asyncio
 async def test_300_create_message_edit_failure( provide_tempdir ):
     ''' Create handles message editing failures appropriately. '''

@@ -97,7 +97,9 @@ nitpick_ignore = [
     ( 'py:class', "mimeogram.__.inscription.Control" ),
     ( 'py:class', "mimeogram.__.inscription.Modes" ),
     ( 'py:class', "mimeogram.__.state.DirectorySpecies" ),
+    ( 'py:class', "mimeogram.apply.Command" ),
     ( 'py:class', "platformdirs.unix.Unix" ),
+    ( 'py:class', "tiktoken.core.Encoding" ),
     ( 'py:class', "types.Annotated" ),
     ( 'py:class', "typing_extensions.Any" ),
     ( 'py:class', "typing_extensions.Never" ),
@@ -108,8 +110,8 @@ nitpick_ignore = [
     ( 'py:obj', "mimeogram.__.generics.T" ),
 ]
 nitpick_ignore_regex = [
-    ( r'py:class', r"mimeogram\.create\.Annotated\[.*\]" ),
-    ( r'py:obj', r"typing\.Annotated\[.*\]" ),
+    ( r'py:class', r"(?ms)mimeogram\.create\.Annotated\[.*\]" ),
+    ( r'py:obj', r"(?ms)typing\.Annotated\[.*\]" ),
 ]
 
 # -- Options for linkcheck builder -------------------------------------------
