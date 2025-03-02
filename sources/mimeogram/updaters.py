@@ -131,7 +131,7 @@ async def update( # pylint: disable=too-many-arguments,too-many-locals
     if __.is_absent( base ): base = __.Path( )
     if __.is_absent( protector ):
         protector = _fsprotect.Cache.from_configuration( auxdata = auxdata )
-    queue = Queue( )
+    queue = Queue( ) # pyright: ignore
     for part in parts:
         if part.location.startswith( 'mimeogram://' ): continue
         destination = _derive_location( part.location, base = base )

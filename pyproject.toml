@@ -51,7 +51,7 @@ classifiers = [ # https://pypi.org/classifiers
   'Programming Language :: Python :: 3.12',
   'Programming Language :: Python :: 3.13',
   'Programming Language :: Python :: Implementation :: CPython',
-  # 'Programming Language :: Python :: Implementation :: PyPy',
+  'Programming Language :: Python :: Implementation :: PyPy',
   'Topic :: Communications :: Chat',
   'Topic :: Scientific/Engineering :: Artificial Intelligence',
   'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
@@ -256,7 +256,7 @@ strict = false
 
 # https://pylint.pycqa.org/en/latest/user_guide/configuration/index.html
 [tool.pylint.main]
-extension-pkg-allow-list = [ 'oxidized_importer' ]
+extension-pkg-allow-list = [ ]
 fail-under = 10
 # TODO: jobs: Consider parallelization if output interleaving, dependency
 #             grouping, and similarities detection bugs have been fixed.

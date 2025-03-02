@@ -127,6 +127,7 @@ linkcheck_ignore = [
     # Some LLM chat interfaces do not like to be touched by bots.
     r'https://chat\.deepseek\.com/',
     r'https://chatgpt\.com/',
+    r'https://grok\.com',
 ]
 
 # -- Options for HTML output -------------------------------------------------
