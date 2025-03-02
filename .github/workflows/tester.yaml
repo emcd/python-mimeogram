@@ -14,7 +14,7 @@ jobs:
 
   test:
     needs: [initialize]
-    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@v1.9
+    uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@v1.10
     with:
       matrix-exclusions: '${{ needs.initialize.outputs.matrix-exclusions }}'
       platforms: '${{ needs.initialize.outputs.platforms }}'
@@ -24,6 +24,6 @@ jobs:
 
   report:
     needs: [initialize, test]
-    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@v1.9
+    uses: emcd/python-project-common/.github/workflows/xrepo--reporter.yaml@v1.10
     with:
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'

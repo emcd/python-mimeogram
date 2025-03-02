@@ -1,3 +1,6 @@
+# vim: set filetype=toml fileencoding=utf-8:
+# -*- mode: toml ; coding: utf-8 -*-
+
 [build-system]
 requires = [
   'hatchling',
@@ -30,10 +33,13 @@ dependencies = [
   'python-dotenv',
   'readchar',
   'rich',
+  'tiktoken',
   'tomli',
   'typing-extensions',
-  'tyro',
   'wcmatch',
+  # --- BEGIN: Injected by Copier ---
+  'tyro',
+  # --- END: Injected by Copier ---
 ]
 classifiers = [ # https://pypi.org/classifiers
   'Development Status :: 4 - Beta',
@@ -46,18 +52,18 @@ classifiers = [ # https://pypi.org/classifiers
   'Programming Language :: Python :: 3.12',
   'Programming Language :: Python :: 3.13',
   'Programming Language :: Python :: Implementation :: CPython',
-  # 'Programming Language :: Python :: Implementation :: PyPy',
+  'Programming Language :: Python :: Implementation :: PyPy',
   'Topic :: Communications :: Chat',
   'Topic :: Scientific/Engineering :: Artificial Intelligence',
   'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
   'Topic :: Text Processing :: General',
 ]
 keywords = [ 'ai', 'llm', 'documents', 'interchange', 'cli' ]
-[project.scripts]
-mimeogram = 'mimeogram:main'
 [[project.authors]]
 name = 'Eric McDonald'
 email = 'emcd@users.noreply.github.com'
+[project.scripts]
+mimeogram = 'mimeogram:main'
 [project.urls]
 'Homepage' = 'https://github.com/emcd/python-mimeogram'
 'Documentation' = 'https://emcd.github.io/python-mimeogram'
@@ -87,10 +93,20 @@ output = '.auxiliary/artifacts/coverage-pytest/coverage.xml'
 [tool.hatch.build]
 directory = '.auxiliary/artifacts/hatch-build'
 [tool.hatch.build.targets.sdist]
-only-include = [ 'sources/mimeogram', 'data' ]
+only-include = [
+  'sources/mimeogram',
+  # --- BEGIN: Injected by Copier ---
+  'data',
+  # --- END: Injected by Copier ---
+]
 strict-naming = false
 [tool.hatch.build.targets.wheel]
-only-include = [ 'sources/mimeogram', 'data' ]
+only-include = [
+  'sources/mimeogram',
+  # --- BEGIN: Injected by Copier ---
+  'data',
+  # --- END: Injected by Copier ---
+]
 strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
 'sources/mimeogram' = 'mimeogram'
@@ -104,8 +120,8 @@ dependencies = [
   'bandit',
   'coverage[toml]',
   'furo',
-  'hypothesis',
   'icecream',
+  'isort',
   'packaging',
   'pre-commit',
   'pyinstaller',
@@ -124,8 +140,16 @@ dependencies = [
   'towncrier',
   'tryceratops',
   'yapf',
+  # --- BEGIN: Injected by Copier ---
+  'pyinstaller',
+  'hypothesis',
+
+  # --- END: Injected by Copier ---
 ]
 post-install-commands = [
+  # --- BEGIN: Injected by Copier ---
+
+  # --- END: Injected by Copier ---
 ]
 [tool.hatch.envs.develop.env-vars]
 _DEVELOPMENT_MODE_ = 'TRUE'
@@ -151,10 +175,12 @@ linters = [
 ]
 packagers = [
   '''hatch build''',
+  # --- BEGIN: Injected by Copier ---
   '''pyinstaller \
       --clean \
       --distpath=.auxiliary/artifacts/pyinstaller \
       pyinstaller.spec''',
+  # --- END: Injected by Copier ---
 ]
 testers = [
   'coverage erase',
@@ -231,7 +257,7 @@ strict = false
 
 # https://pylint.pycqa.org/en/latest/user_guide/configuration/index.html
 [tool.pylint.main]
-extension-pkg-allow-list = [ 'oxidized_importer' ]
+extension-pkg-allow-list = [ ]
 fail-under = 10
 # TODO: jobs: Consider parallelization if output interleaving, dependency
 #             grouping, and similarities detection bugs have been fixed.

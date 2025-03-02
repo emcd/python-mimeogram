@@ -68,6 +68,33 @@ For LLM interfaces without project support, include format instructions:
 
     mimeogram create --prepend-prompt src/*.py
 
+Token Counting
+-------------------------------------------------------------------------------
+
+Count the total number of tokens in the mimeogram, useful for estimating LLM
+context window usage:
+
+.. code-block:: bash
+
+    mimeogram create --count-tokens=True src/*.py
+
+Specify a tokenizer to use for counting (defaults to "tiktoken"):
+
+.. code-block:: bash
+
+    mimeogram create --count-tokens=True --tokenizer=tiktoken src/*.py
+
+Use a specific tokenizer variant, if supported by the tokenizer:
+
+.. code-block:: bash
+
+    mimeogram create --count-tokens=True --tokenizer=tiktoken \
+        --tokenizer-variant=o200k_base src/*.py
+
+The token count will be logged to the console after creating the mimeogram. This
+feature helps you manage token usage when working with LLMs that have strict
+context limits.
+
 
 Applying Mimeograms
 ===============================================================================

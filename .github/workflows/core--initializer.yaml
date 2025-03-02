@@ -77,11 +77,8 @@ jobs:
         run: |
           set -eu
           # PyPy has slow I/O, even slower on Windows.
-          # TEMP: Exclude PyPy on all platforms until various fixes.
           items="$(jq --compact-output <<EOF
           [
-            {"platform": "macos-latest", "python-version": "pypy3.10"},
-            {"platform": "ubuntu-latest", "python-version": "pypy3.10"},
             {"platform": "windows-latest", "python-version": "pypy3.10"}
           ]
           EOF

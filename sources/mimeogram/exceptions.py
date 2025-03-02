@@ -121,6 +121,14 @@ class TextualMimetypeInvalidity( Omnierror ):
             f"Invalid MIME type '{mimetype}' for content at '{location}'." )
 
 
+class TokenizerVariantInvalidity( Omnierror ):
+    ''' Invalid tokenizer variant. '''
+
+    def __init__( self, name: str, variant: str ):
+        super( ).__init__(
+            f"Invalid variant '{variant}' for tokenizer '{name}'." )
+
+
 class UrlSchemeNoSupport( Omnierror ):
     ''' Unsupported URL scheme. '''
 

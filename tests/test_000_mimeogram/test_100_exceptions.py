@@ -143,7 +143,18 @@ def test_090_program_absence( ):
     assert species in str( exc )
 
 
-def test_100_url_scheme_support( ):
+def test_100_validate_tokenizer_variant_invalidity( ):
+    ''' TokenizerVariantInvalidity contains correct details. '''
+    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
+    name = "tiktoken"
+    variant = "invalid_variant"
+    exc = exceptions.TokenizerVariantInvalidity( name, variant )
+    assert isinstance( exc, exceptions.Omnierror )
+    assert name in str( exc )
+    assert variant in str( exc )
+
+
+def test_110_url_scheme_support( ):
     ''' URL scheme support exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
@@ -153,7 +164,7 @@ def test_100_url_scheme_support( ):
     assert url in str( exc )
 
 
-def test_110_user_operation_cancellation( ):
+def test_120_user_operation_cancellation( ):
     ''' User operation cancellation exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
@@ -164,7 +175,7 @@ def test_110_user_operation_cancellation( ):
     assert str( cause ) in str( exc )
 
 
-def test_120_exception_chaining( ):
+def test_200_exception_chaining( ):
     ''' Exception chaining behavior. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
@@ -177,7 +188,7 @@ def test_120_exception_chaining( ):
         assert 'Original error' in str( exc.__cause__ )
 
 
-def test_130_visible_attributes( ):
+def test_210_visible_attributes( ):
     ''' Visibility of exception attributes. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 

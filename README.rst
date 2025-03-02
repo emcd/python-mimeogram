@@ -59,10 +59,9 @@ reviews, project sharing, and LLM interactions.
 Key Features ⭐
 ===============================================================================
 
+* 🔄 **Interactive Reviews**: Review and apply LLM-proposed changes one by one.
 * 📋 **Clipboard Integration**: Seamless copying and pasting by default.
 * 🗂️ **Directory Structure**: Preserves hierarchical file organization.
-* 🔄 **Interactive Reviews**: Review and apply proposed changes one by one.
-* 🤖 **LLM Integration**: Built-in prompts and format instructions.
 * 🛡️ **Path Protection**: Safeguards against dangerous modifications.
 
 
@@ -116,12 +115,31 @@ Below are some simple examples. Please see the `examples documentation
 <https://github.com/emcd/python-mimeogram/blob/master/documentation/sphinx/examples/cli.rst>`_
 for more detailed usage patterns.
 
+::
+
+    usage: mimeogram [-h] [OPTIONS] {create,apply,provide-prompt,version}
+
+    Mimeogram: hierarchical data exchange between humans and LLMs.
+
+    ╭─ options ────────────────────────────────────────────────────────────────────╮
+    │ -h, --help              show this help message and exit                      │
+    │ --configfile {None}|STR                                                      │
+    │                         (default: None)                                      │
+    ╰──────────────────────────────────────────────────────────────────────────────╯
+    ╭─ subcommands ────────────────────────────────────────────────────────────────╮
+    │ {create,apply,provide-prompt,version}                                        │
+    │     create              Creates mimeogram from filesystem locations or URLs. │
+    │     apply               Applies mimeogram to filesystem locations.           │
+    │     provide-prompt      Provides LLM prompt text for mimeogram format.       │
+    │     version             Prints version information.                          │
+    ╰──────────────────────────────────────────────────────────────────────────────╯
+
 Working with Simple LLM Interfaces
 -------------------------------------------------------------------------------
 
 Use with API workbenches and with LLM GUIs which do not support persistent
-user-customized instructions (e.g., `DeepSeek <https://chat.deepseek.com/>`_
-and `Google Gemini <https://gemini.google.com/>`_):
+user-customized instructions (e.g., `DeepSeek <https://chat.deepseek.com/>`_,
+`Google Gemini <https://gemini.google.com/>`_, `Grok <https://grok.com>`_):
 
 * Bundle files with mimeogram format instructions into clipboard.
 
@@ -135,12 +153,20 @@ and `Google Gemini <https://gemini.google.com/>`_):
 
 * Request mimeogram from LLM and copy it from browser to clipboard.
 
+  * `Example: Claude Artifact <https://claude.site/artifacts/5ca7851f-6b63-4d1d-87ff-cd418f3cab0f>`_
+     (may need to remix to see it because of Claude.ai display bug)
+
 * Apply mimeogram parts from clipboard. (On a terminal, this will be
   interactive by default.)
 
   .. code-block:: bash
 
       mimeogram apply
+
+Note that, if you do not want the LLM to return mimeograms to you, most of the
+current generation of LLMs are smart enough to understand the format without
+instructions. Thus, you can save tokens by not explicitly providing mimeogram
+instructions.
 
 
 Working with LLM Project Interfaces
@@ -172,6 +198,20 @@ do not need to include mimeogram instructions with each new chat:
 
 * Same workflow as chats without project support at this point: interact with
   LLM, request mimeogram (as necessary), apply mimeogram (as necessary).
+
+
+Remote URLs
+-------------------------------------------------------------------------------
+
+You can also create mimeograms from remote URLs:
+
+.. code-block:: bash
+
+     mimeogram create https://raw.githubusercontent.com/BurntSushi/aho-corasick/refs/heads/master/src/dfa.rs
+
+Both local and remote files may be bundled together in the same mimeogram.
+
+However, there is no ability to apply a mimeogram to remote URLs.
 
 
 Interactive Review
@@ -268,27 +308,26 @@ Platform Neutrality ☁️
 Limitations and Alternatives 🔀
 ===============================================================================
 
-* LLMs must be prompted to understand and use mimeograms.
 * Manual refresh of files needed (no automatic sync).
 * Cannot retract stale content from conversation history in provider GUIs.
 * Consider dedicated tools (e.g., Cursor) for tighter collaboration loops.
 
-Comparison ⚖️
+Comparison of General Approaches ⚖️
 -------------------------------------------------------------------------------
 
 +---------------------+------------+------------+-------------+--------------+
-| Feature             | Mimeograms | Projects   | Direct API  | Specialized  |
-|                     |            | (Web) [1]_ | Integration | IDEs [2]_    |
+| Feature             | Mimeograms | Projects   | Agents and  | Specialized  |
+|                     |            | (Web) [1]_ | Tools [3]_  | IDEs [2]_    |
 +=====================+============+============+=============+==============+
 | Cost Model          | Flat rate  | Flat rate  | Usage-based | Flat rate    |
 +---------------------+------------+------------+-------------+--------------+
-| Directory Structure | Yes        | No         | Yes [3]_    | Yes          |
+| Directory Structure | Yes        | No         | Yes [4]_    | Yes          |
 +---------------------+------------+------------+-------------+--------------+
 | IDE Integration     | Any        | Web only   | N/A         | One          |
 +---------------------+------------+------------+-------------+--------------+
 | Setup Required      | CLI tool   | None       | SDK/Auth    | Full install |
 +---------------------+------------+------------+-------------+--------------+
-| Version Control     | Yes        | No         | Yes [3]_    | Yes          |
+| Version Control     | Yes        | No         | Yes [4]_    | Yes          |
 +---------------------+------------+------------+-------------+--------------+
 | Platform Support    | Universal  | Web        | Universal   | Limited      |
 +---------------------+------------+------------+-------------+--------------+
@@ -296,28 +335,76 @@ Comparison ⚖️
 +---------------------+------------+------------+-------------+--------------+
 
 .. [1] ChatGPT and Claude.ai subscription feature
-.. [2] `Cursor <https://www.cursor.com/>`_, etc...
-.. [3] Requires custom implementation
+.. [2] `Cursor <https://www.cursor.com/en>`_, etc...
+.. [3] `Claude Code <https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview>`_, etc...
+.. [4] Requires custom implementation
 
 Notes:
 
-- "Direct API Integration" refers to custom applications providing I/O tools
+- "Agents and Tools" refers to custom applications providing I/O tools
   for LLMs to use via APIs, such as the Anthropic or OpenAI API.
 - Cost differences can be significant at scale, especially when considering
   cache misses against APIs.
 
 
-Contributing 🤝
+Comparison with Similar Tools ⚖️
+-------------------------------------------------------------------------------
+
+- `ai-digest <https://github.com/khromov/ai-digest>`_
+- `dump_dir <https://github.com/fargusplumdoodle/dump_dir/>`_
+- `Gitingest <https://github.com/cyclotruc/gitingest>`_
+- `Repomix <https://github.com/yamadashy/repomix>`_
+
+Mimeogram is unique among file collection tools for LLMs in offering round-trip
+support - the ability to not just collect files but also apply changes proposed
+by LLMs.
+
+`Full Comparison of Tools
+<https://github.com/emcd/python-mimeogram/tree/master/documentation/sphinx/comparisons.rst>`_
+
+Features Matrix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
++--------------------+-----------+-----------+------------+-----------+
+| Feature            | Mimeogram | Gitingest | Repomix    | dump_dir  |
++====================+===========+===========+============+===========+
+| Round Trips        | ✓         |           |            |           |
++--------------------+-----------+-----------+------------+-----------+
+| Clipboard Support  | ✓         |           | ✓          | ✓         |
++--------------------+-----------+-----------+------------+-----------+
+| Remote URL Support | ✓         | ✓         | ✓          |           |
++--------------------+-----------+-----------+------------+-----------+
+| Security Checks    | ✓         |           | ✓          |           |
++--------------------+-----------+-----------+------------+-----------+
+
+Content Selection Approaches
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Tools in this space generally follow one of two approaches: filesystem-oriented
+or repository-oriented.
+
+Tools, like ``mimeogram``, ``dump_dir``, and ``ai-digest``, are oriented around
+files and directories. You start with nothing and select what is needed. This
+approach offers more precise control over context window usage and is better
+suited for targeted analysis or specific features.
+
+Tools, like ``gitingest`` and ``repomix``, are oriented around code
+repositories. You start with an entire repository and then filter out unneeded
+files and directories. This approach is better for full project comprehension
+but requires careful configuration to avoid exceeding LLM context window
+limits.
+
+
+Contribution 🤝
 ===============================================================================
 
-Contributions welcome. Please see the `contribution guide
+Contribution welcome. Please see the `contribution guide
 <https://github.com/emcd/python-mimeogram/tree/master/documentation/sphinx/contribution>`_
 for:
 
-* Code of conduct
-* Development setup
-* Coding guidelines
-* Documentation standards
+* Code of Conduct
+* Development Setup
+* Coding Guidelines
 
 
 About the Name 📝

@@ -40,10 +40,10 @@ class Command(
     ''' Applies mimeogram to filesystem locations. '''
 
     source: __.typx.Annotated[
-        str, # TODO: str | Path
+        str,
         __.tyro.conf.arg(
             help = (
-                "Source file for mimeogram. "
+                "Source file for mimeogram.\n"
                 "Defaults to stdin if '--clip' not specified." ) ),
     ] = '-'
     clip: __.typx.Annotated[
@@ -57,10 +57,10 @@ class Command(
         __.tyro.conf.arg(
             aliases = ( '--review-mode', ),
             help = (
-                "Controls how changes are reviewed. "
-                "'silent': Apply without review. "
-                "'partitive': Review each change interactively. "
-                "Partitive, if not specified and on a terminal. "
+                "Controls how changes are reviewed.\n"
+                "'silent': Apply without review.\n"
+                "'partitive': Review each change interactively.\n"
+                "Partitive, if not specified and on a terminal.\n"
                 "Silent, if not specified and not on a terminal." ) ),
     ] = None
     base: __.typx.Annotated[
@@ -68,7 +68,7 @@ class Command(
         __.tyro.conf.arg(
             aliases = ( '--base-directory', ),
             help = (
-                "Base directory for relative locations. "
+                "Base directory for relative locations.\n"
                 "Defaults to current working directory." ) ),
     ] = None
     force: __.typx.Annotated[

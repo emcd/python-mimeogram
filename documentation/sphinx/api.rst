@@ -124,6 +124,12 @@ Module ``mimeogram.prompt``
 .. automodule:: mimeogram.prompt
 
 
+Module ``mimeogram.tokenizers``
+-------------------------------------------------------------------------------
+
+.. automodule:: mimeogram.tokenizers
+
+
 Module ``mimeogram.updaters``
 -------------------------------------------------------------------------------
 

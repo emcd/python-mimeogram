@@ -23,7 +23,6 @@
 
 from contextlib import AsyncExitStack
 from pathlib import Path
-import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -131,15 +130,3 @@ async def test_110_prepare_production( ):
             assert not info.editable
             assert 'test-dist' == info.name
             assert path == info.location
-
-
-@pytest.mark.asyncio
-@pytest.mark.skipif(
-    not hasattr( sys, 'oxidized' ),
-    reason = "PyOxidizer tests only run in PyOxidizer environment" )
-async def test_120_prepare_pyoxidizer( ):
-    ''' Information.prepare handles PyOxidizer environment. '''
-    # This test only runs in a PyOxidizer environment.
-    # We could potentially mock the PyOxidizer environment,
-    # but it would be complex and might not accurately
-    # represent real PyOxidizer behavior.
