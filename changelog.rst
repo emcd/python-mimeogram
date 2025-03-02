@@ -2,6 +2,22 @@
 
 .. towncrier release notes start
 
+Mimeogram 1.1 (2025-03-02)
+==========================
+
+Features
+--------
+
+- Support reporting of total token counts for mimeograms as part of ``mimeogram
+  create`` output.
+
+
+Supported Platforms
+-------------------
+
+- Add support for PyPy 3.10.
+
+
 Mimeogram 1.0 (2025-02-22)
 ==========================
 
