@@ -49,4 +49,5 @@ def main( ):
     execute( )
 
 
+# TODO: Also reclassify package modules as concealed.
 __.reclassify_modules_as_immutable( __name__ )

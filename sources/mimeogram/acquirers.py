@@ -150,7 +150,6 @@ def _collect_directory_files(
 
 
 def _detect_charset( content: bytes ) -> str | None:
-    # TODO: Pyright bug: `None is charset` != `charset is None`
     from chardet import detect
     charset = detect( content )[ 'encoding' ]
     if charset is None: return charset

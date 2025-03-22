@@ -130,6 +130,8 @@ linkcheck_ignore = [
     r'https://chat\.deepseek\.com/',
     r'https://chatgpt\.com/',
     r'https://grok\.com',
+    # Other blockades...
+    r'https://docs\.anthropic\.com/.*',
 ]
 
 # -- Options for HTML output -------------------------------------------------

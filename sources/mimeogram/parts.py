@@ -39,7 +39,6 @@ class LineSeparators( __.enum.Enum ):
         selfclass, content: bytes, limit = 1024
     ) -> LineSeparators | None:
         ''' Detects newline characters in bytes array. '''
-        # TODO: Pyright bug? `Self` not recognized as type for enum members
         sample = content[ : limit ]
         found_cr = False
         for byte in sample:
