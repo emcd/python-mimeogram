@@ -64,22 +64,22 @@ class Cli(
     command: __.typx.Union[
         __.typx.Annotated[
             _create.Command,
-            __.tyro.conf.subcommand( # pyright: ignore
+            __.tyro.conf.subcommand(
                 'create', prefix_name = False ),
         ],
         __.typx.Annotated[
             _apply.Command,
-            __.tyro.conf.subcommand( # pyright: ignore
+            __.tyro.conf.subcommand(
                 'apply', prefix_name = False ),
         ],
         __.typx.Annotated[
             _prompt.Command,
-            __.tyro.conf.subcommand( # pyright: ignore
+            __.tyro.conf.subcommand(
                 'provide-prompt', prefix_name = False ),
         ],
         __.typx.Annotated[
             VersionCommand,
-            __.tyro.conf.subcommand( # pyright: ignore
+            __.tyro.conf.subcommand(
                 'version', prefix_name = False ),
         ],
     ]
