@@ -158,7 +158,6 @@ user-customized instructions (e.g., `DeepSeek <https://chat.deepseek.com/>`_,
 * Request mimeogram from LLM and copy it from browser to clipboard.
 
   * `Example: Claude Artifact <https://claude.site/artifacts/5ca7851f-6b63-4d1d-87ff-cd418f3cab0f>`_
-     (may need to remix to see it because of Claude.ai display bug)
 
 * Apply mimeogram parts from clipboard. (On a terminal, this will be
   interactive by default.)
