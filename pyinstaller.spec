@@ -25,7 +25,11 @@ a = Analysis(
         ('data', 'data'),
         # --- END: Injected by Copier ---
     ],
-    hiddenimports = [ ],
+    hiddenimports = [
+        # https://github.com/openai/tiktoken/issues/80#issuecomment-1484965176
+        'tiktoken_ext',
+        'tiktoken_ext.openai_public',
+    ],
     hookspath = [ ],
     hooksconfig = { },
     runtime_hooks = [ ],
