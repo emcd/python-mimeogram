@@ -40,7 +40,7 @@ from . import exceptions
 # TODO: Export various module contents.
 
 
-__version__ = '1.2a0'
+__version__ = '1.3a0'
 
 
 def main( ):
