@@ -78,8 +78,9 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
     mimetype, charset = _detect_mimetype_and_charset( content_bytes, location )
     if charset is None: raise ContentDecodeFailure( location, '???' )
     linesep = _parts.LineSeparators.detect_bytes( content_bytes )
-    # TODO? Separate error for newline issues.
-    if linesep is None: raise ContentDecodeFailure( location, charset )
+    if linesep is None:
+        _scribe.warning( f"No line separator detected in '{location}'." )
+        linesep = _parts.LineSeparators( __.os.linesep )
     try: content = content_bytes.decode( charset )
     except Exception as exc:
         raise ContentDecodeFailure( location, charset ) from exc
@@ -112,8 +113,9 @@ async def _acquire_via_http( # pylint: disable=too-many-locals
             _detect_mimetype_and_charset(
                 content_bytes, url, charset = charset ) )
     linesep = _parts.LineSeparators.detect_bytes( content_bytes )
-    # TODO? Separate error for newline issues.
-    if linesep is None: raise ContentDecodeFailure( url, charset )
+    if linesep is None:
+        _scribe.warning( f"No line separator detected in '{url}'." )
+        linesep = _parts.LineSeparators( __.os.linesep )
     try: content = content_bytes.decode( charset )
     except Exception as exc:
         raise ContentDecodeFailure( url, charset ) from exc
@@ -126,8 +128,8 @@ async def _acquire_via_http( # pylint: disable=too-many-locals
         content = linesep.normalize( content ) )
 
 
-# VCS directories to skip during traversal
-_VCS_DIRS = frozenset( ( '.git', '.svn', '.hg', '.bzr' ) )
+_files_to_ignore = frozenset( ( '.DS_Store', '.env' ) )
+_directories_to_ignore = frozenset( ( '.bzr', '.git', '.hg', '.svn' ) )
 def _collect_directory_files(
     directory: __.Path, recursive: bool
 ) -> list[ __.Path ]:
@@ -137,8 +139,11 @@ def _collect_directory_files(
     paths: list[ __.Path ] = [ ]
     _scribe.debug( f"Collecting files in directory: {directory}" )
     for entry in directory.iterdir( ):
-        if entry.is_dir( ) and entry.name in _VCS_DIRS:
-            _scribe.debug( f"Ignoring VCS directory: {entry}" )
+        if entry.is_dir( ) and entry.name in _directories_to_ignore:
+            _scribe.debug( f"Ignoring directory: {entry}" )
+            continue
+        if entry.is_file( ) and entry.name in _files_to_ignore:
+            _scribe.debug( f"Ignoring file: {entry}" )
             continue
         if cache( str( entry ) ):
             _scribe.debug( f"Ignoring path (matched by .gitignore): {entry}" )
