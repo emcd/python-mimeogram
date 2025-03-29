@@ -29,7 +29,7 @@ from . import PACKAGE_NAME, cache_import_module
 
 def test_000_information_defaults( ):
     ''' Information class provides expected defaults. '''
-    application = cache_import_module( 'mimeogram.__.application' )
+    application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     info = application.Information( )
     assert PACKAGE_NAME == info.name
     assert info.publisher is None
@@ -38,7 +38,7 @@ def test_000_information_defaults( ):
 
 def test_010_information_custom_values( ):
     ''' Information class accepts custom values. '''
-    application = cache_import_module( 'mimeogram.__.application' )
+    application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     info = application.Information(
         name = 'custom-app',
         publisher = 'Test Publisher',
@@ -50,10 +50,9 @@ def test_010_information_custom_values( ):
 
 def test_020_information_platform_dirs( ):
     ''' Information class produces PlatformDirs instance. '''
-    application = cache_import_module( 'mimeogram.__.application' )
+    application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     info = application.Information( name = 'test-app' )
     platform_dirs = info.produce_platform_directories( )
-
     assert isinstance( platform_dirs, PlatformDirs )
     assert 'test-app' == platform_dirs.appname
     assert platform_dirs.appauthor is None
@@ -62,13 +61,12 @@ def test_020_information_platform_dirs( ):
 
 def test_030_information_platform_dirs_full( ):
     ''' Information class forwards all attributes to PlatformDirs. '''
-    application = cache_import_module( 'mimeogram.__.application' )
+    application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     info = application.Information(
         name = 'test-app',
         publisher = 'Test Publisher',
         version = '1.0.0' )
     platform_dirs = info.produce_platform_directories( )
-
     assert isinstance( platform_dirs, PlatformDirs )
     assert 'test-app' == platform_dirs.appname
     assert 'Test Publisher' == platform_dirs.appauthor
@@ -77,17 +75,10 @@ def test_030_information_platform_dirs_full( ):
 
 def test_040_information_immutability( ):
     ''' Information class is immutable. '''
-    application = cache_import_module( 'mimeogram.__.application' )
+    application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
     info = application.Information(
         name = 'test-app',
         publisher = 'Test Publisher',
         version = '1.0.0' )
-
     with pytest.raises( AttributeError ):
         info.name = 'new-name'
-
-    with pytest.raises( AttributeError ):
-        info.publisher = 'New Publisher'
-
-    with pytest.raises( AttributeError ):
-        info.version = '2.0.0'

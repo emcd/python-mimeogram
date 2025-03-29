@@ -81,27 +81,31 @@ Python Package
 Executables Environment Manager
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install with `pipx <https://pipx.pypa.io/stable/installation/>`_:
+Install via `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_
+``tool`` command:
+
+::
+
+    uv tool install mimeogram
+
+Or, install via `pipx <https://pipx.pypa.io/stable/installation/>`_:
 
 ::
 
     pipx install mimeogram
 
-(Pipx is preferred because it helps ensure that you have access to the
-``mimeogram`` executable througout your system rather than in any specific
-virtual environment.)
-
 
 Package Manager
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Install with `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_:
+Install via `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_ ``pip``
+command:
 
 ::
 
     uv pip install mimeogram
 
-Or, install with ``pip``:
+Or, install via ``pip``:
 
 ::
 
@@ -154,7 +158,6 @@ user-customized instructions (e.g., `DeepSeek <https://chat.deepseek.com/>`_,
 * Request mimeogram from LLM and copy it from browser to clipboard.
 
   * `Example: Claude Artifact <https://claude.site/artifacts/5ca7851f-6b63-4d1d-87ff-cd418f3cab0f>`_
-     (may need to remix to see it because of Claude.ai display bug)
 
 * Apply mimeogram parts from clipboard. (On a terminal, this will be
   interactive by default.)
@@ -323,20 +326,23 @@ Comparison of General Approaches ⚖️
 +---------------------+------------+------------+-------------+--------------+
 | Directory Structure | Yes        | No         | Yes [4]_    | Yes          |
 +---------------------+------------+------------+-------------+--------------+
-| IDE Integration     | Any        | Web only   | N/A         | One          |
+| IDE Integration     | Any        | Web-only   | Varies      | One          |
 +---------------------+------------+------------+-------------+--------------+
-| Setup Required      | CLI tool   | None       | SDK/Auth    | Full install |
+| Setup Required      | Download   | None       | Varies      | Varies       |
 +---------------------+------------+------------+-------------+--------------+
 | Version Control     | Yes        | No         | Yes [4]_    | Yes          |
 +---------------------+------------+------------+-------------+--------------+
-| Platform Support    | Universal  | Web        | Universal   | Limited      |
+| Platform Support    | Universal  | Web        | Varies      | Varies       |
 +---------------------+------------+------------+-------------+--------------+
-| Automation Support  | Yes        | No         | Yes         | Varies       |
+| Automation Support  | Yes        | No         | Varies      | Varies       |
 +---------------------+------------+------------+-------------+--------------+
 
 .. [1] ChatGPT and Claude.ai subscription feature
-.. [2] `Cursor <https://www.cursor.com/en>`_, etc...
-.. [3] `Claude Code <https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview>`_, etc...
+.. [2] `Cursor <https://www.cursor.com/en>`_, `Windsurf
+   <https://codeium.com/windsurf>`_, etc...
+.. [3] `Aider <https://aider.chat/>`_, `Claude Code
+   <https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview>`_,
+   etc...
 .. [4] Requires custom implementation
 
 Notes:

@@ -129,7 +129,10 @@ linkcheck_ignore = [
     # Some LLM chat interfaces do not like to be touched by bots.
     r'https://chat\.deepseek\.com/',
     r'https://chatgpt\.com/',
+    r'https://claude\.ai/',
     r'https://grok\.com',
+    # Other blockades...
+    r'https://docs\.anthropic\.com/.*',
 ]
 
 # -- Options for HTML output -------------------------------------------------

@@ -40,7 +40,7 @@ from . import exceptions
 # TODO: Export various module contents.
 
 
-__version__ = '1.1'
+__version__ = '1.2a0'
 
 
 def main( ):
@@ -49,4 +49,5 @@ def main( ):
     execute( )
 
 
+# TODO: Also reclassify package modules as concealed.
 __.reclassify_modules_as_immutable( __name__ )
