@@ -2,6 +2,33 @@
 
 .. towncrier release notes start
 
+Mimeogram 1.2 (2025-03-29)
+==========================
+
+Bugfixes
+--------
+
+- Character set decoding error was raised when unable to detect line separator.
+  Now, a warning is issued and the OS-native line separator is assumed.
+- Release 1.1 executables were broken due to incomplete bundling of ``tiktoken``
+  dependencies. Completely bundle these. (Bug report from @wad11656.)
+
+
+Features
+--------
+
+- Ignore macOS ``.DS_Store`` file, regardless of whether it is listed in
+  ``.gitignore`` or whether there is a ``.gitignore`` when collecting files from
+  a directory.
+
+  Likewise, ignore ``.env`` when collecting files from a directory. (For
+  security reasons, as there may be secrets in it.)
+
+  One can still explicitly specify ignored files to include them in mimeograms.
+  Ignoring only applies to collecting files from directories, when directories
+  are given as arguments to ``mimeogram create``.
+
+
 Mimeogram 1.1 (2025-03-02)
 ==========================
 
