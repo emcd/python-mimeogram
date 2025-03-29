@@ -138,8 +138,12 @@ jobs:
         - name: Validate Executable (commands)
           run: |
             set -eu -o pipefail
-            .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} create README
-
+            .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} \
+              create --clipboard False README.rst >validate.mg
+            .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} \
+              apply --clipboard False --review-mode silent <validate.mg
+            rm validate.mg
+          shell: bash
 
         - name: Save Executable
           uses: actions/upload-artifact@v4
