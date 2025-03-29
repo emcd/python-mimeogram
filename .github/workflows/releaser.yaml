@@ -139,7 +139,7 @@ jobs:
           run: |
             set -eu -o pipefail
             .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} \
-              create --clipboard False README.rst >validate.mg
+              create --clipboard False sources/mimeogram/__init__.py >validate.mg
             .auxiliary/artifacts/pyinstaller/${_PYI_EXECUTABLE_NAME} \
               apply --clipboard False --review-mode silent <validate.mg
             rm validate.mg
