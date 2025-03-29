@@ -39,9 +39,8 @@ class Command(
 
     clip: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg(
-            aliases = ( '--clipboard', '--to-clipboard' ),
-            help = "Copy prompt to clipboard." ),
+        __.typx.Doc( ''' Copy prompt to clipboard. ''' ),
+        __.tyro.conf.arg( aliases = ( '--clipboard', '--to-clipboard' ) ),
     ] = None
 
     async def __call__( self, auxdata: __.Globals ) -> None:

@@ -41,40 +41,43 @@ class Command(
 
     source: __.typx.Annotated[
         str,
-        __.tyro.conf.arg(
-            help = (
-                "Source file for mimeogram.\n"
-                "Defaults to stdin if '--clip' not specified." ) ),
+        __.typx.Doc(
+            ''' Source file for mimeogram.
+
+                Defaults to stdin if '--clip' not specified.
+            ''' ),
     ] = '-'
     clip: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg(
-            aliases = ( '--clipboard', '--from-clipboard' ),
-            help = "Read mimeogram from clipboard instead of file or stdin." ),
+        __.typx.Doc(
+            ''' Read mimeogram from clipboard instead of file or stdin. ''' ),
+        __.tyro.conf.arg( aliases = ( '--clipboard', '--from-clipboard' ) ),
     ] = None
     mode: __.typx.Annotated[
         __.typx.Optional[ _updaters.ReviewModes ],
-        __.tyro.conf.arg(
-            aliases = ( '--review-mode', ),
-            help = (
-                "Controls how changes are reviewed.\n"
-                "'silent': Apply without review.\n"
-                "'partitive': Review each change interactively.\n"
-                "Partitive, if not specified and on a terminal.\n"
-                "Silent, if not specified and not on a terminal." ) ),
+        __.typx.Doc(
+            ''' Controls how changes are reviewed.
+
+                'silent': Apply without review.
+                'partitive': Review each change interactively.
+
+                Partitive, if not specified and on a terminal.
+                Silent, if not specified and not on a terminal.
+            ''' ),
+        __.tyro.conf.arg( aliases = ( '--review-mode', ) ),
     ] = None
     base: __.typx.Annotated[
         __.typx.Optional[ __.Path ],
-        __.tyro.conf.arg(
-            aliases = ( '--base-directory', ),
-            help = (
-                "Base directory for relative locations.\n"
-                "Defaults to current working directory." ) ),
+        __.typx.Doc(
+            ''' Base directory for relative locations.
+
+                Defaults to current working directory.
+            ''' ),
+        __.tyro.conf.arg( aliases = ( '--base-directory', ) ),
     ] = None
     force: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg(
-            help = 'Override protected path checks.' ),
+        __.typx.Doc( '''Override protected path checks.''' ),
     ] = None
 
     async def __call__( self, auxdata: __.Globals ) -> None:

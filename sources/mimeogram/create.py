@@ -40,57 +40,53 @@ class Command(
 
     sources: __.typx.Annotated[
         __.tyro.conf.Positional[ list[ str ] ],
-        __.tyro.conf.arg(
-            help = "Filesystem locations or URLs.",
-            prefix_name = False ),
+        __.typx.Doc( ''' Filesystem locations or URLs. ''' ),
+        __.tyro.conf.arg( prefix_name = False ),
     ]
     clip: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg(
-            aliases = ( '--clipboard', '--to-clipboard' ),
-            help = "Copy mimeogram to clipboard." ),
+        __.typx.Doc( ''' Copy mimeogram to clipboard. ''' ),
+        __.tyro.conf.arg( aliases = ( '--clipboard', '--to-clipboard' ) ),
     ] = None
     count_tokens: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg(
-            help = "Count total tokens in mimeogram." ),
+        __.typx.Doc( ''' Count total tokens in mimeogram. ''' ),
     ] = None
     edit: __.typx.Annotated[
         bool,
-        __.tyro.conf.arg(
-            aliases = ( '-e', '--edit-message' ),
-            help = "Spawn editor to capture an introductory message." ),
+        __.typx.Doc( ''' Spawn editor to capture introductory message. ''' ),
+        __.tyro.conf.arg( aliases = ( '-e', '--edit-message' ) ),
     ] = False
     prepend_prompt: __.typx.Annotated[
         bool,
-        __.tyro.conf.arg(
-            help = "Prepend mimeogram format instructions." ),
+        __.typx.Doc( ''' Prepend mimeogram format instructions. ''' ),
     ] = False
     recurse: __.typx.Annotated[
         __.typx.Optional[ bool ],
+        __.typx.Doc( ''' Recurse into directories. ''' ),
         __.tyro.conf.arg(
-            aliases = ( '-r', '--recurse-directories', '--recursive' ),
-            help = "Recurse into directories." ),
+            aliases = ( '-r', '--recurse-directories', '--recursive' ) ),
     ] = None
     strict: __.typx.Annotated[
         __.typx.Optional[ bool ],
-        __.tyro.conf.arg(
-            aliases = ( '--fail-on-invalid', ),
-            help = "Fail on invalid contents? True, fail. False, skip." ),
+        __.typx.Doc(
+            ''' Fail on invalid contents? True, fail. False, skip. ''' ),
+        __.tyro.conf.arg( aliases = ( '--fail-on-invalid', ) ),
     ] = None
     tokenizer: __.typx.Annotated[
         __.typx.Optional[ _tokenizers.Tokenizers ],
-        __.tyro.conf.arg(
-            help = "Which tokenizer to use for counting?" ),
+        __.typx.Doc( ''' Which tokenizer to use for counting? ''' ),
     ] = None
     tokenizer_variant: __.typx.Annotated[
         __.typx.Optional[ str ],
-        __.tyro.conf.arg(
-            help = (
-                "Which tokenizer variant to use for counting?\n"
-                "For 'tiktoken': 'cl100k_base', 'o200k_base', etc....\n"
-                "Not all tokenizers have variants.\n"
-                "If not specified, then the default variant is used." ) ),
+        __.typx.Doc(
+            ''' Which tokenizer variant to use for counting?
+
+                'tiktoken': 'cl100k_base', 'o200k_base', etc....
+
+                Not all tokenizers have variants.
+                If not specified, then the default variant is used.
+            ''' ),
     ] = None
 
     async def __call__( self, auxdata: __.Globals ) -> None:
