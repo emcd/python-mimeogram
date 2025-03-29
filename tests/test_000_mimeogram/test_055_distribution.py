@@ -32,12 +32,11 @@ from . import PACKAGE_NAME, cache_import_module, create_test_files
 
 def test_000_information_attributes( ):
     ''' Information class has expected attributes. '''
-    distribution = cache_import_module( 'mimeogram.__.distribution' )
+    distribution = cache_import_module( f"{PACKAGE_NAME}.__.distribution" )
     info = distribution.Information(
         name = 'test-dist',
         location = Path( '/test/path' ),
         editable = True )
-
     assert 'test-dist' == info.name
     assert Path( '/test/path' ) == info.location
     assert info.editable
@@ -45,30 +44,26 @@ def test_000_information_attributes( ):
 
 def test_010_information_immutability( ):
     ''' Information class is immutable. '''
-    distribution = cache_import_module( 'mimeogram.__.distribution' )
+    distribution = cache_import_module( f"{PACKAGE_NAME}.__.distribution" )
     info = distribution.Information(
         name = 'test-dist',
         location = Path( '/test/path' ),
         editable = True )
-
     with pytest.raises( AttributeError ):
         info.name = 'new-name'
-
     with pytest.raises( AttributeError ):
         info.location = Path( '/new/path' )
-
     with pytest.raises( AttributeError ):
         info.editable = False
 
 
 def test_020_provide_data_location( ):
     ''' Information.provide_data_location provides expected paths. '''
-    distribution = cache_import_module( 'mimeogram.__.distribution' )
+    distribution = cache_import_module( f"{PACKAGE_NAME}.__.distribution" )
     info = distribution.Information(
         name = 'test-dist',
         location = Path( '/test/path' ),
         editable = True )
-
     assert Path( '/test/path/data' ) == info.provide_data_location( )
     assert (
         Path( '/test/path/data/subdir/file.txt' )
@@ -78,8 +73,7 @@ def test_020_provide_data_location( ):
 @pytest.mark.asyncio
 async def test_100_prepare_development( provide_tempdir ):
     ''' Information.prepare handles development environment. '''
-    distribution = cache_import_module( 'mimeogram.__.distribution' )
-
+    distribution = cache_import_module( f"{PACKAGE_NAME}.__.distribution" )
     # Create mock development environment
     pyproject_content = '''
 [project]
@@ -87,14 +81,12 @@ name = "test-package"
 version = "1.0.0"
 '''
     test_files = { 'pyproject.toml': pyproject_content }
-
     with create_test_files( provide_tempdir, test_files ):
         async with AsyncExitStack( ) as exits:
             info = await distribution.Information.prepare(
                 package = PACKAGE_NAME,
                 exits = exits,
                 project_anchor = provide_tempdir )
-
             assert info.editable
             assert 'test-package' == info.name
             assert provide_tempdir == info.location
@@ -103,13 +95,11 @@ version = "1.0.0"
 @pytest.mark.asyncio
 async def test_110_prepare_production( ):
     ''' Information.prepare handles production environment. '''
-    distribution = cache_import_module( 'mimeogram.__.distribution' )
-
+    distribution = cache_import_module( f"{PACKAGE_NAME}.__.distribution" )
     # Mock packages_distributions to simulate installed package
     packages = { PACKAGE_NAME: [ 'test-dist' ] }
     path = Path( '/test/installed/path' )
     mock_file = MagicMock( )
-
     with patch(
         'importlib_metadata.packages_distributions',
         return_value = packages
@@ -126,7 +116,6 @@ async def test_110_prepare_production( ):
         async with AsyncExitStack( ) as exits:
             info = await distribution.Information.prepare(
                 package = PACKAGE_NAME, exits = exits )
-
             assert not info.editable
             assert 'test-dist' == info.name
             assert path == info.location

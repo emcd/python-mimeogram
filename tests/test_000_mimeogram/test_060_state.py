@@ -23,22 +23,23 @@
 # pylint: disable=redefined-outer-name
 
 
+import sys
+
 from contextlib import AsyncExitStack
 from pathlib import Path
 
 import pytest
 from platformdirs import PlatformDirs
 
-from . import cache_import_module
+from . import PACKAGE_NAME, cache_import_module
 
 
 @pytest.fixture
 def provide_globals( ):
     ''' Provides test globals instance. '''
-    state = cache_import_module( 'mimeogram.__.state' )
-    application = cache_import_module( 'mimeogram.__.application' )
-    distribution = cache_import_module( 'mimeogram.__.distribution' )
-
+    state = cache_import_module( f"{PACKAGE_NAME}.__.state" )
+    application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
+    distribution = cache_import_module( f"{PACKAGE_NAME}.__.distribution" )
     app_info = application.Information( name = 'test-app' )
     platform_dirs = app_info.produce_platform_directories( )
     dist_info = distribution.Information(
@@ -47,7 +48,6 @@ def provide_globals( ):
         editable = True )
     config = { 'locations': { } }
     exits = AsyncExitStack( )
-
     return state.Globals(
         application = app_info,
         configuration = config,
@@ -58,7 +58,7 @@ def provide_globals( ):
 
 def test_010_directory_species_values( ):
     ''' DirectorySpecies enum has expected values. '''
-    state = cache_import_module( 'mimeogram.__.state' )
+    state = cache_import_module( f"{PACKAGE_NAME}.__.state" )
     assert 'cache' == state.DirectorySpecies.Cache.value
     assert 'data' == state.DirectorySpecies.Data.value
     assert 'state' == state.DirectorySpecies.State.value
@@ -66,7 +66,7 @@ def test_010_directory_species_values( ):
 
 def test_020_directory_species_members( ):
     ''' DirectorySpecies enum has expected members. '''
-    state = cache_import_module( 'mimeogram.__.state' )
+    state = cache_import_module( f"{PACKAGE_NAME}.__.state" )
     assert set( ( 'Cache', 'Data', 'State' ) ) == {
         member.name for member in state.DirectorySpecies }
 
@@ -74,7 +74,6 @@ def test_020_directory_species_members( ):
 def test_110_globals_attributes( provide_globals ):
     ''' Globals class has expected attributes. '''
     globals_obj = provide_globals
-
     assert 'test-app' == globals_obj.application.name
     assert isinstance( globals_obj.configuration, dict )
     assert isinstance( globals_obj.directories, PlatformDirs )
@@ -85,13 +84,10 @@ def test_110_globals_attributes( provide_globals ):
 def test_120_globals_immutability( provide_globals ):
     ''' Globals class is immutable. '''
     globals_obj = provide_globals
-
     with pytest.raises( AttributeError ):
         globals_obj.application = None
-
     with pytest.raises( AttributeError ):
         globals_obj.configuration = { }
-
     with pytest.raises( AttributeError ):
         globals_obj.directories = None
 
@@ -100,7 +96,6 @@ def test_130_globals_as_dictionary( provide_globals ):
     ''' Globals.as_dictionary provides shallow copy of state. '''
     globals_obj = provide_globals
     state_dict = globals_obj.as_dictionary( )
-
     assert isinstance( state_dict, dict )
     assert globals_obj.application == state_dict[ 'application' ]
     assert globals_obj.configuration == state_dict[ 'configuration' ]
@@ -111,46 +106,37 @@ def test_130_globals_as_dictionary( provide_globals ):
 
 def test_140_provide_cache_location( provide_globals ):
     ''' Globals.provide_cache_location resolves cache paths. '''
-    import sys
     globals_obj = provide_globals
     base_path = globals_obj.provide_cache_location( )
     assert isinstance( base_path, Path )
-
     if sys.platform == 'win32':
         assert 'Cache' in base_path.parts
         assert 'test-app' in base_path.parent.parts
     else: assert base_path.name == 'test-app'
-
     subdir_path = globals_obj.provide_cache_location( 'subdir', 'file.txt' )
     assert subdir_path.parts[ -2: ] == ( 'subdir', 'file.txt' )
 
 
 def test_150_provide_data_location( provide_globals ):
     ''' Globals.provide_data_location resolves data paths. '''
-    import sys
     globals_obj = provide_globals
     base_path = globals_obj.provide_data_location( )
     assert isinstance( base_path, Path )
-
     if sys.platform == 'win32':
         assert 'test-app' in base_path.parts
     else: assert base_path.name == 'test-app'
-
     subdir_path = globals_obj.provide_data_location( 'subdir', 'file.txt' )
     assert subdir_path.parts[ -2: ] == ( 'subdir', 'file.txt' )
 
 
 def test_160_provide_state_location( provide_globals ):
     ''' Globals.provide_state_location resolves state paths. '''
-    import sys
     globals_obj = provide_globals
     base_path = globals_obj.provide_state_location( )
     assert isinstance( base_path, Path )
-
     if sys.platform == 'win32':
         assert 'test-app' in base_path.parts
     else: assert base_path.name == 'test-app'
-
     subdir_path = globals_obj.provide_state_location( 'subdir', 'file.txt' )
     assert subdir_path.parts[ -2: ] == ( 'subdir', 'file.txt' )
 
@@ -158,16 +144,12 @@ def test_160_provide_state_location( provide_globals ):
 def test_170_provide_location_default( provide_globals ):
     ''' Globals.provide_location uses platform defaults without config. '''
     globals_obj = provide_globals
-    state = cache_import_module( 'mimeogram.__.state' )
-
-    # Test each species with default behavior (no custom config)
+    state = cache_import_module( f"{PACKAGE_NAME}.__.state" )
     for species in state.DirectorySpecies:
         base_dir = getattr(
             globals_obj.directories, f'user_{species.value}_path' )
         path = globals_obj.provide_location( species )
         assert path == base_dir
-
-        # Test with appendages
         path_with_appendages = globals_obj.provide_location(
             species, 'subdir', 'file.txt' )
         assert path_with_appendages == base_dir / 'subdir' / 'file.txt'
@@ -176,9 +158,7 @@ def test_170_provide_location_default( provide_globals ):
 def test_180_provide_location_with_custom_paths( provide_globals ):
     ''' Globals.provide_location uses custom paths from config. '''
     globals_obj = provide_globals
-    state = cache_import_module( 'mimeogram.__.state' )
-
-    # Update configuration with absolute custom paths
+    state = cache_import_module( f"{PACKAGE_NAME}.__.state" )
     globals_obj.configuration[ 'locations' ] = { }
     paths_by_species = {
         'cache': '/var/cache',
@@ -188,13 +168,9 @@ def test_180_provide_location_with_custom_paths( provide_globals ):
     for species in state.DirectorySpecies:
         globals_obj.configuration[ 'locations' ][ species.value ] = (
             f"{paths_by_species[ species.value ]}/{{application_name}}" )
-
-    # Test each species
     for species in state.DirectorySpecies:
         path = globals_obj.provide_location( species )
         assert path == Path( paths_by_species[ species.value ] ) / 'test-app'
-
-        # Test with appendages
         path_with_appendages = globals_obj.provide_location(
             species, 'subdir', 'file.txt' )
         assert path_with_appendages == (
@@ -204,32 +180,24 @@ def test_180_provide_location_with_custom_paths( provide_globals ):
 
 def test_190_provide_location_with_variables( provide_globals ):
     ''' Globals.provide_location handles variable substitution. '''
-    import sys
     globals_obj = provide_globals
-    state = cache_import_module( 'mimeogram.__.state' )
-
-    # Test home variable substitution with platform-aware paths
+    state = cache_import_module( f"{PACKAGE_NAME}.__.state" )
     if sys.platform == 'win32':
         path_template = '{user_home}\\AppData\\Local\\{application_name}'
     else: path_template = '{user_home}/.local/share/{application_name}'
-
     globals_obj.configuration[ 'locations' ] = {
         'data': path_template
     }
-
     path = globals_obj.provide_location( state.DirectorySpecies.Data )
     if sys.platform == 'win32':
         assert 'AppData' in path.parts
         assert 'Local' in path.parts
         assert 'test-app' in path.parts
     else: assert path == Path.home( ) / '.local' / 'share' / 'test-app'
-
-    # Test platform directory variable substitution
     globals_obj.configuration[ 'locations' ] = { }
     for species in state.DirectorySpecies:
         globals_obj.configuration[ 'locations' ][ species.value ] = (
             f"{{user_{species.value}}}/custom" )
-
     for species in state.DirectorySpecies:
         base_dir = getattr(
             globals_obj.directories, f'user_{species.value}_path' )

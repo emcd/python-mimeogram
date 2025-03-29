@@ -24,12 +24,11 @@
 '''
 
 
-import contextlib
-import pathlib
+import contextlib as ctxl
 import types
 import typing_extensions as typx
 
-from types import MappingProxyType as DictionaryProxy
+from pathlib import Path
 
 
 PACKAGE_NAME = 'mimeogram'
@@ -56,12 +55,12 @@ def acquire_test_mimeogram( name: str ) -> str:
     return location.read_text( )
 
 
-@contextlib.contextmanager
+@ctxl.contextmanager
 def create_test_files(
-    base_dir: pathlib.Path, files: dict[ str, str ]
+    base_dir: Path, files: dict[ str, str ]
 ) -> typx.Iterator[ None ]:
     ''' Creates test files in specified directory. '''
-    created: list[ pathlib.Path ] = [ ]
+    created: list[ Path ] = [ ]
     try: # pylint: disable=too-many-try-statements
         for relpath, content in files.items( ):
             filepath = base_dir / relpath
@@ -84,8 +83,8 @@ def produce_test_environment( ) -> dict[ str, str ]:
 
 
 def _discover_module_names( package_name: str ) -> tuple[ str, ... ]:
-    from pathlib import Path
     package = cache_import_module( package_name )
+    if not package.__file__: return ( )
     return tuple(
         path.stem
         for path in Path( package.__file__ ).parent.glob( '*.py' )
@@ -93,13 +92,13 @@ def _discover_module_names( package_name: str ) -> tuple[ str, ... ]:
             and path.is_file( ) )
 
 
-MODULES_NAMES_BY_PACKAGE_NAME = DictionaryProxy( {
+MODULES_NAMES_BY_PACKAGE_NAME = types.MappingProxyType( {
     name: _discover_module_names( name ) for name in PACKAGES_NAMES } )
-PACKAGES_NAMES_BY_MODULE_QNAME = DictionaryProxy( {
+PACKAGES_NAMES_BY_MODULE_QNAME = types.MappingProxyType( {
     f"{subpackage_name}.{module_name}": subpackage_name
     for subpackage_name in PACKAGES_NAMES
     for module_name in MODULES_NAMES_BY_PACKAGE_NAME[ subpackage_name ] } )
 MODULES_QNAMES = tuple( PACKAGES_NAMES_BY_MODULE_QNAME.keys( ) )
-MODULES_NAMES_BY_MODULE_QNAME = DictionaryProxy( {
+MODULES_NAMES_BY_MODULE_QNAME = types.MappingProxyType( {
     name: name.rsplit( '.', maxsplit = 1 )[ -1 ]
     for name in PACKAGES_NAMES_BY_MODULE_QNAME.keys( ) } )
