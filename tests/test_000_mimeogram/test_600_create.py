@@ -19,7 +19,6 @@
 
 
 ''' Tests for create module. '''
-# pylint: disable=too-many-locals
 
 
 from unittest.mock import MagicMock
@@ -122,7 +121,7 @@ async def test_200_create_basic_file( provide_tempdir ):
 
     with create_test_files( provide_tempdir, test_files ):
         cmd = create.Command( sources = [ str( test_path ) ] )
-        with pytest.raises( SystemExit ) as exc_info:
+        with pytest.raises( SystemExit ) as exc_info: # noqa: SIM117
             with pytest.MonkeyPatch( ).context( ) as mp:
                 mp.setattr( 'builtins.print', mock_print )
                 await create.create(
@@ -156,7 +155,7 @@ async def test_210_create_with_message( provide_tempdir ):
         cmd = create.Command(
             sources = [ str( test_path ) ],
             edit = True )
-        with pytest.raises( SystemExit ) as exc_info:
+        with pytest.raises( SystemExit ) as exc_info: # noqa: SIM117
             with pytest.MonkeyPatch( ).context( ) as mp:
                 mp.setattr( 'builtins.print', mock_print )
                 await create.create(
@@ -188,14 +187,14 @@ async def test_220_create_with_prompt( provide_tempdir ):
     def mock_print( content: str ):
         printed_content.append( content )
 
-    async def test_prompter( auxdata ): # pylint: disable=unused-argument
+    async def test_prompter( auxdata ):
         return test_prompt
 
     with create_test_files( provide_tempdir, test_files ):
         cmd = create.Command(
             sources = [ str( test_path ) ],
             prepend_prompt = True )
-        with pytest.raises( SystemExit ) as exc_info:
+        with pytest.raises( SystemExit ) as exc_info: # noqa: SIM117
             with pytest.MonkeyPatch( ).context( ) as mp:
                 mp.setattr( 'builtins.print', mock_print )
                 await create.create(
@@ -259,7 +258,7 @@ async def test_240_create_with_recursion( provide_tempdir ):
         cmd = create.Command(
             sources = [ str( provide_tempdir ) ],
             recurse = True )
-        with pytest.raises( SystemExit ) as exc_info:
+        with pytest.raises( SystemExit ) as exc_info: # noqa: SIM117
             with pytest.MonkeyPatch( ).context( ) as mp:
                 mp.setattr( 'builtins.print', mock_print )
                 await create.create(
@@ -291,48 +290,6 @@ async def test_250_create_acquisition_failure( provide_tempdir ):
         await create.create( MagicMock( configuration = { } ), cmd )
 
     assert exc_info.value.code == 1
-
-
-# @pytest.mark.asyncio
-# async def test_260_calculate_tokens_during_create( provide_tempdir ):
-#     ''' Token counting during mimeogram creation succeeds without error. '''
-#     create = cache_import_module( f"{PACKAGE_NAME}.create" )
-#     tokenizers = cache_import_module( f"{PACKAGE_NAME}.tokenizers" )
-#     test_content = "test content\n"
-#     test_path = provide_tempdir / "test.txt"
-#     test_files = { "test.txt": test_content }
-#     with create_test_files( provide_tempdir, test_files ):
-#         cmd = create.Command(
-#             sources = [ str( test_path ) ],
-#             count_tokens = True,
-#             tokenizer = tokenizers.Tokenizers.Tiktoken,
-#             tokenizer_variant = "cl100k_base" )
-#         with pytest.raises( SystemExit ) as exc_info:
-#             await create.create(
-#                 MagicMock( configuration = { "create": { "count-tokens": True } } ),
-#                 cmd )
-#         assert exc_info.value.code == 0
-
-
-# @pytest.mark.asyncio
-# async def test_270_validate_token_counting_invalid_tokenizer( provide_tempdir ):
-#     ''' Invalid tokenizer variant fails during token counting. '''
-#     create = cache_import_module( f"{PACKAGE_NAME}.create" )
-#     tokenizers = cache_import_module( f"{PACKAGE_NAME}.tokenizers" )
-#     test_content = "test content\n"
-#     test_path = provide_tempdir / "test.txt"
-#     test_files = { "test.txt": test_content }
-#     with create_test_files( provide_tempdir, test_files ):
-#         cmd = create.Command(
-#             sources = [ str( test_path ) ],
-#             count_tokens = True,
-#             tokenizer = tokenizers.Tokenizers.Tiktoken,
-#             tokenizer_variant = "invalid_variant" )
-#         with pytest.raises( SystemExit ) as exc_info:
-#             await create.create(
-#                 MagicMock( configuration = { "create": { "count-tokens": True } } ),
-#                 cmd )
-#         assert exc_info.value.code == 1
 
 
 @pytest.mark.asyncio

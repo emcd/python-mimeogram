@@ -41,8 +41,6 @@ class ReviewModes( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     Partitive = 'partitive'     # Interactively review each part.
 
 
-# pylint: disable=bad-reversed-sequence,unsubscriptable-object
-# pylint: disable=unsupported-assignment-operation,unsupported-membership-test
 class Reverter(
     metaclass = __.ImmutableStandardDataclass,
     decorators = ( __.standard_dataclass, ),
@@ -50,9 +48,9 @@ class Reverter(
     ''' Backup and restore filesystem state. '''
 
     originals: dict[ __.Path, str ] = (
-        __.dataclass_declare( default_factory = dict ) )
+        __.dataclass_declare( default_factory = dict[ __.Path, str ] ) )
     revisions: list[ __.Path ] = (
-        __.dataclass_declare( default_factory = list ) )
+        __.dataclass_declare( default_factory = list[ __.Path ] ) )
 
     async def save( self, part: _parts.Part, path: __.Path ) -> None:
         ''' Saves original file content if it exists. '''
@@ -77,11 +75,8 @@ class Reverter(
                 except ContentUpdateFailure:
                     _scribe.exception( "Failed to restore {path}" )
             else: path.unlink( )
-# pylint: enable=bad-reversed-sequence,unsubscriptable-object
-# pylint: enable=unsupported-assignment-operation,unsupported-membership-test
 
 
-# pylint: disable=no-member,not-an-iterable
 class Queue(
     metaclass = __.ImmutableStandardDataclass,
     decorators = ( __.standard_dataclass, ),
@@ -89,7 +84,8 @@ class Queue(
     ''' Manages queued file updates for batch application. '''
 
     updates: list[ tuple[ _parts.Part, __.Path, str ] ] = (
-        __.dataclass_declare( default_factory = list ) )
+        __.dataclass_declare(
+            default_factory = list[ tuple[ _parts.Part, __.Path, str ] ] ) )
     reverter: Reverter = (
         __.dataclass_declare( default_factory = Reverter ) )
 
@@ -116,10 +112,9 @@ class Queue(
             raise
         for _, target, _ in self.updates:
             self.reverter.revisions.append( target )
-# pylint: enable=no-member,not-an-iterable
 
 
-async def update( # pylint: disable=too-many-arguments,too-many-locals
+async def update( # noqa: PLR0913
     auxdata: __.Globals,
     parts: __.cabc.Sequence[ _parts.Part ],
     mode: ReviewModes,
@@ -199,8 +194,8 @@ async def _update_content_atomic(
     linesep: _parts.LineSeparators = _parts.LineSeparators.LF
 ) -> None:
     ''' Updates file content atomically, if possible. '''
-    import aiofiles.os as os # pylint: disable=consider-using-from-import
-    from aiofiles.tempfile import NamedTemporaryFile
+    import aiofiles.os as os # noqa: PLR0402
+    from aiofiles.tempfile import NamedTemporaryFile # pyright: ignore
     location.parent.mkdir( parents = True, exist_ok = True )
     content = linesep.nativize( content )
     has_error = False
@@ -211,16 +206,16 @@ async def _update_content_atomic(
     ) as stream:
         filename = str( stream.name )
         try: await stream.write( content.encode( charset ) )
-        except Exception: # pylint: disable=broad-exception-caught
+        except Exception:
             has_error = True
     # Windows: Replace must happen after file handle is closed.
     if not has_error:
         try: await os.replace( filename, str( location ) )
-        except Exception: # pylint: disable=broad-exception-caught
+        except Exception:
             has_error = True
     if await os.path.exists( filename ):
         try: await os.remove( filename )
-        except Exception: # pylint: disable=broad-exception-caught
+        except Exception:
             _scribe.warning( f"Could not remove temporary file: {filename}" )
     if has_error:
         from .exceptions import ContentUpdateFailure

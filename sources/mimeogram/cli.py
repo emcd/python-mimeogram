@@ -21,8 +21,6 @@
 ''' Command-line interface. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import apply as _apply
 from . import create as _create
@@ -41,7 +39,7 @@ class VersionCommand(
 
     async def __call__( self, auxdata: __.Globals ) -> None:
         ''' Executes command to print version information. '''
-        from . import __version__ # pylint: disable=cyclic-import
+        from . import __version__
         print( f"{__package__} {__version__}" )
         raise SystemExit( 0 )
 

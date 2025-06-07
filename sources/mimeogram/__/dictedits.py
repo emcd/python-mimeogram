@@ -24,10 +24,11 @@
 
 
 from . import imports as __
+from . import nomina as _nomina
 from . import exceptions as _exceptions
 
 
-class Edit( # pylint: disable=invalid-metaclass
+class Edit(
     __.typx.Protocol,
     metaclass = __.ImmutableStandardProtocolDataclass,
     decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
@@ -37,25 +38,25 @@ class Edit( # pylint: disable=invalid-metaclass
     address: __.cabc.Sequence[ str ]
 
     @__.abc.abstractmethod
-    def __call__( self, configuration: __.NominativeDictionary ) -> None:
+    def __call__( self, configuration: _nomina.NominativeDictionary ) -> None:
         ''' Performs edit. '''
         raise NotImplementedError
 
     def dereference(
-        self, configuration: __.NominativeDictionary
+        self, configuration: _nomina.NominativeDictionary
     ) -> __.typx.Any:
         ''' Dereferences value at address in configuration. '''
         configuration_ = configuration
         for part in self.address:
             if part not in configuration_:
                 raise (
-                    _exceptions.AddressLocateFailure(
+                    _exceptions.AddressLocateFailure( # noqa: TRY003
                         'configuration dictionary', self.address, part ) )
             configuration_ = configuration_[ part ]
         return configuration_
 
     def inject(
-        self, configuration: __.NominativeDictionary, value: __.typx.Any
+        self, configuration: _nomina.NominativeDictionary, value: __.typx.Any
     ) -> None:
         ''' Injects value at address in configuration. '''
         configuration_ = configuration
@@ -71,16 +72,16 @@ class ElementsEntryEdit( Edit, decorators = ( __.standard_dataclass, ) ):
     editee: tuple[ str, __.typx.Any ]
     identifier: __.typx.Optional[ tuple[ str, __.typx.Any ] ] = None
 
-    def __call__( self, configuration: __.NominativeDictionary ) -> None:
+    def __call__( self, configuration: _nomina.NominativeDictionary ) -> None:
         array = self.dereference( configuration )
         if self.identifier:
-            iname, ivalue = self.identifier # pylint: disable=unpacking-non-sequence
+            iname, ivalue = self.identifier
         else: iname, ivalue = None, None
         ename, evalue = self.editee
         for element in array:
             if iname:
                 if iname not in element:
-                    raise _exceptions.EntryAssertionFailure(
+                    raise _exceptions.EntryAssertionFailure( # noqa: TRY003
                         'configuration array element', iname )
                 if ivalue != element[ iname ]: continue
             element[ ename ] = evalue
@@ -91,7 +92,7 @@ class SimpleEdit( Edit, decorators = ( __.standard_dataclass, ) ):
 
     value: __.typx.Any
 
-    def __call__( self, configuration: __.NominativeDictionary ) -> None:
+    def __call__( self, configuration: _nomina.NominativeDictionary ) -> None:
         self.inject( configuration, self.value )
 
 

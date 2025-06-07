@@ -20,9 +20,6 @@
 
 ''' Tests for environment module. '''
 
-# pylint: disable=redefined-outer-name,too-many-try-statements
-# pylint: disable=unused-argument
-
 
 import os
 from pathlib import Path
@@ -36,7 +33,7 @@ from . import PACKAGE_NAME, cache_import_module, create_test_files
 @pytest.fixture
 def provide_test_platform_dirs( provide_tempdir ):
     ''' Provides PlatformDirs with user_config_path in test directory. '''
-    class PatchedPlatformDirs( PlatformDirs ): # pylint: disable=too-many-ancestors
+    class PatchedPlatformDirs( PlatformDirs ):
         __slots__ = ( '_test_config_path', )
 
         def __init__( self, appname: str, ensure_exists: bool = False ):

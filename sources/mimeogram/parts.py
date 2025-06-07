@@ -35,7 +35,7 @@ class LineSeparators( __.enum.Enum ):
     LF =    '\n'    # Unix/Linux
 
     @classmethod
-    def detect_bytes( # pylint: disable=inconsistent-return-statements
+    def detect_bytes(
         selfclass, content: bytes, limit = 1024
     ) -> LineSeparators | None:
         ''' Detects newline characters in bytes array. '''
@@ -51,7 +51,7 @@ class LineSeparators( __.enum.Enum ):
                     return selfclass.LF
                 case _:
                     if found_cr: return selfclass.CR
-        return
+        return None
 
     @classmethod
     def normalize_universal( selfclass, content: str ) -> str:

@@ -19,7 +19,6 @@
 
 
 ''' Tests for interactions module. '''
-# pylint: disable=too-many-locals,unused-argument
 
 
 import pytest

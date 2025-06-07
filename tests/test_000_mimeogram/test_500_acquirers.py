@@ -19,7 +19,6 @@
 
 
 ''' Tests for content acquisition module. '''
-# pylint: disable=redefined-outer-name
 
 
 import exceptiongroup
@@ -64,7 +63,6 @@ def provide_auxdata( provide_tempdir, provide_tempenv ):
 
 
 # Basic File Acquisition Tests
-# ===============================================================================
 
 @pytest.mark.asyncio
 async def test_100_acquire_single_file( provide_tempdir, provide_auxdata ):
@@ -126,7 +124,6 @@ async def test_120_acquire_recursive_directory(
 
 
 # Line Ending Tests
-# ===============================================================================
 
 @pytest.mark.asyncio
 async def test_200_detect_line_endings( provide_tempdir, provide_auxdata ):
@@ -153,7 +150,6 @@ async def test_200_detect_line_endings( provide_tempdir, provide_auxdata ):
 
 
 # Character Set Tests
-# ===============================================================================
 
 @pytest.mark.asyncio
 async def test_300_detect_charset( provide_tempdir, provide_auxdata ):
@@ -188,7 +184,6 @@ async def test_300_detect_charset( provide_tempdir, provide_auxdata ):
 
 
 # MIME Type Tests
-# ===============================================================================
 
 @pytest.mark.asyncio
 async def test_400_detect_mime_types( provide_tempdir, provide_auxdata ):
@@ -215,7 +210,6 @@ async def test_400_detect_mime_types( provide_tempdir, provide_auxdata ):
 
 
 # Error Handling Tests
-# ===============================================================================
 
 @pytest.mark.asyncio
 async def test_500_invalid_file( provide_tempdir, provide_auxdata ):
@@ -324,7 +318,7 @@ async def test_530_strict_mode_handling( provide_tempdir, provide_auxdata ):
 
 
 @pytest.mark.asyncio
-async def test_540_strict_mode_multiple_failures( # pylint: disable=too-many-locals
+async def test_540_strict_mode_multiple_failures(
     provide_tempdir, provide_auxdata
 ):
     ''' Tests strict mode handling of multiple invalid files. '''
@@ -453,7 +447,6 @@ async def test_550_strict_mode_http_failures( provide_auxdata, httpx_mock ):
 
 
 # HTTP Tests
-# ===============================================================================
 
 @pytest.mark.asyncio
 async def test_600_http_acquisition( provide_auxdata, httpx_mock ):
@@ -561,7 +554,6 @@ async def test_620_http_nontextual_mimetype( provide_auxdata, httpx_mock ):
 
 
 # VCS Directory Tests
-# ===============================================================================
 
 @pytest.mark.asyncio
 async def test_700_vcs_directory_exclusion( provide_tempdir, provide_auxdata ):
@@ -585,7 +577,6 @@ async def test_700_vcs_directory_exclusion( provide_tempdir, provide_auxdata ):
 
 
 # Gitignore Tests
-# ===============================================================================
 
 @pytest.mark.asyncio
 async def test_800_gitignore_patterns( provide_tempdir, provide_auxdata ):
@@ -612,7 +603,6 @@ async def test_800_gitignore_patterns( provide_tempdir, provide_auxdata ):
 
 
 # Edge Case Tests
-# ===============================================================================
 
 @pytest.mark.asyncio
 async def test_900_nonexistent_file( provide_tempdir, provide_auxdata ):

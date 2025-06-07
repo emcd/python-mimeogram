@@ -18,10 +18,11 @@
 #============================================================================#
 
 
-''' Filesystem location protection. '''
+''' Filesystem location protection.
 
+    Helps prevent dangerous modifications to sensitive paths.
+'''
 
-from __future__ import annotations
 
 from .cache import Cache, Rule
 from .core import Protector, Reasons, Status

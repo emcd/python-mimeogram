@@ -46,7 +46,7 @@ def format_mimeogram(
             content = message )
         lines.append( format_part( message_part, boundary ) )
     for part in parts:
-        lines.append( format_part( part, boundary ) )
+        lines.append( format_part( part, boundary ) ) # noqa: PERF401
     lines.append( f"--{boundary}--" )
     return '\n'.join( lines )
 

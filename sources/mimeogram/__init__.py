@@ -18,7 +18,13 @@
 #============================================================================#
 
 
-''' Exchange of file collections with LLMs. '''
+''' Exchange of file collections with LLMs.
+
+    A toolkit for exchanging collections of files with Large Language Models
+    (LLMs). Mimeogram bundles multiple files into a single clipboard-ready
+    document while preserving directory structure and metadata, making it ideal
+    for code reviews, project sharing, and LLM interactions.
+'''
 
 
 from . import __
@@ -40,7 +46,7 @@ from . import exceptions
 # TODO: Export various module contents.
 
 
-__version__ = '1.2'
+__version__ = '1.3rc0'
 
 
 def main( ):

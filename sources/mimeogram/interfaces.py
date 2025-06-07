@@ -27,7 +27,7 @@ from . import __
 from . import parts as _parts
 
 
-class CliCommand( # pylint: disable=invalid-metaclass
+class CliCommand(
     __.typx.Protocol,
     metaclass = __.ImmutableStandardProtocolDataclass,
     decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
@@ -45,7 +45,7 @@ class CliCommand( # pylint: disable=invalid-metaclass
         raise NotImplementedError
 
 
-class DifferencesDisplay( # pylint: disable=invalid-metaclass
+class DifferencesDisplay(
     __.typx.Protocol,
     metaclass = __.ImmutableStandardProtocolDataclass,
     decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
@@ -66,7 +66,7 @@ class DifferencesDisplay( # pylint: disable=invalid-metaclass
         raise NotImplementedError
 
 
-class DifferencesInteractor( # pylint: disable=invalid-metaclass
+class DifferencesInteractor(
     __.typx.Protocol,
     metaclass = __.ImmutableProtocolClass,
 ):
@@ -80,7 +80,7 @@ class DifferencesInteractor( # pylint: disable=invalid-metaclass
         raise NotImplementedError
 
 
-class PartInteractor( # pylint: disable=invalid-metaclass
+class PartInteractor(
     __.typx.Protocol,
     metaclass = __.ImmutableStandardProtocolDataclass,
     decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),

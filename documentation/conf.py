@@ -1,3 +1,6 @@
+# vim: set filetype=python fileencoding=utf-8:
+# -*- mode: python ; coding: utf-8 -*-
+
 ''' Configuration file for the Sphinx documentation builder.
 
     This file only contains a selection of the most common options.
@@ -7,15 +10,13 @@
         https://jareddillard.com/blog/common-ways-to-customize-sphinx-themes.html
 '''
 
-# mypy: ignore-errors
-# pylint: disable=consider-using-namedtuple-or-dataclass
 # ruff: noqa: E402,F401
 
 
 def _calculate_copyright_notice( ):
-    from datetime import datetime as DateTime
+    from datetime import datetime as DateTime, timezone as TimeZone
     first_year = 2025
-    now_year = DateTime.utcnow( ).year
+    now_year = DateTime.now( TimeZone.utc ).year
     if first_year < now_year: year_range = f"{first_year}-{now_year}"
     else: year_range = str( first_year )
     return f"{year_range}, Eric McDonald"
@@ -25,7 +26,7 @@ def _import_version( ):
     from importlib import import_module
     from pathlib import Path
     from sys import path
-    project_location = Path( __file__ ).parent.parent.parent
+    project_location = Path( __file__ ).parent.parent
     path.insert( 0, str( project_location / 'sources' ) )
     module = import_module( 'mimeogram' )
     return module.__version__
@@ -36,7 +37,7 @@ def _import_version( ):
 
 project = 'python-mimeogram'
 author = 'Eric McDonald'
-copyright = ( # pylint: disable=redefined-builtin
+copyright = ( # noqa: A001
     _calculate_copyright_notice( ) )
 release = version = _import_version( )
 
@@ -98,6 +99,7 @@ nitpick_ignore = [
     ( 'py:class', "mimeogram.__.inscription.Modes" ),
     ( 'py:class', "mimeogram.__.state.DirectorySpecies" ),
     ( 'py:class', "mimeogram.apply.Command" ),
+    ( 'py:class', "mimeogram.fsprotect.core.Protector" ),
     ( 'py:class', "platformdirs.unix.Unix" ),
     ( 'py:class', "tiktoken.core.Encoding" ),
     ( 'py:class', "types.Annotated" ),
@@ -125,7 +127,9 @@ linkcheck_ignore = [
     r'https://github\.com/emcd/python-mimeogram',
     r'https://github\.com/emcd/python-mimeogram/.*',
     # Package does not exist during initial development.
-    r'https://pypi\.org/project/mimeogram/',
+    r'https://pypi.org/project/mimeogram/',
+    # Github aggressively rate-limits access to certain blobs.
+    r'https://github\.com/.*/.*/blob/.*',
     # Some LLM chat interfaces do not like to be touched by bots.
     r'https://chat\.deepseek\.com/',
     r'https://chatgpt\.com/',
@@ -152,13 +156,13 @@ html_static_path = [ '_static' ]
 
 autodoc_default_options = {
     'member-order': 'groupwise',
-    'imported-members': False,
-    'inherited-members': True,
+    'members': True,
     'show-inheritance': True,
-    'undoc-members': True,
+    # 'special-members': '__call__',
 }
 
-#autodoc_typehints = 'description'
+autodoc_typehints = 'none'
+autodoc_use_type_comments = False
 
 # -- Options for intersphinx extension ---------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/intersphinx.html#configuration

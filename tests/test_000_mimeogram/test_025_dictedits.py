@@ -20,8 +20,6 @@
 
 ''' Tests for dictedits module. '''
 
-# pylint: disable=useless-parent-delegation
-
 
 import pytest
 

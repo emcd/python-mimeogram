@@ -19,7 +19,6 @@
 
 
 ''' Tests for apply module. '''
-# pylint: disable=unused-argument
 
 
 import types
@@ -39,7 +38,7 @@ class MockContentAcquirer:
         stdin_is_terminal: bool = True,
         stdin_content: str = '',
         clipboard_content: str = '',
-        file_contents: dict[str, str] = None,
+        file_contents: dict[ str, str ] | None = None,
     ):
         self._stdin_is_terminal = stdin_is_terminal
         self._stdin_content = stdin_content

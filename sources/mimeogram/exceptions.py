@@ -18,11 +18,7 @@
 #============================================================================#
 
 
-''' Family of exceptions for package API.
-
-    * ``Omniexception``: Base for all package exceptions
-    * ``Omnierror``: Base for all package errors
-'''
+''' Family of exceptions for package API. '''
 
 
 from . import __

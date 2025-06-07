@@ -34,7 +34,7 @@ from . import parts as _parts
 _scribe = __.produce_scribe( __name__ )
 
 
-async def acquire( # pylint: disable=too-many-locals
+async def acquire(
     auxdata: __.Globals, sources: __.cabc.Sequence[ str | __.Path ]
 ) -> __.cabc.Sequence[ _parts.Part ]:
     ''' Acquires content from multiple sources. '''
@@ -72,7 +72,7 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
     ''' Acquires content from text file. '''
     from .exceptions import ContentAcquireFailure, ContentDecodeFailure
     try:
-        async with _aiofiles.open( location, 'rb' ) as f:
+        async with _aiofiles.open( location, 'rb' ) as f: # pyright: ignore
             content_bytes = await f.read( )
     except Exception as exc: raise ContentAcquireFailure( location ) from exc
     mimetype, charset = _detect_mimetype_and_charset( content_bytes, location )
@@ -93,7 +93,7 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
         content = linesep.normalize( content ) )
 
 
-async def _acquire_via_http( # pylint: disable=too-many-locals
+async def _acquire_via_http(
     client: _httpx.AsyncClient, url: str
 ) -> _parts.Part:
     ''' Acquires content via HTTP/HTTPS. '''
@@ -186,11 +186,11 @@ def _detect_mimetype_and_charset(
     if __.is_absent( mimetype ):
         mimetype_ = _detect_mimetype( content, location )
     else: mimetype_ = mimetype
-    if __.is_absent( charset ):
+    if __.is_absent( charset ): # noqa: SIM108
         charset_ = _detect_charset( content )
     else: charset_ = charset
     if not mimetype_:
-        if charset_: mimetype_ = 'text/plain' # pylint: disable=redefined-variable-type
+        if charset_: mimetype_ = 'text/plain' # noqa: SIM108
         else: mimetype_ = 'application/octet-stream'
     if not _is_textual_mimetype( mimetype_ ):
         raise TextualMimetypeInvalidity( location, mimetype_ )

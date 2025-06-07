@@ -32,7 +32,7 @@ async def acquire_text_file_async(
         __.typx.Callable[ [ str ], __.typx.Any ] ] = __.absent,
 ) -> __.typx.Any:
     ''' Reads file asynchronously. '''
-    from aiofiles import open as open_
+    from aiofiles import open as open_ # pyright: ignore
     async with open_( file, encoding = charset ) as stream:
         data = await stream.read( )
     if not __.is_absent( deserializer ):

@@ -20,8 +20,6 @@
 
 ''' Tests for inscription module. '''
 
-# pylint: disable=comparison-with-callable,unused-argument
-
 
 import builtins
 import logging
@@ -186,7 +184,7 @@ def test_330_prepare_scribe_icecream_no_development( provide_tempenv ):
     inscription.prepare_scribe_icecream( control )
 
     assert hasattr( builtins, 'ic' )
-    result = builtins.ic( 'test' ) # pylint: disable=no-member
+    result = builtins.ic( 'test' )
     assert ( 'test', ) == result
 
 

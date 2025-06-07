@@ -18,11 +18,7 @@
 #============================================================================#
 
 
-''' Family of exceptions for package internals.
-
-    * ``Omniexception``: Base for all internal exceptions
-    * ``Omnierror``: Base for all internals errors
-'''
+''' Family of exceptions for package internals. '''
 
 
 import contextlib as _contextlib
@@ -93,15 +89,15 @@ def report_exceptions(
     level = scribe.getEffectiveLevel( )
     try: yield
     except _exceptiongroup.ExceptionGroup as excg: # pyright: ignore
-        scribe.error( message ) # noqa: TRY400
+        scribe.error( message )
         for exc in excg.exceptions: # pyright: ignore
-            if level <= _logging.DEBUG:
+            if level <= _logging.DEBUG: # noqa: SIM108
                 nomargs = dict( exc_info = exc ) # pyright: ignore
             else: nomargs = { }
-            scribe.error( # noqa: TRY400
+            scribe.error(
                 f"\tCause: {exc}", **nomargs ) # pyright: ignore
         if eclass: raise eclass( *eposargs ) from None
-    except Exception as exc: # pylint: disable=broad-exception-caught
+    except Exception as exc:
         if level <= _logging.DEBUG: scribe.exception( f"{message}" )
-        else: scribe.error( f"{message} Cause: {exc}" ) # noqa: TRY400
+        else: scribe.error( f"{message} Cause: {exc}" )
         if eclass: raise eclass( *eposargs ) from None

@@ -134,7 +134,7 @@ async def _edit_message( ) -> str:
     return edit_content( )
 
 
-async def create( # pylint: disable=too-complex,too-many-locals
+async def create(
     auxdata: __.Globals,
     command: Command, *,
     editor: __.cabc.Callable[

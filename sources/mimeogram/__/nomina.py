@@ -18,24 +18,20 @@
 #============================================================================#
 
 
-''' Common constants, imports, and utilities. '''
+''' Common names and type aliases. '''
 
 
-from .application import Information as ApplicationInformation
-from .asyncf import *
-from .dictedits import (
-    Edit as                 DictionaryEdit,
-    Edits as                DictionaryEdits,
-    ElementsEntryEdit as    ElementsEntryDictionaryEdit,
-    SimpleEdit as           SimpleDictionaryEdit,
-)
-from .distribution import Information as DistributionInformation
-from .exceptions import *
-from .generics import *
-from .imports import *
-from .inscription import (
-    Control as InscriptionControl, Modes as InscriptionModes )
-from .io import *
-from .nomina import *
-from .preparation import *
-from .state import Globals
+from . import imports as __
+
+
+ComparisonResult: __.typx.TypeAlias = bool | __.types.NotImplementedType
+NominativeArguments: __.typx.TypeAlias = __.cabc.Mapping[ str, __.typx.Any ]
+PositionalArguments: __.typx.TypeAlias = __.cabc.Sequence[ __.typx.Any ]
+
+NominativeDictionary: __.typx.TypeAlias = (
+    __.cabc.MutableMapping[ str, __.typx.Any ] )
+ImmutableNominativeDictionary: __.typx.TypeAlias = (
+    __.cabc.Mapping[ str, __.typx.Any ] )
+
+
+package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]

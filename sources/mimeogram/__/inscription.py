@@ -22,13 +22,14 @@
 
 
 from . import imports as __
+from . import nomina as _nomina
 
 
 class Modes( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     ''' Possible modes for logging output. '''
 
     Null = 'null' # suppress library logs
-    Pass = 'pass' # pass library logs to root logger # nosec
+    Pass = 'pass' # pass library logs to root logger # noqa: S105
     Rich = 'rich' # print rich library logs to stderr
 
 
@@ -82,7 +83,7 @@ def prepare_scribe_logging( control: Control ) -> None:
     import logging
     level_name = _discover_inscription_level_name( control )
     level = getattr( logging, level_name.upper( ) )
-    scribe = __.produce_scribe( __.package_name )
+    scribe = __.produce_scribe( _nomina.package_name )
     scribe.propagate = False # prevent double-logging
     scribe.setLevel( level )
     match control.mode:
@@ -110,7 +111,7 @@ def _discover_inscription_level_name( control: Control ) -> str:
             envvar_name = (
                 "{name}_{base}_LEVEL".format(
                     base = envvar_name_base,
-                    name = __.package_name.upper( ) ) )
+                    name = _nomina.package_name.upper( ) ) )
             if envvar_name not in environ: continue
             return environ[ envvar_name ]
         return 'INFO'

@@ -74,7 +74,7 @@ async def intercept_error_async(
         propagation.
     '''
     try: return _generics.Value( await awaitable )
-    except Exception as exc: # pylint: disable=broad-exception-caught
+    except Exception as exc:
         return _generics.Error( exc )
 
 
@@ -109,6 +109,6 @@ async def _gather_async_strict(
             if iscoroutine( operand_ ): operand_.close( )
         raise _exceptions.AsyncAssertionFailure( operand )
     for operand in operands:
-        awaitables.append( intercept_error_async( __.typx.cast(
+        awaitables.append( intercept_error_async( __.typx.cast( # noqa: PERF401
             __.cabc.Awaitable[ __.typx.Any ], operand ) ) )
     return await gather( *awaitables )

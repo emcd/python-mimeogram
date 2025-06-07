@@ -20,8 +20,6 @@
 
 ''' Tests for configuration module. '''
 
-# pylint: disable=redefined-outer-name
-
 
 from pathlib import Path
 
@@ -79,7 +77,7 @@ def provide_test_platform_dirs( provide_tempdir ):
         Works consistently across all platforms by forcing the config path
         to a known test location.
     '''
-    class PatchedPlatformDirs( PlatformDirs ): # pylint: disable=too-many-ancestors
+    class PatchedPlatformDirs( PlatformDirs ):
         __slots__ = ( '_test_config_path', )
 
         def __init__( self, appname: str, ensure_exists: bool = False ):

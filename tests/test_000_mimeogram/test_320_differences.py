@@ -19,7 +19,6 @@
 
 
 ''' Tests for differences module. '''
-# pylint: disable=too-many-locals
 
 
 from unittest.mock import patch
@@ -159,7 +158,7 @@ async def test_120_select_segments_reject_changes( provide_tempdir ):
 
 
 @pytest.mark.asyncio
-async def test_130_select_segments_multiple_changes( # pylint: disable=too-many-locals
+async def test_130_select_segments_multiple_changes(
     provide_tempdir
 ):
     ''' Multiple changes handled correctly. '''
