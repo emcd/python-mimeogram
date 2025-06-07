@@ -14,3 +14,4 @@ Other Platforms
 
 The macOS and Windows executables should work on any recent version of their
 respective operating systems.
+
