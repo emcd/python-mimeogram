@@ -51,14 +51,14 @@ def discover_system_paths( ) -> frozenset[ __.Path ]:
 #             _scribe.debug( f"WSL detected via {var} environment variable" )
 #             return True
 #     try:
-#         with open( '/proc/version', 'r' ) as f: # pylint: disable=unspecified-encoding
+#         with open( '/proc/version', 'r' ) as f:
 #             version_info = f.read( ).lower( )
-#     except Exception as exc: # pylint: disable=broad-exception-caught
+#     except Exception as exc:
 #         _scribe.debug( f"Error checking /proc/version: {exc}" )
-#     if 'microsoft' in version_info: # pylint: disable=magic-value-comparison
+#     if 'microsoft' in version_info:
 #         _scribe.debug( "WSL detected via /proc/version" )
 #         return True
-#     if 'microsoft' in __.os.uname( ).release.lower( ): # pylint: disable=magic-value-comparison
+#     if 'microsoft' in __.os.uname( ).release.lower( ):
 #         _scribe.debug( "WSL detected via kernel release string." )
 #         return True
 #     return False
@@ -77,5 +77,6 @@ def discover_system_paths( ) -> frozenset[ __.Path ]:
 #         if 1 >= len( parts ): continue
 #         drive = parts[ 0 ][ 0 ].lower( ) # TODO? Consider UNC paths.
 #         paths_.add( __.Path( f"/mnt/{drive}" ).joinpath( *parts[ 1 : ] ) )
-#     _scribe.debug( "Calculated {} WSL system paths.".format( len( paths_ ) ) )
+#     _scribe.debug(
+#           "Calculated {} WSL system paths.".format( len( paths_ ) ) )
 #     return paths_

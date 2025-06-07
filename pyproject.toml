@@ -16,15 +16,15 @@ license = 'Apache-2.0'
 readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
 requires-python = '>= 3.10'
 dependencies = [
-  'absence',
-  'accretive',
+  'absence~=1.1',
+  'accretive~=3.0',
   'aiofiles',
   'chardet',
   'exceptiongroup',
-  'frigid',
+  'frigid~=3.0',
   'gitignorefile',
   'httpx',
-  'icecream-truck',
+  'icecream-truck~=1.3',
   'importlib-metadata',
   'importlib-resources',
   'patiencediff',
@@ -48,12 +48,14 @@ classifiers = [ # https://pypi.org/classifiers
   'Intended Audience :: End Users/Desktop',
   'License :: OSI Approved :: Apache Software License',
   'Programming Language :: Python :: 3 :: Only',
+  # --- BEGIN: Injected by Copier ---
   'Programming Language :: Python :: 3.10',
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
   'Programming Language :: Python :: 3.13',
   'Programming Language :: Python :: Implementation :: CPython',
   'Programming Language :: Python :: Implementation :: PyPy',
+  # --- END: Injected by Copier ---
   'Topic :: Communications :: Chat',
   'Topic :: Scientific/Engineering :: Artificial Intelligence',
   'Topic :: Scientific/Engineering :: Interface Engine/Protocol Translator',
@@ -75,10 +77,13 @@ mimeogram = 'mimeogram:main'
 [tool.SELF]
 year-of-origin = 2025
 
-[tool.bandit]
-exclude_dirs = [ 'tests' ]
-
 # https://coverage.readthedocs.io/en/latest/config.html
+[tool.coverage.paths]
+gha-runners = [
+  '/home/runner/work/python-mimeogram/python-mimeogram/',
+  '/Users/runner/work/python-mimeogram/python-mimeogram/',
+  'D:\a\python-mimeogram\python-mimeogram\',
+]
 [tool.coverage.run]
 branch = true
 command_line = '-m pytest' # TODO? '--fail-under'
@@ -111,81 +116,76 @@ only-include = [
 strict-naming = false
 [tool.hatch.build.targets.wheel.sources]
 'sources/mimeogram' = 'mimeogram'
+# --- BEGIN: Injected by Copier ---
 'data' = 'mimeogram/data'
+# --- END: Injected by Copier ---
 [tool.hatch.envs.default]
 python = '3.10'
 [tool.hatch.envs.develop]
 description = ''' Development environment. '''
 dependencies = [
   'Jinja2',
-  'bandit',
   'coverage[toml]',
+  'emcd-projects',
   'furo',
-  'icecream',
-  'isort',
+  'icecream-truck',
   'packaging',
   'pre-commit',
-  'pyinstaller',
-  'pylint',
-  'pylint-per-file-ignores',
   'pyright',
   'pytest',
   'pytest-asyncio',
   'pytest-httpx',
   'pytest-mock',
   'ruff',
-  'semgrep;platform_system!="Windows"', # https://github.com/returntocorp/semgrep/issues/1330
   'sphinx',
   'sphinx-copybutton',
   'sphinx-inline-tabs',
   'towncrier',
-  'tryceratops',
-  'yapf',
   # --- BEGIN: Injected by Copier ---
   'pyinstaller',
   'hypothesis',
-
   # --- END: Injected by Copier ---
 ]
 post-install-commands = [
   # --- BEGIN: Injected by Copier ---
-
   # --- END: Injected by Copier ---
 ]
 [tool.hatch.envs.develop.env-vars]
-_DEVELOPMENT_MODE_ = 'TRUE'
-HYPOTHESIS_STORAGE_DIRECTORY = '.auxiliary/caches/hypothesis'
 PYTHONUNBUFFERED = 'TRUE' # TODO: Only for coverage/pytest.
+# --- BEGIN: Injected by Copier ---
+HYPOTHESIS_STORAGE_DIRECTORY = '.auxiliary/caches/hypothesis'
+# --- END: Injected by Copier ---
 [tool.hatch.envs.develop.scripts]
 docsgen = [
-  '''sphinx-build -E -b doctest -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-doctest''',
-  '''sphinx-build -E -b linkcheck -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-linkcheck''',
-  '''sphinx-build -a -d .auxiliary/caches/sphinx \
-     documentation/sphinx .auxiliary/artifacts/sphinx-html''',
+  """sphinx-build -E -b linkcheck -d .auxiliary/caches/sphinx \
+     documentation .auxiliary/artifacts/sphinx-linkcheck""",
+  """sphinx-build -a -d .auxiliary/caches/sphinx \
+     documentation .auxiliary/artifacts/sphinx-html""",
 ]
 linters = [
-  '''ruff check --quiet sources documentation tests''',
-  '''bandit --configfile pyproject.toml --quiet --recursive sources''',
-  '''tryceratops sources''',
-  '''pyright sources''',
-  '''pylint --recursive yes sources documentation tests''',
-  '''semgrep --config p/python --error --quiet --skip-unknown-extensions \
-     sources/mimeogram''',
+  """ruff check --quiet sources documentation tests""",
+  # --- BEGIN: Injected by Copier ---
+  # --- END: Injected by Copier ---
+  """pyright sources""",
 ]
 packagers = [
-  '''hatch build''',
+  """hatch build""",
   # --- BEGIN: Injected by Copier ---
-  '''pyinstaller \
+  """pyinstaller \
       --clean \
       --distpath=.auxiliary/artifacts/pyinstaller \
-      pyinstaller.spec''',
+      pyinstaller.spec""",
   # --- END: Injected by Copier ---
 ]
-testers = [
+testers-no-reports = [
   'coverage erase',
   'coverage run',
+  """coverage run -m sphinx.cmd.build \
+     -E -b doctest -d .auxiliary/caches/sphinx \
+     documentation .auxiliary/artifacts/sphinx-doctest""",
+]
+testers = [
+  'testers-no-reports',
   'coverage combine',
   'coverage report --skip-covered',
   'coverage html',
@@ -213,38 +213,6 @@ allow-direct-references = true
 [tool.hatch.version]
 path = 'sources/mimeogram/__init__.py'
 
-# https://pycqa.github.io/isort/docs/configuration/options.html
-# https://pycqa.github.io/isort/docs/configuration/multi_line_output_modes.html
-[tool.isort]
-atomic = true
-#color = false
-#combine_as = false
-#combine_straight_imports = false
-#extra_standard_library = [ ]
-follow_links = false
-#force_alphabetical_sort_within_sections = false
-#float_to_top = false
-honor_noqa = true
-#ignore_whitespace = false
-include_trailing_comma = true
-# known_OTHER: substitute OTHER
-known_first_party = [ 'mimeogram' ]
-#known_third_party = [ ]
-#line_length = 79
-#lines_after_imports = -1 # automatic
-#lines_before_imports = -1 # automatic
-multi_line_output = 3 # vertical hanging indent
-#quiet = false
-#sections = [ 'FUTURE', 'STDLIB', 'THIRDPARTY', 'FIRSTPARTY', 'LOCALFOLDER' ]
-skip_gitignore = true
-split_on_trailing_comma = true
-#src_paths = [ ]
-#star_first = false
-#supported_extensions = [ 'pxd', 'py', 'pyi', 'pyx' ]
-use_parentheses = true
-
-
-
 # https://mypy.readthedocs.io/en/stable/config_file.html
 [tool.mypy]
 # Note: Due to repeated painful experiences with Mypy, we use Pyright instead.
@@ -256,165 +224,9 @@ follow_imports = 'skip'
 pretty = true
 strict = false
 
-# https://pylint.pycqa.org/en/latest/user_guide/configuration/index.html
-[tool.pylint.main]
-extension-pkg-allow-list = [ ]
-fail-under = 10
-# TODO: jobs: Consider parallelization if output interleaving, dependency
-#             grouping, and similarities detection bugs have been fixed.
-load-plugins = [
-  # 'pylint.extensions.bad_builtin',
-  'pylint.extensions.broad_try_clause',
-  'pylint.extensions.check_elif',
-  'pylint.extensions.code_style',
-  'pylint.extensions.confusing_elif',
-  # 'pylint.extensions.consider_ternary_expression',
-  'pylint.extensions.dict_init_mutate',
-  'pylint.extensions.dunder',
-  'pylint.extensions.eq_without_hash',
-  'pylint.extensions.for_any_all',
-  'pylint.extensions.magic_value',
-  'pylint.extensions.mccabe',
-  'pylint.extensions.no_self_use',
-  'pylint.extensions.overlapping_exceptions',
-  'pylint.extensions.private_import',
-  'pylint.extensions.redefined_loop_name',
-  'pylint.extensions.redefined_variable_type',
-  # 'pylint.extensions.set_membership',
-  # 'pylint.extensions.while_used',
-  'pylint_per_file_ignores',
-]
-recursive = false
-suggestion-mode = true
-[tool.pylint.basic]
-const-rgx = '([A-Za-z_][A-Za-z0-9_]{2,30}|(__.*__))$'
-good-names = [ '_', '__' ]
-include-naming-hint = true
-[tool.pylint.broad_try_clause]
-max-try-statements = 2
-[tool.pylint.classes]
-defining-attr-methods = [ '__init__', '__new__', '__post_init__' ]
-exclude-protected = [ ]
-valid-classmethod-first-arg = [ 'selfclass' ]
-valid-metaclass-classmethod-first-arg = [ 'clscls' ]
-[tool.pylint.design]
-# TODO: exclude-too-few-public-methods: Consider exception hierarchies.
-ignored-parents = [
-  'abc.ABCMeta',
-  'builtins.AttributeError',
-  'builtins.BaseException',
-  'builtins.Exception',
-  'builtins.KeyError',
-  'builtins.TypeError',
-  'builtins.ValueError',
-  'builtins.type',
-  'typing.Protocol',
-  'typing_extensions.Protocol',
-  # --- BEGIN: Injected by Copier ---
-  'mimeogram.exceptions.Omnierror',
-  'mimeogram.exceptions.Omniexception',
-  # --- END: Injected by Copier ---
-]
-max-args = 5
-max-attributes = 7
-max-bool-expr = 3
-max-branches = 12
-max-locals = 10
-max-parents = 3
-max-public-methods = 10
-max-returns = 6
-max-statements = 30
-min-public-methods = 1
-[tool.pylint.exceptions]
-overgeneral-exceptions = [
-  'builtins.BaseException',
-  'builtins.Exception',
-  # --- BEGIN: Injected by Copier ---
-  'mimeogram.exceptions.Omnierror',
-  'mimeogram.exceptions.Omniexception',
-  # --- END: Injected by Copier ---
-]
-[tool.pylint.format]
-ignore-long-lines = '''^(\s*<?https?://\S+>?|([^'"]*\s+)?#.*)$'''
-max-line-length = 79
-max-module-lines = 800
-single-line-class-stmt = true
-single-line-if-stmt = true
-[tool.pylint.imports]
-allow-wildcard-with-all = false
-# TODO: ext-import-graph
-# TODO: int-import-graph
-[tool.pylint.logging]
-logging-format-style = 'new'
-[tool.pylint.'messages control']
-disable = [
-  'bad-dunder-name',
-  'consider-using-assignment-expr',
-  'consider-using-f-string',
-  'duplicate-code',  # TODO: Re-enable after heuristic is fixed.
-  'fixme',
-  'f-string-without-interpolation',
-  'import-outside-toplevel',
-  'invalid-name',
-  'logging-format-interpolation',
-  'logging-fstring-interpolation',
-  'multiple-statements',
-  'reimported',
-  'too-few-public-methods',
-  'too-many-positional-arguments',  # 'too-many-arguments' is good enough
-  'ungrouped-imports',
-  'unused-wildcard-import',
-  'use-dict-literal',
-  'using-exception-groups-in-unsupported-version',
-  'wrong-import-order',
-  'wrong-import-position',
-]
-# TODO: Latest 'per-file-ignores' code may supports dicts and lists in addition to strings.
-per-file-ignores = '''
-  /tests/:attribute-defined-outside-init,comparison-with-itself,magic-value-comparison,missing-class-docstring,missing-function-docstring,protected-access,singleton-comparison,superfluous-parens,too-many-try-statements,unexpected-keyword-arg
-  __init__\.py:unused-import
-''' # Note: Paths are regexes.
-[tool.pylint.refactoring]
-max-nested-blocks = 3
-never-returning-functions = [ 'sys.exit', 'argparse.parse_error' ]
-[tool.pylint.reports]
-msg-template = '{path} {line:3d},{column:2d} [{symbol}] {msg}'
-output-format = 'colorized'
-reports = false
-score = true
-[tool.pylint.similarities]
-ignore-comments = true
-ignore-docstrings = true
-ignore-imports = true
-ignore-signatures = true
-min-similarity-lines = 5
-[tool.pylint.spelling]
-max-spelling-suggestions = 4
-# TODO: spelling-dict
-[tool.pylint.typecheck]
-contextmanager-decorators = [ 'contextlib.contextmanager' ]
-ignored-checks-for-mixins = [
-  'attribute-defined-outside-init',
-  'no-member',
-  'not-async-context-manager',
-  'not-context-manager',
-]
-#ignored-classes = [ 'thread._local', '_thread._local', 'argparse.Namespace' ]
-ignore-mixin-members = false
-missing-member-hint = true
-missing-member-hint-distance = 1
-missing-member-max-choices = 2
-#mixin-class-rgx = '.*[Mm]ixin'
-#signature-mutators = [ ]
-[tool.pylint.variables]
-additional-builtins = [ 'ic' ]
-callbacks = [ ]
-dummy-variables-rgx = '''_$'''
-ignored-argument-names = '''_.*'''
-redefining-builtins-modules = [ 'builtins', 'io' ]
-
 # https://microsoft.github.io/pyright/#/configuration
 [tool.pyright]
+ignore = [ 'documentation', 'tests' ] # Stronger hint for language server.
 include = [ 'sources' ]
 reportConstantRedefinition = true
 reportInvalidTypeVarUse = true
@@ -454,98 +266,94 @@ python_functions = [ 'test_[0-9][0-9][0-9]_*' ]
 cache_dir = '.auxiliary/caches/pytest'
 
 [tool.ruff]
-builtins = [ 'ic' ]
+#builtins = [ 'ic' ]
 cache-dir = '.auxiliary/caches/ruff'
+indent-width = 4
+line-length = 79
 [tool.ruff.lint]
+dummy-variable-rgx = '^_$'
 ignore = [
-  'E701', # multiple-statements-on-one-line-colon
+  'E701',     # multiple-statements-on-one-line-colon
+  'PLC0415',  # import-outside-top-level
+  'SIM300',   # yoda-condition: scarred by assignment expressions, I am
 ]
+select = [ # default: E4, E7, E9, F
+  'A',        # Flake8 builtins rules
+  'B006',     # mutable-argument-default
+  'B008',     # function-call-in-default-argument
+  'B011',     # assert-false
+  'B023',     # function-uses-loop-variable
+  'B904',     # raise-without-from-inside-except
+  'B909',     # PREVIEW: loop-iterator-mutation
+  'C90',      # McCabe complexity rules
+  'E101',     # mixed-spaces-and-tabs
+  'E111',     # PREVIEW: indentation-with-invalid-multiple
+  'E112',     # PREVIEW: no-indented-block
+  'E4',       # Pycodestyle import rules
+  'E501',     # line-too-long
+  'E7',       # Pycodestyle general rules
+  'E9',       # Pycodestyle runtime errors
+  'F',        # Pyflakes rules
+  'PERF',     # Perflint rules
+  'PLC',      # Pylint convention rules
+  'PLE',      # Pylint error rules
+  'PLR',      # Pylint refactor rules
+  'PLW',      # Pylint warning rules
+  'RET',      # Flake8 return rules
+  'RUF',      # Ruff rules
+  'S',        # Flake8 Bandit rules
+  'SIM',      # Flake8 simplify rules
+  'SLF',      # Flake8 self rules
+  'TRY',      # Tryceratops rules
+]
+[tool.ruff.lint.mccabe]
+max-complexity = 12
 [tool.ruff.lint.per-file-ignores]
 '__init__.py' = [
-  'F401', # unused-import
-  'F403', # undefined-local-with-import-star
-  'F405', # undefined-local-with-import-star-usage
+  'F401',     # unused-import
+  'F403',     # undefined-local-with-import-star
+  'F405',     # undefined-local-with-import-star-usage
 ]
+'tests/**/*.py' = [
+  'PLR0124',  # comparison-with-itself
+  'PLR0913',  # too-many-arguments
+  'PLR0915',  # too-many-statements
+  'PLR1704',  # redefined-argument-from-local
+  'PLR2004',  # magic-value-comparison
+  'PLW0129',  # assert-on-string-literal
+  'PLW0603',  # global-statement
+  'PLW0642',  # self-assignment
+  'S101',     # assert
+  'SLF001',   # private-member-accessed
+  'TRY',      # Tryceratops rules
+]
+[tool.ruff.lint.pylint]
+max-locals = 10
+max-public-methods = 10
+max-statements = 30
 
 [tool.towncrier]
-directory = 'documentation/towncrier'
-filename = 'changelog.rst'
+directory = '.auxiliary/data/towncrier'
+filename = 'documentation/changelog.rst'
 package = 'mimeogram'
 package_dir = 'sources'
 [[tool.towncrier.type]]
-directory = 'bugfix'
-name = 'Bugfixes'
+# features and other improvements
+directory = 'enhance'
+name = 'Enhancements'
 showcontent = true
 [[tool.towncrier.type]]
-directory = 'docs'
-name = 'Documentation Improvements'
+# deprecations and other notices
+directory = 'notify'
+name = 'Notices'
 showcontent = true
 [[tool.towncrier.type]]
-directory = 'feature'
-name = 'Features'
+# removals of feature or platform support
+directory = 'remove'
+name = 'Removals'
 showcontent = true
 [[tool.towncrier.type]]
-directory = 'platform'
-name = 'Supported Platforms'
+# bug fixes
+directory = 'repair'
+name = 'Repairs'
 showcontent = true
-[[tool.towncrier.type]]
-directory = 'removal'
-name = 'Deprecations and Removals'
-showcontent = true
-
-# https://github.com/google/yapf?tab=readme-ov-file#knobs
-# yapf --style-help
-[tool.yapf]
-align_closing_bracket_with_visual_indent = false
-allow_multiline_dictionary_keys = true
-allow_multiline_lambdas = true
-#allow_split_before_default_or_named_assigns = true
-#allow_split_before_dict_value = true
-blank_line_before_module_docstring = true
-#blank_line_before_nested_class_or_def = true
-#blank_lines_around_top_level_definition = 2
-blank_lines_between_top_level_imports_and_variables = 2
-#coalesce_brackets = false
-#column_limit = 79
-#continuation_align_style = 'SPACE'
-#continuation_indent_width = 4
-dedent_closing_brackets = true
-#disable_ending_comma_heuristic = false
-#disable_split_list_with_comment = false
-#each_dict_entry_on_separate_line = true
-#force_multiline_dict = false
-indent_dictionary_value = true
-#indent_width = 4
-join_multiple_lines = true
-#space_between_ending_comma_and_closing_bracket = true
-space_inside_brackets = true
-spaces_around_default_or_named_assign = true
-spaces_around_dict_delimiters = true
-spaces_around_list_delimiters = true
-spaces_around_power_operator = true
-spaces_around_subscript_colon = true
-spaces_around_tuple_delimiters = true
-#spaces_before_comment = 2
-#split_all_comma_separated_values = false
-#split_all_top_level_comma_separated_values = false
-split_arguments_when_comma_terminated = true
-split_before_arithmetic_operator = true
-split_before_bitwise_operator = true
-split_before_closing_bracket = false
-#split_before_dict_set_generator = true
-split_before_dot = true
-split_before_expression_after_opening_paren = true
-split_before_first_argument = true
-split_before_logical_operator = true
-#split_before_named_assigns = true
-split_complex_comprehension = true
-split_penalty_after_opening_bracket = 100   # default: 300
-#split_penalty_after_unary_operator = 10000
-#split_penalty_arithmetic_operator = 300
-#split_penalty_before_if_expr = 0
-#split_penalty_bitwise_operator = 300
-#split_penalty_comprehension = 80
-#split_penalty_excess_character = 7000
-#split_penalty_for_added_line_split = 30
-#split_penalty_import_names = 0
-#split_penalty_logical_operator = 300

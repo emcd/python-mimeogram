@@ -226,8 +226,6 @@ def test_060_empty_mimeogram_without_message( ):
     ''' Attempt to format empty mimeogram without a message. '''
     formatters = cache_import_module( f"{PACKAGE_NAME}.formatters" )
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
-
-    # Attempt to format an empty mimeogram without message should raise an exception
     with pytest.raises( exceptions.MimeogramFormatEmpty ):
         formatters.format_mimeogram( [] )
 

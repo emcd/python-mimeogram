@@ -46,13 +46,11 @@ class Tokenizers( __.enum.Enum ):
         tokenizer = selfclass( name )
         match tokenizer:
             case Tokenizers.AnthropicApi:
-                raise NotImplementedError( # noqa: TRY003
-                    "Not implemented yet. Sorry." )
+                raise NotImplementedError( "Not implemented yet. Sorry." )
             case Tokenizers.Tiktoken:
                 return await Tiktoken.from_variant( name = variant )
 
 
-# pylint: disable=invalid-metaclass
 class Tokenizer(
     __.typx.Protocol,
     metaclass = __.ImmutableStandardProtocolDataclass,
@@ -71,7 +69,6 @@ class Tokenizer(
     async def count( self, text: str ) -> int:
         ''' Counts number of tokens in text. '''
         raise NotImplementedError
-# pylint: enable=invalid-metaclass
 
 
 # TODO: Implement 'AnthropicApi' tokenizer.

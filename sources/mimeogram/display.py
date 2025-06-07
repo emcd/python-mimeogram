@@ -32,7 +32,7 @@ _scribe = __.produce_scribe( __name__ )
 def discover_pager( ) -> __.cabc.Callable[ [ str ], None ]:
     ''' Discovers pager and returns executor function. '''
     from shutil import which
-    from subprocess import run # nosec B404
+    from subprocess import run
     pager = __.os.environ.get( 'PAGER', 'less' )
     for pager_ in ( pager, 'less', 'more' ):
         if ( pager := which( pager_ ) ):
@@ -49,7 +49,7 @@ def discover_pager( ) -> __.cabc.Callable[ [ str ], None ]:
         # TODO? async
         def pager_executor( filename: str ) -> None:
             ''' Executes pager with file. '''
-            run( ( pager, filename ), check = True ) # nosec B603
+            run( ( pager, filename ), check = True ) # noqa: S603
 
         return pager_executor
 
@@ -89,5 +89,5 @@ def display_content(
     except Exception as exc: raise PagerFailure( cause = exc ) from exc
     finally:
         try: Path( filename ).unlink( )
-        except Exception: # pylint: disable=broad-exception-caught
+        except Exception:
             _scribe.exception( f"Failed to cleanup {filename}" )

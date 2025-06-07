@@ -97,13 +97,13 @@ async def select_segments(
             await _select_segments(
                 original, revision,
                 display = display, interactor = interactor ) )
-    except Exception: # pylint: disable=broad-exception-caught
+    except Exception:
         _scribe.exception( "Could not process changes" )
         return revision
     return revision_
 
 
-def _format_segment( # pylint: disable=too-many-arguments,too-many-locals
+def _format_segment( # noqa: PLR0913
     current_lines: list[ str ],
     revision_lines: list[ str ],
     i1: int, i2: int,
@@ -120,17 +120,17 @@ def _format_segment( # pylint: disable=too-many-arguments,too-many-locals
     diff.append(
         f"@@ -{i1 + 1},{i2 - i1} +{j1 + 1},{j2 - j1} @@" )
     for idx in range( start, i1 ):
-        diff.append( f" {current_lines[ idx ]}" )
+        diff.append( f" {current_lines[ idx ]}" ) # noqa: PERF401
     for idx in range( i1, i2 ):
-        diff.append( f"-{current_lines[ idx ]}" )
+        diff.append( f"-{current_lines[ idx ]}" ) # noqa: PERF401
     for idx in range( j1, j2 ):
-        diff.append( f"+{revision_lines[ idx ]}" )
+        diff.append( f"+{revision_lines[ idx ]}" ) # noqa: PERF401
     for idx in range( i2, end ):
-        diff.append( f" {current_lines[ idx ]}" )
+        diff.append( f" {current_lines[ idx ]}" ) # noqa: PERF401
     return diff
 
 
-async def _select_segments( # pylint: disable=too-many-locals
+async def _select_segments(
     current: str,
     revision: str,
     display: _interfaces.DifferencesDisplay,
@@ -143,7 +143,7 @@ async def _select_segments( # pylint: disable=too-many-locals
         None, current_lines, revision_lines )
     result: list[ str ] = [ ]
     for op, i1, i2, j1, j2 in matcher.get_opcodes( ):
-        if op == 'equal': # pylint: disable=magic-value-comparison
+        if op == 'equal':
             result.extend( current_lines[ i1:i2 ] )
             continue
         diff_lines = _format_segment(

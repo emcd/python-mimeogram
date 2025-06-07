@@ -5,8 +5,8 @@
 - Make classes lightweight. Prefer module-level functions over class methods.
 - Functions should not be more than 30 lines long. Refactor long functions.
 - Keep the number of function arguments small. Pass common state via
-  lightweight data transfer objects (DTOs).
-- Use dependency injection to improve configuration and testing. Choose
+  data transfer objects (DTOs).
+- Use dependency injection to improve configuration and testability. Choose
   sensible defaults for injected dependencies to streamline normal development.
 - Prefer immutability wherever possible.
 
@@ -18,12 +18,14 @@
 
 - Target Python 3.10 and use idioms appropriate for that version
   (`match`..`case`, type unions via `|`, etc...).
-- Do not pollute the module namespace with public imports. Either import inside
-  of functions or else alias module-level imports as private, depending on how
-  imports affect performance.
-- Take note of the internal `__` subpackage, which exposes imports used
-  internally throughout the package (`cabc` alias for `collections.abc`,
-  `enum`, `types`, `typx` alias for `typing_extensions`, etc...).
+- Note the internal `__` subpackage which exposes imports used internally
+  throughout the package (`cabc` alias for `collections.abc`, `enum`, `types`,
+  `typx` alias for `typing_extensions`, etc...).
+- Do not pollute the module namespace with public imports. Either reference
+  common imports from the `__` subpackage or alias module-level imports as
+  private.
+- Do not use `__all__` to advertise the public API of a module. Name anything,
+  which should not be part of this API, with a private name starting with `_`.
 - Do not conflate optional arguments (`__.Absential`/`__.absent`) with nullable
   values (`__.typx.Optional`/`None`).
 - Prefer custom exceptions, derived from the package base exception,
@@ -56,6 +58,36 @@
 - Leave TODO comments about uncovered edge cases, tests, and other future work.
 - Do not break function bodies with empty lines.
 - One empty line between attribute blocks and methods on classes.
-- Two empty lines between attribute blocks and functions on modules.
+- Two empty lines between attribute blocks, classes, and functions on modules.
 - Split lines at 79 columns. Use parentheses for continuations and not
-  backslash.
+  backslashes.
+
+### Lints and Tests
+
+- Check your work by linting, ensuring that the package imports, running tests,
+  and generating documentation.
+- Ignore any warnings, unless instructed otherwise. Focus only on errors and
+  failures.
+- To run linters, use `hatch --env develop run linters`.
+- To run testers, use `hatch --env develop run testers`.
+- To generate documentation, use `hatch --env develop run docsgen`.
+- Do not write tests unless explicitly instructed to do so.
+
+# Commits
+
+- Use `git status` to ensure that all relevant changes are in the changeset to
+  be committed.
+- Look at the previous five commit messages for guidance on message style.
+- Use present tense, imperative mood verbs to describe changes. E.g. "Fix" and
+  *not* "Fixed".
+- The commit message should include a `Co-Authored-By:` field as its final
+  line. The name of the author should be your model name. The email address
+  should either be one which you have been designated to use or else a
+  commonly-known no-reply address.
+
+## Interactive Collaboration on User Terminal
+
+- Do not commit until you have user approval to do so.
+- Add the `--no-gpg-sign` option to the `git commit` command to suppress GPG
+  passphrase challenges. (These challenges conflict with the alternate console
+  screen, managed by some CLI agents, resulting in an unusable terminal.)

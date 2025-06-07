@@ -97,7 +97,7 @@ class Command(
         return tuple( edits )
 
 
-class ContentAcquirer( # pylint: disable=invalid-metaclass
+class ContentAcquirer(
     __.typx.Protocol,
     metaclass = __.ImmutableStandardProtocolDataclass,
     decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
@@ -144,7 +144,7 @@ class StandardContentAcquirer(
         return __.sys.stdin.read( )
 
 
-async def apply( # pylint: disable=too-complex
+async def apply(
     auxdata: __.Globals,
     command: Command,
     *,

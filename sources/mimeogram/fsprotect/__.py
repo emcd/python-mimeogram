@@ -21,9 +21,6 @@
 ''' Internal base for filesystem location protection. '''
 
 # ruff: noqa: F401,F403
-# pylint: disable=unused-import,wildcard-import
 
-
-from __future__ import annotations
 
 from ..__ import *

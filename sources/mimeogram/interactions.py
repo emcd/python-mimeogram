@@ -90,7 +90,7 @@ async def _select_segments( target: _parts.Target, content: str ) -> str:
 
 
 def _validate_choice(
-    target: _parts.Target, choice: str # pylint: disable=unused-argument
+    target: _parts.Target, choice: str
 ) -> None:
     if choice.isprintable( ):
         print( f"Invalid choice: {choice}" )
@@ -128,7 +128,6 @@ class GenericInteractor(
         content = target.part.content
         protect = target.protection.active
         while True:
-            # pylint: disable=too-many-function-args
             choice = self.prompter( target, content, protect )
             match choice:
                 case 'a' if not protect:
@@ -142,7 +141,6 @@ class GenericInteractor(
                     content = await self.sselector( target, content )
                 case 'v': await self.cdisplayer( target, content )
                 case _: self.validator( target, choice )
-            # pylint: enable=too-many-function-args
 
 
 async def interact(
@@ -180,7 +178,7 @@ def _produce_actions_menu(
     size = len( content )
     size_str = (
         "{:.1f}K".format( size / 1024 )
-        if 1024 <= size # pylint: disable=magic-value-comparison
+        if 1024 <= size # noqa: PLR2004
         else f"{size}B" )
     status = "[PROTECTED]" if protect else ""
     info = f"{part.location} [{size_str}] {status}"

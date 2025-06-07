@@ -20,8 +20,6 @@
 
 ''' Tests for state module. '''
 
-# pylint: disable=redefined-outer-name
-
 
 import sys
 

@@ -61,7 +61,7 @@ def create_test_files(
 ) -> typx.Iterator[ None ]:
     ''' Creates test files in specified directory. '''
     created: list[ Path ] = [ ]
-    try: # pylint: disable=too-many-try-statements
+    try:
         for relpath, content in files.items( ):
             filepath = base_dir / relpath
             filepath.parent.mkdir( parents = True, exist_ok = True )
@@ -101,4 +101,4 @@ PACKAGES_NAMES_BY_MODULE_QNAME = types.MappingProxyType( {
 MODULES_QNAMES = tuple( PACKAGES_NAMES_BY_MODULE_QNAME.keys( ) )
 MODULES_NAMES_BY_MODULE_QNAME = types.MappingProxyType( {
     name: name.rsplit( '.', maxsplit = 1 )[ -1 ]
-    for name in PACKAGES_NAMES_BY_MODULE_QNAME.keys( ) } )
+    for name in PACKAGES_NAMES_BY_MODULE_QNAME } )

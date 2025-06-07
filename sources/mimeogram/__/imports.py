@@ -18,13 +18,10 @@
 #============================================================================#
 
 
-''' Common imports and type aliases used throughout the package. '''
+''' Common imports used throughout the package. '''
 
-# pylint: disable=unused-import
 # ruff: noqa: F401
 
-
-from __future__ import annotations
 
 import abc
 import asyncio
@@ -61,11 +58,6 @@ from frigid.qaliases import (
 from platformdirs import PlatformDirs
 
 
-ComparisonResult: typx.TypeAlias = bool | types.NotImplementedType
-NominativeDictionary: typx.TypeAlias = cabc.MutableMapping[ str, typx.Any ]
-ImmutableNominativeDictionary: typx.TypeAlias = cabc.Mapping[ str, typx.Any ]
-
-
 @typx.dataclass_transform( frozen_default = True, kw_only_default = True )
 class ImmutableStandardDataclass( ImmutableClass ):
     ''' Metaclass for immutable standard dataclasses. (Typechecker hack.) '''
@@ -76,7 +68,6 @@ class ImmutableStandardProtocolDataclass( ImmutableProtocolClass ):
     ''' Metaclass for immutable standard dataclasses. (Typechecker hack.) '''
 
 
-package_name = __name__.split( '.', maxsplit = 1 )[ 0 ]
 simple_tyro_class = tyro.conf.configure( )
 standard_dataclass = dataclass( frozen = True, kw_only = True, slots = True )
 standard_tyro_class = tyro.conf.configure( tyro.conf.OmitArgPrefixes )

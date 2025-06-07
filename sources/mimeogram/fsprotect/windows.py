@@ -103,7 +103,7 @@ def _discover_system_paths_via_api( ) -> set[ __.Path ]:
     dmessage = "Could not retrieve additional Windows system paths via API."
     paths: set[ __.Path ] = set( )
     try: dll = ctypes.windll.shell32 # pyright: ignore
-    except Exception: # pylint: disable=broad-exception-caught
+    except Exception:
         _scribe.debug( dmessage )
     buf = ctypes.create_unicode_buffer( MAX_PATH + 1 )
     for key in (
@@ -114,7 +114,7 @@ def _discover_system_paths_via_api( ) -> set[ __.Path ]:
             dll.SHGetFolderPathW( # pyright: ignore
                 None, key, None, 0, buf )
             paths.add( __.Path( buf.value ) )
-        except Exception: # pylint: disable=broad-exception-caught
+        except Exception: # noqa: PERF203
             _scribe.debug( dmessage )
     return paths
 

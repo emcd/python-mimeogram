@@ -28,12 +28,15 @@ from . import dictedits as _dictedits
 from . import distribution as _distribution
 from . import environment as _environment
 from . import inscription as _inscription
+from . import nomina as _nomina
 from . import state as _state
 
 
-async def prepare( # pylint: disable=too-many-arguments,too-many-locals
+_application_information = _application.Information( )
+
+async def prepare( # noqa: PLR0913
     exits: __.ExitsAsync,
-    application: _application.Information = _application.Information( ),
+    application: _application.Information = _application_information,
     configedits: _dictedits.Edits = ( ),
     configfile: __.Absential[ __.Path ] = __.absent,
     environment: bool = False,
@@ -52,7 +55,7 @@ async def prepare( # pylint: disable=too-many-arguments,too-many-locals
     directories = application.produce_platform_directories( )
     distribution = (
         await _distribution.Information.prepare(
-            package = __.package_name, exits = exits ) )
+            package = _nomina.package_name, exits = exits ) )
     configuration = (
         await _configuration.acquire(
             application_name = application.name,
@@ -76,7 +79,7 @@ async def prepare( # pylint: disable=too-many-arguments,too-many-locals
 
 
 def _inscribe_preparation_report( auxdata: _state.Globals ):
-    scribe = __.produce_scribe( __.package_name )
+    scribe = __.produce_scribe( _nomina.package_name )
     scribe.debug( f"Application Name: {auxdata.application.name}" )
     # scribe.debug( f"Execution ID: {auxdata.application.execution_id}" )
     scribe.debug( "Application Cache Location: {}".format(

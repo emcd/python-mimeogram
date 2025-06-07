@@ -20,8 +20,6 @@
 
 ''' Test fixtures. '''
 
-# pylint: disable=redefined-outer-name
-
 
 import os
 import pathlib

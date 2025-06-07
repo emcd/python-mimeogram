@@ -22,6 +22,7 @@
 
 
 from . import imports as __
+from . import nomina as _nomina
 
 
 # # Note: We reuse a fixed execution ID across instances of this class
@@ -41,7 +42,7 @@ class Information(
     name: __.typx.Annotated[
         str,
         __.typx.Doc( "For derivation of platform directories." ),
-    ] = __.package_name
+    ] = _nomina.package_name
     publisher: __.typx.Annotated[
         __.typx.Optional[ str ],
         __.typx.Doc( "For derivation of platform directories." ),

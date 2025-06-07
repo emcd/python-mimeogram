@@ -32,7 +32,7 @@ _scribe = __.produce_scribe( __name__ )
 def discover_editor( ) -> __.cabc.Callable[ [ str ], str ]:
     ''' Discovers editor and returns executor function. '''
     from shutil import which
-    from subprocess import run # nosec B404
+    from subprocess import run
     editor = __.os.environ.get( 'VISUAL' ) or  __.os.environ.get( 'EDITOR' )
     for editor_ in filter(
         None,
@@ -50,7 +50,7 @@ def discover_editor( ) -> __.cabc.Callable[ [ str ], str ]:
         # TODO? async
         def editor_executor( filename: str ) -> str:
             ''' Executes editor with file. '''
-            run( ( editor, *posargs, filename ), check = True ) # nosec B603
+            run( ( editor, *posargs, filename ), check = True ) # noqa: S603
             with open( filename, 'r', encoding = 'utf-8' ) as stream:
                 return stream.read( )
 
@@ -65,7 +65,7 @@ def discover_editor( ) -> __.cabc.Callable[ [ str ], str ]:
     raise ProgramAbsenceError( 'editor' )
 
 
-def edit_content( # pylint: disable=too-many-locals
+def edit_content(
     content: str = '', *,
     suffix: str = '.md',
     editor_discoverer: __.cabc.Callable[
@@ -86,9 +86,9 @@ def edit_content( # pylint: disable=too-many-locals
     ) as tmp:
         filename = tmp.name
         tmp.write( content )
-    try: return editor( filename ) # noqa: TRY101
+    try: return editor( filename )
     except Exception as exc: raise EditorFailure( cause = exc ) from exc
     finally:
         try: Path( filename ).unlink( )
-        except Exception: # pylint: disable=broad-exception-caught
+        except Exception:
             _scribe.exception( f"Failed to cleanup {filename}" )

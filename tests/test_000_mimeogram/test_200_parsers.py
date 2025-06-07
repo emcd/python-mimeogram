@@ -26,7 +26,7 @@ import pytest
 from . import PACKAGE_NAME, cache_import_module
 
 
-def _create_sample_mimeogram( # pylint: disable=too-many-arguments
+def _create_sample_mimeogram(
     location = 'test.txt',
     mimetype = 'text/plain',
     charset = 'utf-8',

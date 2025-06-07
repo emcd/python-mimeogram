@@ -62,7 +62,7 @@ class Cache( _core.Protector, decorators = ( __.standard_dataclass, ) ):
             defaults_disablement = disables,
             rules_supercession = supercedes )
 
-    def verify( self, path: __.Path ) -> _core.Status: # pylint: disable=too-many-locals
+    def verify( self, path: __.Path ) -> _core.Status:
         ''' Verifies if a path should be protected using cached data. '''
         path = _normalize_path( path )
         _scribe.debug( f"Path: {path}" )
@@ -158,7 +158,7 @@ def discover_platform_locations(
 def _expand_location( path: str ) -> __.Path:
     ''' Expands path with home directory and environment variables. '''
     expanded = __.os.path.expanduser( __.os.path.expandvars( path ) )
-    if (    __.sys.platform == 'win32' # pylint: disable=magic-value-comparison
+    if (    __.sys.platform == 'win32'
             and expanded.startswith( '/' )
             and not expanded.startswith( '//' ) # Skip UNC paths
     ):
@@ -173,7 +173,7 @@ def _expand_location( path: str ) -> __.Path:
 def _normalize_path( path: __.Path ) -> __.Path:
     ''' Normalizes path for consistent comparison across platforms. '''
     resolved = path.resolve( )
-    if __.sys.platform == 'win32' and resolved.drive: # pylint: disable=magic-value-comparison
+    if __.sys.platform == 'win32' and resolved.drive:
         return __.Path(
             resolved.drive.lower( )
             + str( resolved )[ len( resolved.drive ): ] )

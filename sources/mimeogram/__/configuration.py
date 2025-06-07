@@ -26,6 +26,7 @@ from . import dictedits as _dictedits
 from . import distribution as _distribution
 from . import exceptions as _exceptions
 from . import io as _io
+from . import nomina as _nomina
 
 
 class EnablementTristate( __.enum.Enum ): # TODO: Python 3.11: StrEnum
@@ -38,7 +39,7 @@ class EnablementTristate( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     def __bool__( self ) -> bool:
         if self.Disable is self: return False
         if self.Enable is self: return True
-        raise _exceptions.OperationInvalidity(
+        raise _exceptions.OperationInvalidity( # noqa: TRY003
             'inert enablement tristate', 'boolean translation' )
 
     def is_retain( self ) -> bool:
@@ -64,8 +65,8 @@ async def acquire(
     return __.AccretiveDictionary( configuration )
 
 
-async def _acquire( file: __.Path ) -> __.NominativeDictionary:
-    from aiofiles import open as open_
+async def _acquire( file: __.Path ) -> _nomina.NominativeDictionary:
+    from aiofiles import open as open_ # pyright: ignore
     from tomli import loads
     async with open_( file ) as stream:
         return loads( await stream.read( ) )

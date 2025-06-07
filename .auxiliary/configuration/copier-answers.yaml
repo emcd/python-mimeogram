@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier
-_commit: v1.10
+_commit: v1.21
 _src_path: gh:emcd/python-project-common
 author_email: emcd@users.noreply.github.com
 author_name: Eric McDonald
@@ -13,10 +13,8 @@ enable_publication: true
 enable_rust_extension: false
 gh_owner: emcd
 include_data_resources: true
-inject_docstring_utils: false
 inject_exceptions: true
 inject_foundations: true
-inject_immutables: false
 package_name: mimeogram
 project_name: python-mimeogram
 pypy_versions:

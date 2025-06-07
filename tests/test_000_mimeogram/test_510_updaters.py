@@ -19,7 +19,6 @@
 
 
 ''' Tests for updaters module. '''
-# pylint: disable=redefined-outer-name
 
 
 from __future__ import annotations
@@ -279,7 +278,9 @@ async def test_150_atomic_update_handles_errors( provide_tempdir ):
 
     test_path = provide_tempdir / 'test.txt'
 
-    with patch( 'aiofiles.os.replace', side_effect = OSError( 'Test error' ) ):
+    with patch( # noqa: SIM117
+        'aiofiles.os.replace', side_effect = OSError( 'Test error' )
+    ):
         with pytest.raises( exceptions.ContentUpdateFailure ):
             await updaters._update_content_atomic( test_path, 'test content' )
 
@@ -319,7 +320,7 @@ async def test_160_partitive_ignore_mode( provide_tempdir ):
 
 @pytest.mark.skipif( 'win32' == sys.platform, reason = 'weirdness' )
 @pytest.mark.asyncio
-async def test_170_queue_and_reverter_rollback_on_error( # pylint: disable=too-many-locals
+async def test_170_queue_and_reverter_rollback_on_error(
     provide_tempdir
 ):
     ''' Reverter restores files if error occurs on subsequent updates. '''
@@ -348,10 +349,9 @@ async def test_170_queue_and_reverter_rollback_on_error( # pylint: disable=too-m
         )
 
         with patch( 'aiofiles.os.replace' ) as mock_replace:
-            async def mock_replace_side_effect( src, dst ): #pylint: disable=unused-argument
+            async def mock_replace_side_effect( src, dst ):
                 if 'file2.txt' in dst:
                     raise OSError( 'Simulated write failure' )
-                return
 
             mock_replace.side_effect = mock_replace_side_effect
 

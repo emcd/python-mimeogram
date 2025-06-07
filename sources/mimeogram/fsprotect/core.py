@@ -26,7 +26,7 @@ from __future__ import annotations
 from .. import __
 
 
-class Protector( # pylint: disable=invalid-metaclass
+class Protector(
     __.typx.Protocol,
     metaclass = __.ImmutableStandardProtocolDataclass,
     decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),

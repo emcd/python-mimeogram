@@ -1,5 +1,5 @@
-.. vim: set fileencoding=utf-8:
-.. -*- coding: utf-8 -*-
+.. vim: set filetype=rst fileencoding=utf-8:
+.. -*- mode: rst ; coding: utf-8 -*-
 .. +--------------------------------------------------------------------------+
    |                                                                          |
    | Licensed under the Apache License, Version 2.0 (the "License");          |
@@ -20,83 +20,127 @@
 :tocdepth: 3
 
 
-Internal Development Interface
+*******************************************************************************
+API
+*******************************************************************************
+
+.. warning::
+
+   The Python API for Mimeogram is currently unofficial and should be
+   considered unstable. The package is primarily intended for use as a
+   command-line tool. Any direct use of the Python modules may break without
+   warning in future versions.
+
+
+Package ``mimeogram``
 ===============================================================================
 
+.. automodule:: mimeogram
 
-Module ``mimeogram.__.application``
+
+Module ``mimeogram.acquirers``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.application
+.. automodule:: mimeogram.acquirers
 
 
-Module ``mimeogram.__.asyncf``
+Module ``mimeogram.apply``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.asyncf
+.. automodule:: mimeogram.apply
 
 
-Module ``mimeogram.__.configuration``
+Module ``mimeogram.cli``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.configuration
+.. automodule:: mimeogram.cli
 
 
-Module ``mimeogram.__.dictedits``
+Module ``mimeogram.create``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.dictedits
+.. automodule:: mimeogram.create
 
 
-Module ``mimeogram.__.distribution``
+Module ``mimeogram.differences``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.distribution
+.. automodule:: mimeogram.differences
 
 
-Module ``mimeogram.__.environment``
+Module ``mimeogram.display``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.environment
+.. automodule:: mimeogram.display
 
 
-Module ``mimeogram.__.exceptions``
+Module ``mimeogram.edit``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.exceptions
+.. automodule:: mimeogram.edit
 
 
-Module ``mimeogram.__.generics``
+Module ``mimeogram.exceptions``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.generics
+.. automodule:: mimeogram.exceptions
 
 
-Module ``mimeogram.__.imports``
+Module ``mimeogram.formatters``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.imports
+.. automodule:: mimeogram.formatters
 
 
-Module ``mimeogram.__.inscription``
+Module ``mimeogram.interactions``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.inscription
+.. automodule:: mimeogram.interactions
 
 
-Module ``mimeogram.__.io``
+Module ``mimeogram.interfaces``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.io
+.. automodule:: mimeogram.interfaces
 
 
-Module ``mimeogram.__.preparation``
+Module ``mimeogram.parsers``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.preparation
+.. automodule:: mimeogram.parsers
 
 
-Module ``mimeogram.__.state``
+Module ``mimeogram.parts``
 -------------------------------------------------------------------------------
 
-.. automodule:: mimeogram.__.state
+.. automodule:: mimeogram.parts
+
+
+Module ``mimeogram.prompt``
+-------------------------------------------------------------------------------
+
+.. automodule:: mimeogram.prompt
+
+
+Module ``mimeogram.tokenizers``
+-------------------------------------------------------------------------------
+
+.. automodule:: mimeogram.tokenizers
+
+
+Module ``mimeogram.updaters``
+-------------------------------------------------------------------------------
+
+.. automodule:: mimeogram.updaters
+
+
+Subpackage ``mimeogram.fsprotect``
+===============================================================================
+
+.. automodule:: mimeogram.fsprotect
+
+
+Module ``mimeogram.fsprotect.cache``
+-------------------------------------------------------------------------------
+
+.. automodule:: mimeogram.fsprotect.cache
