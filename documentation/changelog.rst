@@ -21,8 +21,17 @@
 Release Notes
 *******************************************************************************
 
-
 .. towncrier release notes start
+
+Mimeogram 1.3 (2025-06-06)
+==========================
+
+Enhancements
+------------
+
+- Internals update - nothing to see here. Lock versions of some dependencies in
+  anticipation of breaking changes.
+
 
 Mimeogram 1.2 (2025-03-29)
 ==========================
