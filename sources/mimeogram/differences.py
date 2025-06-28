@@ -136,16 +136,10 @@ async def _select_segments(
     display: _interfaces.DifferencesDisplay,
     interactor: _interfaces.DifferencesInteractor,
 ) -> str:
-    try:
-        from patiencediff import PatienceSequenceMatcher  # pyright: ignore
-    except ImportError as e:
-        raise ImportError(
-            "The 'patiencediff' package is required for diffing. "
-            "Please install it with 'pip install patiencediff'."
-        ) from e
+    from patiencediff import PatienceSequenceMatcher # pyright: ignore
     current_lines = current.split( '\n' )
     revision_lines = revision.split( '\n' )
-    matcher = PatienceSequenceMatcher(  # pyright: ignore
+    matcher = PatienceSequenceMatcher( # pyright: ignore
         None, current_lines, revision_lines )
     result: list[ str ] = [ ]
     for op, i1, i2, j1, j2 in matcher.get_opcodes( ):
