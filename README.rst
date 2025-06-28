@@ -56,6 +56,24 @@ document while preserving directory structure and metadata... good for code
 reviews, project sharing, and LLM interactions.
 
 
+Quickstart for Development & Testing
+===============================================================================
+
+1. Install Hatch (if you don't have it):
+
+   .. code-block:: bash
+
+      pip install --upgrade hatch
+
+2. Set up the development environment and run all tests:
+
+   .. code-block:: bash
+
+      hatch run develop:testers
+
+This will install all dependencies and run the full test suite automatically.
+
+
 Key Features ⭐
 ===============================================================================
 
@@ -112,44 +130,16 @@ Or, install via ``pip``:
     pip install mimeogram
 
 
-Dependencies & Running Tests
-===============================================================================
-
-Install required dependencies for development and testing:
-
-.. code-block:: bash
-
-    pip install tyro pytest platformdirs pyperclip absence accretive frigid
-
-To run all tests, set the PYTHONPATH to the sources directory and run pytest:
-
-.. code-block:: bash
-
-    # On Windows PowerShell
-    $env:PYTHONPATH="sources"; pytest
-
-    # On Linux/macOS
-    PYTHONPATH=sources pytest
-
-This ensures the test runner can find the `mimeogram` package in the sources directory.
-
-
 Building a Standalone Executable (Windows)
 ===============================================================================
 
-To build a standalone Windows executable using PyInstaller:
+To build a standalone Windows executable using Hatch (recommended):
 
 .. code-block:: bash
 
-    pip install pyinstaller readchar
-    pyinstaller pyinstaller.spec
+    hatch run develop:packagers
 
-The resulting executable will be located in the ``dist`` directory. You can distribute the ``dist\mimeogram\mimeogram.exe`` file as a self-contained binary.
-
-If you encounter missing module errors (e.g., ``ModuleNotFoundError: No module named 'frigid.qaliases'``), ensure all dependencies are installed as described above. You may need to add missing packages to your environment or update the ``pyinstaller.spec`` file to include hidden imports.
-
-For more details, see the documentation and troubleshooting sections above.
-
+This will run PyInstaller and place the resulting executable in the `.auxiliary/artifacts/pyinstaller` directory.
 
 Examples 💡
 ===============================================================================

@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import aiofiles as _aiofiles
 import httpx as _httpx
+import asyncio
 
 from . import __
 from . import exceptions as _exceptions
@@ -56,15 +57,23 @@ async def acquire(
                 tasks.append( _produce_http_task( str( source ) ) )
             case _:
                 raise _exceptions.UrlSchemeNoSupport( str( source ) )
-    if strict: return await __.gather_async( *tasks )
-    results = await __.gather_async( *tasks, return_exceptions = True )
+    if strict:
+        return await __.gather_async( *tasks )
+    # Use asyncio.gather for non-strict mode to ensure coroutines are awaited
+    results = await asyncio.gather( *tasks, return_exceptions = True )
     # TODO: Factor into '__.generics.extract_results_filter_errors'.
     values: list[ _parts.Part ] = [ ]
     for result in results:
-        if result.is_error( ):
-            _scribe.warning( str( result.error ) )
-            continue
-        values.append( result.extract( ) )
+        # Accept both wrapped and plain results
+        if hasattr(result, 'is_error') and hasattr(result, 'extract'):
+            if result.is_error():
+                _scribe.warning(str(result.error))
+                continue
+            values.append(result.extract())
+        elif isinstance(result, _parts.Part):
+            values.append(result)
+        else:
+            _scribe.warning(f"Unexpected result type: {type(result)} -> {result}")
     return tuple( values )
 
 
@@ -85,6 +94,7 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
     except Exception as exc:
         raise ContentDecodeFailure( location, charset ) from exc
     _scribe.debug( f"Read file: {location}" )
+    _scribe.debug( f"Returning Part: location={location}, mimetype={mimetype}, charset={charset}, linesep={linesep}, content={repr(content)}" )
     return _parts.Part(
         location = str( location ),
         mimetype = mimetype,

@@ -72,8 +72,11 @@ async def test_100_acquire_single_file( provide_tempdir, provide_auxdata ):
     test_files = { "test.txt": test_content }
 
     with create_test_files( provide_tempdir, test_files ):
+        test_file_path = provide_tempdir / "test.txt"
+        # Debug: Ensure file exists before calling acquire
+        assert test_file_path.exists(), f"Test file does not exist: {test_file_path}"
         result = await acquirers.acquire(
-            provide_auxdata, [ provide_tempdir / "test.txt" ] )
+            provide_auxdata, [ test_file_path ] )
 
         assert len( result ) == 1
         part = result[ 0 ]
