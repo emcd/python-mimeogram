@@ -247,3 +247,22 @@ def test_070_verify_boundary_uniqueness( ):
     assert match1 is not None
     assert match2 is not None
     assert match1.group( 1 ) != match2.group( 1 )
+
+
+def test_080_deterministic_boundary( ):
+    ''' Deterministic boundary produces reproducible output. '''
+    formatters = cache_import_module( f"{PACKAGE_NAME}.formatters" )
+    part = _create_sample_part( location='deterministic.txt', content='Deterministic content' )
+
+    # Format twice with deterministic_boundary=True
+    mimeogram1 = formatters.format_mimeogram( [ part ], deterministic_boundary = True )
+    mimeogram2 = formatters.format_mimeogram( [ part ], deterministic_boundary = True )
+
+    # The outputs should be identical
+    assert mimeogram1 == mimeogram2
+
+    # The boundary should be a hash (64 hex chars)
+    import re
+    boundary_pattern = r'--====MIMEOGRAM_([0-9a-f]{64})===='
+    match = re.search( boundary_pattern, mimeogram1 )
+    assert match is not None, 'Boundary should be a 64-character hex hash'

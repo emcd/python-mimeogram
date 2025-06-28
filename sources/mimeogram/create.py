@@ -88,6 +88,11 @@ class Command(
                 If not specified, then the default variant is used.
             ''' ),
     ] = None
+    deterministic_boundary: __.typx.Annotated[
+        bool,
+        __.typx.Doc( '''Use deterministic (hash-based) boundary for reproducible output. When enabled, the MIME boundary marker will be a hash of the content, making output reproducible and diff-friendly. Useful for testing, CI, and batch processing. Default: False (random boundary).'''),
+        __.tyro.conf.arg( aliases = ( '--deterministic-boundary', ) ),
+    ] = False
 
     async def __call__( self, auxdata: __.Globals ) -> None:
         ''' Executes command to create mimeogram. '''
@@ -136,7 +141,8 @@ async def _edit_message( ) -> str:
 
 async def create(
     auxdata: __.Globals,
-    command: Command, *,
+    command: Command,
+    *,
     editor: __.cabc.Callable[
         [ ], __.cabc.Coroutine[ None, None, str ] ] = _edit_message,
     clipcopier: __.cabc.Callable[
@@ -156,7 +162,11 @@ async def create(
             _scribe, "Could not acquire user message."
         ): message = await editor( )
     else: message = None
-    mimeogram = format_mimeogram( parts, message = message )
+    mimeogram = format_mimeogram(
+        parts,
+        message = message,
+        deterministic_boundary = getattr(command, 'deterministic_boundary', False)
+    )
     # TODO? Pass prompt to 'format_mimeogram'.
     if command.prepend_prompt:
         prompt = await prompter( auxdata )

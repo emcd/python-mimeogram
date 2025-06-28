@@ -30,12 +30,18 @@ from . import parts as _parts
 def format_mimeogram(
     parts: __.cabc.Sequence[ _parts.Part ],
     message: __.typx.Optional[ str ] = None,
+    deterministic_boundary: bool = False,
 ) -> str:
     ''' Formats parts into mimeogram. '''
     if not parts and message is None:
         from .exceptions import MimeogramFormatEmpty
         raise MimeogramFormatEmpty( )
-    boundary = "====MIMEOGRAM_{uuid}====".format( uuid = __.uuid4( ).hex )
+    if deterministic_boundary:
+        from .__ import hashing
+        hashval = hashing.hash_mimeogram_parts(parts, message)
+        boundary = f"====MIMEOGRAM_{hashval}===="
+    else:
+        boundary = "====MIMEOGRAM_{uuid}====".format( uuid = __.uuid4( ).hex )
     lines: list[ str ] = [ ]
     if message:
         message_part = _parts.Part(
