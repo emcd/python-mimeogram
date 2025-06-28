@@ -162,16 +162,19 @@ async def create(
             _scribe, "Could not acquire user message."
         ): message = await editor( )
     else: message = None
+    options = auxdata.configuration.get('create', {})
     mimeogram = format_mimeogram(
         parts,
-        message = message,
-        deterministic_boundary = getattr(command, 'deterministic_boundary', False)
+        message=message,
+        deterministic_boundary=(
+            command.deterministic_boundary
+            or bool(options.get('deterministic-boundary', False))
+        )
     )
     # TODO? Pass prompt to 'format_mimeogram'.
     if command.prepend_prompt:
         prompt = await prompter( auxdata )
         mimeogram = f"{prompt}\n\n{mimeogram}"
-    options = auxdata.configuration.get( 'create', { } )
     if options.get( 'count-tokens', False ):
         with __.report_exceptions(
             _scribe, "Could not count mimeogram tokens."
