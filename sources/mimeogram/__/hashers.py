@@ -17,26 +17,23 @@
 #                                                                            #
 #============================================================================#
 
+''' Deterministic hashing utilities for mimeogram parts. '''
 
-''' Common constants, imports, and utilities. '''
+import hashlib
 
 
-from .application import Information as ApplicationInformation
-from .asyncf import *
-from .dictedits import (
-    Edit as                 DictionaryEdit,
-    Edits as                DictionaryEdits,
-    ElementsEntryEdit as    ElementsEntryDictionaryEdit,
-    SimpleEdit as           SimpleDictionaryEdit,
-)
-from .distribution import Information as DistributionInformation
-from .exceptions import *
-from .generics import *
-from .imports import *
-from .inscription import (
-    Control as InscriptionControl, Modes as InscriptionModes )
-from .io import *
-from .nomina import *
-from .preparation import *
-from . import hashers
-from .state import Globals
+def hash_mimeogram_parts(
+    parts,
+    message: str | None = None
+) -> str:
+    ''' Computes a deterministic hash for a sequence of mimeogram parts. '''
+    m = hashlib.sha256()
+    if message is not None:
+        m.update(message.encode('utf-8'))
+    for part in parts:
+        m.update(str(part.location).encode('utf-8'))
+        m.update(str(part.mimetype).encode('utf-8'))
+        m.update(str(part.charset).encode('utf-8'))
+        m.update(str(part.linesep.name).encode('utf-8'))
+        m.update(str(part.content).encode('utf-8'))
+    return m.hexdigest()

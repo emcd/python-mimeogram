@@ -37,8 +37,7 @@ def format_mimeogram(
         from .exceptions import MimeogramFormatEmpty
         raise MimeogramFormatEmpty( )
     if deterministic_boundary:
-        from .__ import hashing
-        hashval = hashing.hash_mimeogram_parts(parts, message)
+        hashval = __.hashers.hash_mimeogram_parts( parts, message )
         boundary = f"====MIMEOGRAM_{hashval}===="
     else:
         boundary = "====MIMEOGRAM_{uuid}====".format( uuid = __.uuid4( ).hex )
