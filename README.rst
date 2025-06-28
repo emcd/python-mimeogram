@@ -534,3 +534,75 @@ Other Projects by This Author 🌟
 * `python-icecream-truck <https://github.com/emcd/python-icecream-truck>`_ (`icecream-truck <https://pypi.org/project/icecream-truck/>`_ on PyPI) 
 
   🍦 **Flavorful Debugging** - A Python library which enhances the powerful and well-known ``icecream`` package with flavored traces, configuration hierarchies, customized outputs, ready-made recipes, and more.
+
+GPG Commit Signing for Contributors
+===================================
+
+This repository requires all commits to be signed and verified for pull requests to be merged.
+
+**How to set up GPG commit signing:**
+
+1. **Install GPG:**
+   - Windows: Download and install Gpg4win from https://gpg4win.org/
+   - macOS: `brew install gnupg`
+   - Linux: `sudo apt install gnupg`
+
+2. **Generate a GPG key:**
+   ::
+
+      gpg --full-generate-key
+
+   - Use your GitHub email address.
+   - Choose RSA and RSA, 4096 bits, no expiration (or as you prefer).
+
+3. **Tell Git to use your key:**
+   - List your keys:
+     ::
+
+        gpg --list-secret-keys --keyid-format=long
+
+   - Copy the long hex key ID (after `sec`).
+   - Configure Git:
+     ::
+
+        git config --global user.signingkey <YOUR_KEY_ID>
+        git config --global commit.gpgsign true
+        git config --global gpg.program gpg
+
+4. **Add your public key to GitHub:**
+   - Export your public key:
+     ::
+
+        gpg --armor --export <YOUR_KEY_ID>
+
+   - Copy the output and add it to GitHub: Settings → SSH and GPG keys → New GPG key.
+
+5. **Sign all future commits:**
+   - All new commits will be signed automatically.
+
+6. **To sign existing commits:**
+   - You may need to rebase and sign them. Here is how to do it:
+
+     a. Start an interactive rebase for the last N commits (replace N with the number of commits you want to sign):
+        ::
+
+           git rebase -i HEAD~N
+
+     b. In the editor, change `pick` to `edit` for each commit you want to sign, then save and close the editor.
+
+     c. For each commit, sign it and continue the rebase:
+        ::
+
+           git commit --amend -S --no-edit
+           git rebase --continue
+
+     d. Repeat step (c) for each commit until the rebase is complete.
+
+     e. If you have already pushed these commits, force-push the branch to update the remote:
+        ::
+
+           git push --force-with-lease
+
+   - For more details, see the GitHub docs: https://docs.github.com/en/authentication/managing-commit-signature-verification
+
+If you have trouble, ask a maintainer for help.
