@@ -252,11 +252,20 @@ def test_070_verify_boundary_uniqueness( ):
 def test_080_deterministic_boundary( ):
     ''' Deterministic boundary produces reproducible output. '''
     formatters = cache_import_module( f"{PACKAGE_NAME}.formatters" )
-    part = _create_sample_part( location='deterministic.txt', content='Deterministic content' )
+    part = _create_sample_part(
+        location='deterministic.txt',
+        content='Deterministic content'
+    )
 
     # Format twice with deterministic_boundary=True
-    mimeogram1 = formatters.format_mimeogram( [ part ], deterministic_boundary = True )
-    mimeogram2 = formatters.format_mimeogram( [ part ], deterministic_boundary = True )
+    mimeogram1 = formatters.format_mimeogram(
+        [ part ],
+        deterministic_boundary = True
+    )
+    mimeogram2 = formatters.format_mimeogram(
+        [ part ],
+        deterministic_boundary = True
+    )
 
     # The outputs should be identical
     assert mimeogram1 == mimeogram2

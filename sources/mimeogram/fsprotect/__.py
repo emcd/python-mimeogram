@@ -20,7 +20,6 @@
 
 ''' Internal base for filesystem location protection. '''
 
-# ruff: noqa: F401,F403
 
-
-from ..__ import *
+# F403: Explicit star import for internal base module pattern
+from ..__ import *  # noqa: F403

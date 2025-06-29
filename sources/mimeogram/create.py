@@ -90,7 +90,17 @@ class Command(
     ] = None
     deterministic_boundary: __.typx.Annotated[
         bool,
-        __.typx.Doc( '''Use deterministic (hash-based) boundary for reproducible output. When enabled, the MIME boundary marker will be a hash of the content, making output reproducible and diff-friendly. Useful for testing, CI, and batch processing. Default: False (random boundary).'''),
+        __.typx.Doc(
+            '''
+            Use deterministic (hash-based) boundary for reproducible output.
+
+            When enabled, the MIME boundary marker will be a hash of the
+            content, making output reproducible and diff-friendly.
+
+            Useful for testing, CI, and batch processing.
+            Default: False (random boundary).
+            '''
+        ),
         __.tyro.conf.arg( aliases = ( '--deterministic-boundary', ) ),
     ] = False
 
