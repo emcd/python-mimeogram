@@ -20,11 +20,15 @@
 ''' Deterministic hashing utilities for mimeogram parts. '''
 
 import hashlib
+from typing import Sequence, Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ..parts import Part
 
 
 def hash_mimeogram_parts(
-    parts,
-    message: str | None = None
+    parts: 'Sequence["Part"]',
+    message: Optional[str] = None
 ) -> str:
     ''' Computes a deterministic hash for a sequence of mimeogram parts. '''
     m = hashlib.sha256()
