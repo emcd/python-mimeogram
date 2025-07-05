@@ -34,14 +34,11 @@ class DirectorySpecies( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     State = 'state'
 
 
-class Globals(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Globals( __.immut.DataclassObject ):
     ''' Immutable global data. Required by some library functions. '''
 
     application: _application.Information
-    configuration: __.AccretiveDictionary[ str, __.typx.Any ]
+    configuration: __.accret.Dictionary[ str, __.typx.Any ]
     directories: __.PlatformDirs
     distribution: _distribution.Information
     exits: __.ExitsAsync

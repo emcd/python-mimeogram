@@ -21,8 +21,6 @@
 ''' User interactions and automations. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import interfaces as _interfaces
 from . import parts as _parts
@@ -97,10 +95,7 @@ def _validate_choice(
     else: print( "Invalid choice." )
 
 
-class GenericInteractor(
-    _interfaces.PartInteractor,
-    decorators = ( __.standard_dataclass, ),
-):
+class GenericInteractor( _interfaces.PartInteractor ):
     ''' Default console-based interaction handler. '''
 
     prompter: __.cabc.Callable[

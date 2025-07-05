@@ -24,13 +24,13 @@
 from . import __
 
 
-class Omniexception( BaseException, metaclass = __.ImmutableClass ):
+class Omniexception(
+    __.immut.Object, BaseException,
+    instances_mutables = ( '__cause__', ), # for PyPy
+    instances_visibles = (
+        '__cause__', '__context__', __.immut.is_public_identifier ),
+):
     ''' Base for all exceptions raised by package API. '''
-    # TODO: Class attribute concealment.
-    # TODO: Instance attribute concealment and immutability.
-
-    _attribute_visibility_includes_: __.cabc.Collection[ str ] = (
-        frozenset( ( '__cause__', '__context__', ) ) )
 
 
 class Omnierror( Omniexception, Exception ):

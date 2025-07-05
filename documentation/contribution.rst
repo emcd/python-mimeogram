@@ -26,7 +26,7 @@ Contribution
 
 Contribution to this project is welcome! However, it must follow the `code of
 conduct
-<https://github.com/emcd/python-project-common/blob/docs-1/documentation/common/conduct.rst>`_
+<https://emcd.github.io/python-project-common/stable/sphinx-html/common/conduct.html>`_
 for the project.
 
 
@@ -50,27 +50,39 @@ Guidance and Standards
 -------------------------------------------------------------------------------
 
 * Follow the `development environment preparation and management instructions
-  <https://github.com/emcd/python-project-common/blob/docs-1/documentation/common/environment.rst>`_
+  <https://emcd.github.io/python-project-common/stable/sphinx-html/common/environment.html>`_
   to ensure consistency with maintainer development environments and CI
   workflows.
 
+* Configure Git commit signing as required for all contributions. See the
+  `environment setup guide
+  <https://emcd.github.io/python-project-common/stable/sphinx-html/common/environment.html#git-commit-signatures>`_
+  for configuration details.
+
 * Adhere to the `development practices
-  <https://github.com/emcd/python-project-common/blob/docs-1/documentation/common/practices.rst>`_
-  and `code style <https://github.com/emcd/python-project-common/blob/docs-1/documentation/common/style.rst>`_
+  <https://emcd.github.io/python-project-common/stable/sphinx-html/common/practices.html>`_
+  and `code style
+  <https://emcd.github.io/python-project-common/stable/sphinx-html/common/style.html>`_
   to improve the probability of pull request acceptance. You may wish to use an
   LLM to assist with this, if the standards seem too onerous or specific.
 
 * Also consider the `nomenclature advice
-  <https://github.com/emcd/python-project-common/blob/docs-1/documentation/common/nomenclature.rst>`_
+  <https://emcd.github.io/python-project-common/stable/sphinx-html/common/nomenclature.html>`_
   for consistency and to improve the probability of pull request acceptance.
 
+* Run validation commands before submitting contributions. See the `validation
+  guide <https://emcd.github.io/python-project-common/stable/sphinx-html/common/validation.html>`_
+  for available commands and workflow. (If you installed the Git pre-commit and
+  pre-push hooks during environment setup, then they will run the validations
+  for you.)
+
 * Prepare changelog fragments according to the `releases guide
-  <https://github.com/emcd/python-project-common/blob/docs-1/documentation/common/releases.rst>`_
+  <https://emcd.github.io/python-project-common/stable/sphinx-html/common/releases.html>`_
   as appropriate.
 
 * Although unncessary for non-maintainer contributions, additional background
   can be found in the `maintenance guide
-  <https://github.com/emcd/python-project-common/blob/docs-1/documentation/common/maintenance.rst>`_.
+  <https://emcd.github.io/python-project-common/stable/sphinx-html/common/maintenance.html>`_.
 
 Artificial Intelligence
 -------------------------------------------------------------------------------
@@ -82,9 +94,9 @@ Artificial Intelligence
 * A more compact representation of the above guidance and standards, plus some
   other advice for these models, can be found in
   ``.auxiliary/configuration/conventions.md``. You may link to this file from a
-  ``AGENTS.md``, ``CLAUDE.md``, ``CONVENTIONS.md`` file in the root of the
-  project. These files are ignored by Git as we do not wish to pollute the
-  root of the project with them in the upstream repository.
+  ``AGENTS.md``, ``CLAUDE.md``, ``GEMINI.md``, ``CONVENTIONS.md``, etc... file
+  in the root of the project. These files are ignored by Git as we do not wish
+  to pollute the root of the project with them in the upstream repository.
 
 Resources
 -------------------------------------------------------------------------------

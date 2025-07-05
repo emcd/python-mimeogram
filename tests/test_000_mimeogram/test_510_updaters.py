@@ -21,8 +21,6 @@
 ''' Tests for updaters module. '''
 
 
-from __future__ import annotations
-
 import sys
 
 from dataclasses import dataclass
@@ -31,7 +29,7 @@ from unittest.mock import patch
 
 import pytest
 
-from accretive.qaliases import AccretiveDictionary
+import accretive as accret
 from exceptiongroup import ExceptionGroup
 
 from . import (
@@ -93,7 +91,7 @@ def produce_mock_auxdata( config = None ):
             name = 'mimeogram-test',
             version = '0.0.0'
         ),
-        configuration = AccretiveDictionary( config ),
+        configuration = accret.Dictionary( config ),
         directories = PlatformDirs(
             appname = 'mimeogram-test',
             version = '0.0.0'

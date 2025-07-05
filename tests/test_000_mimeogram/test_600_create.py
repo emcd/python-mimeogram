@@ -341,3 +341,172 @@ async def test_310_create_clipboard_failure( provide_tempdir ):
                 clipcopier = failing_clipcopier )
 
         assert exc_info.value.code == 1
+
+
+@pytest.mark.asyncio
+async def test_400_create_deterministic_boundary_cli( provide_tempdir ):
+    ''' Create uses deterministic boundary when CLI flag is set. '''
+    create = cache_import_module( f"{PACKAGE_NAME}.create" )
+    import re
+
+    test_content = "test content\n"
+    test_path = provide_tempdir / "test.txt"
+    test_files = { "test.txt": test_content }
+    printed_content = [ ]
+
+    def mock_print( content: str ):
+        printed_content.append( content )
+
+    with create_test_files( provide_tempdir, test_files ):
+        cmd = create.Command(
+            sources = [ str( test_path ) ],
+            deterministic_boundary = True )
+        with pytest.raises( SystemExit ) as exc_info: # noqa: SIM117
+            with pytest.MonkeyPatch( ).context( ) as mp:
+                mp.setattr( 'builtins.print', mock_print )
+                await create.create(
+                    MagicMock( configuration = { } ),
+                    cmd )
+
+        assert exc_info.value.code == 0
+        assert len( printed_content ) == 1
+        output = printed_content[ 0 ]
+        boundary_pattern = r'--====MIMEOGRAM_([0-9a-f]{64})===='
+        match = re.search( boundary_pattern, output )
+        assert match is not None, 'Should have deterministic boundary'
+
+
+@pytest.mark.asyncio
+async def test_410_create_deterministic_boundary_config( provide_tempdir ):
+    ''' Create uses deterministic boundary when config is set. '''
+    create = cache_import_module( f"{PACKAGE_NAME}.create" )
+    import re
+
+    test_content = "test content\n"
+    test_path = provide_tempdir / "test.txt"
+    test_files = { "test.txt": test_content }
+    printed_content = [ ]
+
+    def mock_print( content: str ):
+        printed_content.append( content )
+
+    with create_test_files( provide_tempdir, test_files ):
+        cmd = create.Command( sources = [ str( test_path ) ] )
+        with pytest.raises( SystemExit ) as exc_info: # noqa: SIM117
+            with pytest.MonkeyPatch( ).context( ) as mp:
+                mp.setattr( 'builtins.print', mock_print )
+                await create.create(
+                    MagicMock( configuration = {
+                        'create': { 'deterministic-boundary': True }
+                    } ),
+                    cmd )
+
+        assert exc_info.value.code == 0
+        assert len( printed_content ) == 1
+        output = printed_content[ 0 ]
+        boundary_pattern = r'--====MIMEOGRAM_([0-9a-f]{64})===='
+        match = re.search( boundary_pattern, output )
+        assert match is not None, 'Should have deterministic boundary'
+
+
+@pytest.mark.asyncio
+async def test_420_create_deterministic_boundary_repeatability(
+    provide_tempdir
+):
+    ''' Create produces identical output with deterministic boundary. '''
+    create = cache_import_module( f"{PACKAGE_NAME}.create" )
+
+    test_content = "test content\n"
+    test_path = provide_tempdir / "test.txt"
+    test_files = { "test.txt": test_content }
+    printed_content1 = [ ]
+    printed_content2 = [ ]
+
+    def mock_print1( content: str ):
+        printed_content1.append( content )
+
+    def mock_print2( content: str ):
+        printed_content2.append( content )
+
+    with create_test_files( provide_tempdir, test_files ):
+        cmd = create.Command(
+            sources = [ str( test_path ) ],
+            deterministic_boundary = True )
+        
+        # First run
+        with pytest.raises( SystemExit ): # noqa: SIM117
+            with pytest.MonkeyPatch( ).context( ) as mp:
+                mp.setattr( 'builtins.print', mock_print1 )
+                await create.create(
+                    MagicMock( configuration = { } ),
+                    cmd )
+        
+        # Second run
+        with pytest.raises( SystemExit ): # noqa: SIM117
+            with pytest.MonkeyPatch( ).context( ) as mp:
+                mp.setattr( 'builtins.print', mock_print2 )
+                await create.create(
+                    MagicMock( configuration = { } ),
+                    cmd )
+
+        assert len( printed_content1 ) == 1
+        assert len( printed_content2 ) == 1
+        assert printed_content1[ 0 ] == printed_content2[ 0 ]
+
+
+@pytest.mark.asyncio
+async def test_430_create_deterministic_boundary_cli_overrides_config( 
+    provide_tempdir
+):
+    ''' CLI flag overrides configuration setting. '''
+    create = cache_import_module( f"{PACKAGE_NAME}.create" )
+    import re
+
+    test_content = "test content\n"
+    test_path = provide_tempdir / "test.txt"
+    test_files = { "test.txt": test_content }
+    printed_content = [ ]
+
+    def mock_print( content: str ):
+        printed_content.append( content )
+
+    with create_test_files( provide_tempdir, test_files ):
+        cmd = create.Command(
+            sources = [ str( test_path ) ],
+            deterministic_boundary = False )
+        with pytest.raises( SystemExit ) as exc_info: # noqa: SIM117
+            with pytest.MonkeyPatch( ).context( ) as mp:
+                mp.setattr( 'builtins.print', mock_print )
+                await create.create(
+                    MagicMock( configuration = {
+                        'create': { 'deterministic-boundary': True }
+                    } ),
+                    cmd )
+
+        assert exc_info.value.code == 0
+        assert len( printed_content ) == 1
+        output = printed_content[ 0 ]
+        boundary_pattern = r'--====MIMEOGRAM_([0-9a-f]{32})===='
+        match = re.search( boundary_pattern, output )
+        assert match is not None, (
+            'Should have random boundary due to CLI override' )
+
+
+def test_440_deterministic_boundary_configuration_edit( ):
+    ''' Command generates configuration edit for deterministic boundary. '''
+    create = cache_import_module( f"{PACKAGE_NAME}.create" )
+
+    cmd = create.Command(
+        sources = [ 'test.txt' ],
+        deterministic_boundary = True )
+    edits = cmd.provide_configuration_edits( )
+    
+    # Find the deterministic boundary edit
+    deterministic_edit = None
+    for edit in edits:
+        if edit.address == ( 'create', 'deterministic-boundary' ):
+            deterministic_edit = edit
+            break
+    
+    assert deterministic_edit is not None
+    assert deterministic_edit.value is True

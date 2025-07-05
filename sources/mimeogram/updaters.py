@@ -21,8 +21,6 @@
 ''' File content updates. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import fsprotect as _fsprotect
 from . import interactions as _interactions
@@ -41,16 +39,13 @@ class ReviewModes( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     Partitive = 'partitive'     # Interactively review each part.
 
 
-class Reverter(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Reverter( __.immut.DataclassObject ):
     ''' Backup and restore filesystem state. '''
 
     originals: dict[ __.Path, str ] = (
-        __.dataclass_declare( default_factory = dict[ __.Path, str ] ) )
+        __.dcls.field( default_factory = dict[ __.Path, str ] ) )
     revisions: list[ __.Path ] = (
-        __.dataclass_declare( default_factory = list[ __.Path ] ) )
+        __.dcls.field( default_factory = list[ __.Path ] ) )
 
     async def save( self, part: _parts.Part, path: __.Path ) -> None:
         ''' Saves original file content if it exists. '''
@@ -77,17 +72,13 @@ class Reverter(
             else: path.unlink( )
 
 
-class Queue(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Queue( __.immut.DataclassObject ):
     ''' Manages queued file updates for batch application. '''
 
     updates: list[ tuple[ _parts.Part, __.Path, str ] ] = (
-        __.dataclass_declare(
+        __.dcls.field(
             default_factory = list[ tuple[ _parts.Part, __.Path, str ] ] ) )
-    reverter: Reverter = (
-        __.dataclass_declare( default_factory = Reverter ) )
+    reverter: Reverter = ( __.dcls.field( default_factory = Reverter ) )
 
     def enqueue(
         self, part: _parts.Part, target: __.Path, content: str

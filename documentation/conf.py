@@ -10,8 +10,6 @@
         https://jareddillard.com/blog/common-ways-to-customize-sphinx-themes.html
 '''
 
-# ruff: noqa: E402,F401
-
 
 def _calculate_copyright_notice( ):
     from datetime import datetime as DateTime, timezone as TimeZone
@@ -83,7 +81,11 @@ nitpick_ignore = [
     ( 'py:class', "Suppress" ),
     ( 'py:class', "absence.objects.AbsentSingleton" ),
     ( 'py:class', "accretive.dictionaries.Dictionary" ),
+    ( 'py:class', "builtins.NotImplementedType" ),
     ( 'py:class', "frigid.classes.Class" ),
+    ( 'py:class', "frigid.classes.DataclassObject" ),
+    ( 'py:class', "frigid.classes.DataclassProtocol" ),
+    ( 'py:class', "frigid.classes.Object" ),
     ( 'py:class', "frigid.classes.ProtocolClass" ),
     ( 'py:class', "frigid.dictionaries.Dictionary" ),
     ( 'py:class', "frigid.objects.Object" ),
@@ -100,6 +102,8 @@ nitpick_ignore = [
     ( 'py:class', "mimeogram.__.state.DirectorySpecies" ),
     ( 'py:class', "mimeogram.apply.Command" ),
     ( 'py:class', "mimeogram.fsprotect.core.Protector" ),
+    ( 'py:class', "mimeogram.fsprotect.core.Reasons" ),
+    ( 'py:class', "mimeogram.fsprotect.core.Status" ),
     ( 'py:class', "platformdirs.unix.Unix" ),
     ( 'py:class', "tiktoken.core.Encoding" ),
     ( 'py:class', "types.Annotated" ),
@@ -136,6 +140,7 @@ linkcheck_ignore = [
     r'https://claude\.ai/',
     r'https://grok\.com',
     # Other blockades...
+    r'https://claude\.site/artifacts/.*',
     r'https://docs\.anthropic\.com/.*',
 ]
 

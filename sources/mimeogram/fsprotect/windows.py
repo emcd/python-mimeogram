@@ -21,8 +21,6 @@
 ''' Sensitive filesystem locations on Windows. '''
 
 
-from __future__ import annotations
-
 from . import __
 
 

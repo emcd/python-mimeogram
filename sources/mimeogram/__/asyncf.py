@@ -21,8 +21,6 @@
 ''' Helper functions for async execution. '''
 
 
-from __future__ import annotations
-
 from . import imports as __
 from . import exceptions as _exceptions
 from . import generics as _generics

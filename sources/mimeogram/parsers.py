@@ -21,8 +21,6 @@
 ''' Parsers for mimeograms and their constituents. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import parts as _parts
 

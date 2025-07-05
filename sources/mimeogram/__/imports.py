@@ -23,51 +23,31 @@
 # ruff: noqa: F401
 
 
-import abc
-import asyncio
-import collections.abc as cabc
-import enum
-import os
-import re
-import sys
-import types
+import                      abc
+import                      asyncio
+import collections.abc as   cabc
+import dataclasses as       dcls
+import                      enum
+import                      hashlib
+import                      os
+import                      re
+import                      sys
+import                      types
 
 from contextlib import AsyncExitStack as ExitsAsync
-from dataclasses import (
-    dataclass,
-    field as dataclass_declare,
-)
 from logging import getLogger as produce_scribe
 from pathlib import Path
 from uuid import uuid4
 
+import accretive as         accret
+import frigid as            immut
 import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
 import tyro
 # --- END: Injected by Copier ---
 
 from absence import Absential, absent, is_absent
-from accretive.qaliases import AccretiveDictionary
-from frigid.qaliases import (
-    ImmutableClass,
-    ImmutableDictionary,
-    ImmutableObject,
-    ImmutableProtocolClass,
-    reclassify_modules_as_immutable,
-)
 from platformdirs import PlatformDirs
 
-
-@typx.dataclass_transform( frozen_default = True, kw_only_default = True )
-class ImmutableStandardDataclass( ImmutableClass ):
-    ''' Metaclass for immutable standard dataclasses. (Typechecker hack.) '''
-
-
-@typx.dataclass_transform( frozen_default = True, kw_only_default = True )
-class ImmutableStandardProtocolDataclass( ImmutableProtocolClass ):
-    ''' Metaclass for immutable standard dataclasses. (Typechecker hack.) '''
-
-
 simple_tyro_class = tyro.conf.configure( )
-standard_dataclass = dataclass( frozen = True, kw_only = True, slots = True )
 standard_tyro_class = tyro.conf.configure( tyro.conf.OmitArgPrefixes )

@@ -1,0 +1,31 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": [ "-y", "@upstash/context7-mcp" ]
+    },
+    "pyright": {
+      "command": "mcp-language-server",
+      "args": [
+        "--lsp",
+        "pyright-langserver",
+        "--workspace",
+        ".",
+        "--",
+        "--stdio"
+      ]
+    },
+    "ruff": {
+       "command": "mcp-language-server",
+       "args": [
+         "--lsp",
+         "ruff",
+         "--workspace",
+         ".",
+         "--",
+         "server",
+         "--preview"
+      ]
+    }
+  }
+}

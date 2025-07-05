@@ -21,8 +21,6 @@
 ''' Content differences management. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import interfaces as _interfaces
 from . import parts as _parts
@@ -31,9 +29,7 @@ from . import parts as _parts
 _scribe = __.produce_scribe( __name__ )
 
 
-class ConsoleDisplay(
-    _interfaces.DifferencesDisplay, decorators = ( __.standard_dataclass, )
-):
+class ConsoleDisplay( _interfaces.DifferencesDisplay ):
     ''' Default display of differences to console. '''
 
     async def __call__( self, lines: __.cabc.Sequence[ str ] ) -> None:

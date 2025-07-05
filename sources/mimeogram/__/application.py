@@ -33,10 +33,7 @@ from . import nomina as _nomina
 # _execution_id = __.uuid4( ).urn
 
 
-class Information(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, )
-):
+class Information( __.immut.DataclassObject ):
     ''' Information about an application. '''
 
     name: __.typx.Annotated[
@@ -60,7 +57,7 @@ class Information(
 
     def produce_platform_directories( self ) -> __.PlatformDirs:
         ''' Produces platform directories object for application. '''
-        arguments = __.AccretiveDictionary( dict(
+        arguments = __.accret.Dictionary( dict(
             appname = self.name, ensure_exists = True ) )
         if self.publisher: arguments[ 'appauthor' ] = self.publisher
         if self.version: arguments[ 'version' ] = self.version

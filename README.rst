@@ -17,7 +17,7 @@
    +--------------------------------------------------------------------------+
 
 *******************************************************************************
-                                   mimeogram                                   
+                                   mimeogram
 *******************************************************************************
 
 .. image:: https://img.shields.io/pypi/v/mimeogram
@@ -68,25 +68,29 @@ Key Features ⭐
 Installation 📦
 ===============================================================================
 
-Standalone Executable (Recommended)
+Method: Download Standalone Executable
 -------------------------------------------------------------------------------
 
 Download the latest standalone executable for your platform from `GitHub
 Releases <https://github.com/emcd/python-mimeogram/releases>`_. These
 executables have no dependencies and work out of the box.
 
-Python Package
+Method: Install Executable Script
 -------------------------------------------------------------------------------
 
-Executables Environment Manager
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Install via `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_
+Install via the `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_
 ``tool`` command:
 
 ::
 
     uv tool install mimeogram
+
+or, run directly with `uvx
+<https://github.com/astral-sh/uv/blob/main/README.md>`_:
+
+::
+
+    uvx mimeogram
 
 Or, install via `pipx <https://pipx.pypa.io/stable/installation/>`_:
 
@@ -94,9 +98,8 @@ Or, install via `pipx <https://pipx.pypa.io/stable/installation/>`_:
 
     pipx install mimeogram
 
-
-Package Manager
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Method: Install Python Package
+-------------------------------------------------------------------------------
 
 Install via `uv <https://github.com/astral-sh/uv/blob/main/README.md>`_ ``pip``
 command:
@@ -338,8 +341,8 @@ Comparison of General Approaches ⚖️
 +---------------------+------------+------------+-------------+--------------+
 
 .. [1] ChatGPT and Claude.ai subscription feature
-.. [2] `Cursor <https://www.cursor.com/en>`_, `Windsurf
-   <https://codeium.com/windsurf>`_, etc...
+.. [2] `Cursor <https://cursor.com/en>`_, `Windsurf
+   <https://windsurf.com/editor>`_, etc...
 .. [3] `Aider <https://aider.chat/>`_, `Claude Code
    <https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview>`_,
    etc...
@@ -404,13 +407,18 @@ limits.
 Contribution 🤝
 ===============================================================================
 
-Contribution welcome. Please see the `contribution guide
-<https://github.com/emcd/python-mimeogram/tree/master/documentation/sphinx/contribution>`_
-for:
+Contribution to this project is welcome! However, it must follow the `code of
+conduct
+<https://emcd.github.io/python-project-common/stable/sphinx-html/common/conduct.html>`_
+for the project.
 
-* Code of Conduct
-* Development Setup
-* Coding Guidelines
+Please file bug reports and feature requests in the `issue tracker
+<https://github.com/emcd/python-mimeogram/issues>`_ or submit `pull
+requests <https://github.com/emcd/python-mimeogram/pulls>`_ to
+improve the source code or documentation.
+
+For development guidance and standards, please see the `development guide
+<https://emcd.github.io/python-mimeogram/stable/sphinx-html/contribution.html#development>`_.
 
 
 About the Name 📝
@@ -484,24 +492,24 @@ Other Projects by This Author 🌟
 ===============================================================================
 
 
-* `python-absence <https://github.com/emcd/python-absence>`_ (`absence <https://pypi.org/project/absence/>`_ on PyPI) 
+* `python-absence <https://github.com/emcd/python-absence>`_ (`absence <https://pypi.org/project/absence/>`_ on PyPI)
 
   🕳️ A Python library package which provides a **sentinel for absent values** - a falsey, immutable singleton that represents the absence of a value in contexts where ``None`` or ``False`` may be valid values.
-* `python-accretive <https://github.com/emcd/python-accretive>`_ (`accretive <https://pypi.org/project/accretive/>`_ on PyPI) 
+* `python-accretive <https://github.com/emcd/python-accretive>`_ (`accretive <https://pypi.org/project/accretive/>`_ on PyPI)
 
   🌌 A Python library package which provides **accretive data structures** - collections which can grow but never shrink.
-* `python-classcore <https://github.com/emcd/python-classcore>`_ (`classcore <https://pypi.org/project/classcore/>`_ on PyPI) 
+* `python-classcore <https://github.com/emcd/python-classcore>`_ (`classcore <https://pypi.org/project/classcore/>`_ on PyPI)
 
   🏭 A Python library package which provides **foundational class factories and decorators** for providing classes with attributes immutability and concealment and other custom behaviors.
-* `python-dynadoc <https://github.com/emcd/python-dynadoc>`_ (`dynadoc <https://pypi.org/project/dynadoc/>`_ on PyPI) 
+* `python-dynadoc <https://github.com/emcd/python-dynadoc>`_ (`dynadoc <https://pypi.org/project/dynadoc/>`_ on PyPI)
 
   📝 A Python library package which bridges the gap between **rich annotations** and **automatic documentation generation** with configurable renderers and support for reusable fragments.
-* `python-falsifier <https://github.com/emcd/python-falsifier>`_ (`falsifier <https://pypi.org/project/falsifier/>`_ on PyPI) 
+* `python-falsifier <https://github.com/emcd/python-falsifier>`_ (`falsifier <https://pypi.org/project/falsifier/>`_ on PyPI)
 
   🎭 A very simple Python library package which provides a **base class for falsey objects** - objects that evaluate to ``False`` in boolean contexts.
-* `python-frigid <https://github.com/emcd/python-frigid>`_ (`frigid <https://pypi.org/project/frigid/>`_ on PyPI) 
+* `python-frigid <https://github.com/emcd/python-frigid>`_ (`frigid <https://pypi.org/project/frigid/>`_ on PyPI)
 
   🔒 A Python library package which provides **immutable data structures** - collections which cannot be modified after creation.
-* `python-icecream-truck <https://github.com/emcd/python-icecream-truck>`_ (`icecream-truck <https://pypi.org/project/icecream-truck/>`_ on PyPI) 
+* `python-icecream-truck <https://github.com/emcd/python-icecream-truck>`_ (`icecream-truck <https://pypi.org/project/icecream-truck/>`_ on PyPI)
 
   🍦 **Flavorful Debugging** - A Python library which enhances the powerful and well-known ``icecream`` package with flavored traces, configuration hierarchies, customized outputs, ready-made recipes, and more.

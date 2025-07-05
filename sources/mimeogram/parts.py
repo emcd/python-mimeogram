@@ -21,8 +21,6 @@
 ''' Mimeogram parts. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import fsprotect as _fsprotect
 
@@ -37,7 +35,7 @@ class LineSeparators( __.enum.Enum ):
     @classmethod
     def detect_bytes(
         selfclass, content: bytes, limit = 1024
-    ) -> LineSeparators | None:
+    ) -> "LineSeparators | None":
         ''' Detects newline characters in bytes array. '''
         sample = content[ : limit ]
         found_cr = False
@@ -76,25 +74,19 @@ class Resolutions( __.enum.Enum ):
     Ignore =    'ignore'
 
 
-class Part(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Part( __.immut.DataclassObject ):
     ''' Part of mimeogram. '''
     location: str # TODO? 'Url' class
     mimetype: str
     charset: str
-    linesep: LineSeparators
+    linesep: "LineSeparators"
     content: str
 
     # TODO? 'format' method
     # TODO? 'parse' method
 
 
-class Target(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Target( __.immut.DataclassObject ):
     ''' Target information for mimeogram part. '''
     part: Part
     destination: __.Path

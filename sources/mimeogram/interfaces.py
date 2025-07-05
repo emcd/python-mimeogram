@@ -21,16 +21,13 @@
 ''' Abstract bases and interfaces. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import parts as _parts
 
 
 class CliCommand(
-    __.typx.Protocol,
-    metaclass = __.ImmutableStandardProtocolDataclass,
-    decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
+    __.immut.DataclassProtocol, __.typx.Protocol,
+    decorators = ( __.typx.runtime_checkable, ),
 ):
     ''' CLI command. '''
 
@@ -46,9 +43,8 @@ class CliCommand(
 
 
 class DifferencesDisplay(
-    __.typx.Protocol,
-    metaclass = __.ImmutableStandardProtocolDataclass,
-    decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
+    __.immut.DataclassProtocol, __.typx.Protocol,
+    decorators = ( __.typx.runtime_checkable, ),
 ):
     ''' Configuration for content differences display. '''
 
@@ -67,8 +63,8 @@ class DifferencesDisplay(
 
 
 class DifferencesInteractor(
-    __.typx.Protocol,
-    metaclass = __.ImmutableProtocolClass,
+    __.immut.DataclassProtocol, __.typx.Protocol,
+    decorators = ( __.typx.runtime_checkable, ),
 ):
     ''' Interactions with content differences. '''
 
@@ -81,9 +77,8 @@ class DifferencesInteractor(
 
 
 class PartInteractor(
-    __.typx.Protocol,
-    metaclass = __.ImmutableStandardProtocolDataclass,
-    decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
+    __.immut.DataclassProtocol, __.typx.Protocol,
+    decorators = ( __.typx.runtime_checkable, ),
 ):
     ''' Interactions with mimeogram parts. '''
 

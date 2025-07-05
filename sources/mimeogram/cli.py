@@ -33,7 +33,7 @@ _scribe = __.produce_scribe( __name__ )
 
 class VersionCommand(
     _interfaces.CliCommand,
-    decorators = ( __.standard_dataclass, __.standard_tyro_class ),
+    decorators = ( __.standard_tyro_class, ),
 ):
     ''' Prints version information. '''
 
@@ -48,9 +48,11 @@ class VersionCommand(
         return ( )
 
 
+_inscription_mode_default = (
+    __.InscriptionControl( mode = __.InscriptionModes.Rich ) )
 class Cli(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, __.simple_tyro_class ),
+    __.immut.DataclassObject,
+    decorators = ( __.simple_tyro_class, ),
 ):
     ''' Mimeogram: hierarchical data exchange between humans and LLMs. '''
 
@@ -58,7 +60,7 @@ class Cli(
     configfile: __.typx.Optional[ str ] = None
     # display: ConsoleDisplay
     inscription: __.InscriptionControl = (
-        __.InscriptionControl( mode = __.InscriptionModes.Rich ) )
+        __.dcls.field( default_factory = lambda: _inscription_mode_default ) )
     command: __.typx.Union[
         __.typx.Annotated[
             _create.Command,

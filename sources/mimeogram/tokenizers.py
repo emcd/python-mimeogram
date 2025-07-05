@@ -21,8 +21,6 @@
 ''' Language model tokenizers. '''
 
 
-from __future__ import annotations
-
 import tiktoken as _tiktoken
 
 from . import __
@@ -41,7 +39,7 @@ class Tokenizers( __.enum.Enum ):
     @classmethod
     async def produce(
         selfclass, name: str, variant: __.Absential[ str ] = __.absent
-    ) -> Tokenizer:
+    ) -> "Tokenizer":
         ''' Produces tokenizer from name and optional variant. '''
         tokenizer = selfclass( name )
         match tokenizer:
@@ -52,9 +50,8 @@ class Tokenizers( __.enum.Enum ):
 
 
 class Tokenizer(
-    __.typx.Protocol,
-    metaclass = __.ImmutableStandardProtocolDataclass,
-    decorators = ( __.standard_dataclass, __.typx.runtime_checkable, ),
+    __.immut.DataclassProtocol, __.typx.Protocol,
+    decorators = ( __.typx.runtime_checkable, ),
 ):
     ''' Language model tokenizer. '''
 
@@ -74,9 +71,7 @@ class Tokenizer(
 # TODO: Implement 'AnthropicApi' tokenizer.
 
 
-class Tiktoken(
-    Tokenizer, decorators = ( __.standard_dataclass, )
-):
+class Tiktoken( Tokenizer ):
     ''' Tokenization via 'tiktoken' package. '''
 
     codec: _tiktoken.Encoding

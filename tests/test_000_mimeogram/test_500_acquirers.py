@@ -38,7 +38,7 @@ from . import (
 @pytest.fixture
 def provide_auxdata( provide_tempdir, provide_tempenv ):
     ''' Provides test auxiliary data. '''
-    from accretive.qaliases import AccretiveDictionary
+    import accretive as accret
     from platformdirs import PlatformDirs
 
     __ = cache_import_module( f"{PACKAGE_NAME}.__" )
@@ -48,7 +48,7 @@ def provide_auxdata( provide_tempdir, provide_tempenv ):
     provide_tempenv.update( produce_test_environment( ) )
     return __.Globals(
         application = _app.Information( name = 'test-app' ),
-        configuration = AccretiveDictionary( {
+        configuration = accret.Dictionary( {
             'acquire-parts': {
                 'fail-on-invalid': False,
                 'recurse-directories': False

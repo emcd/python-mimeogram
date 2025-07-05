@@ -22,8 +22,6 @@
 # TODO: Independent package.
 
 
-from __future__ import annotations
-
 from . import imports as __
 
 
@@ -32,7 +30,7 @@ U = __.typx.TypeVar( 'U' ) # generic
 E = __.typx.TypeVar( 'E', bound = Exception ) # error
 
 
-class Result( __.ImmutableObject, __.typx.Generic[ T, E ] ):
+class Result( __.immut.Object, __.typx.Generic[ T, E ] ):
     ''' Either a value or an error. '''
     # TODO: Protocol class.
 
@@ -55,7 +53,7 @@ class Result( __.ImmutableObject, __.typx.Generic[ T, E ] ):
     @__.abc.abstractmethod
     def transform(
         self, function: __.typx.Callable[ [ T ], U ]
-    ) -> __.typx.Self | Result[ U, E ]:
+    ) -> __.typx.Self | "Result[ U, E ]":
         ''' Transforms value in value result. Ignores error result.
 
             Similar to Result.map in Rust.
@@ -77,7 +75,7 @@ class Value( Result[ T, E ] ):
 
     def transform(
         self, function: __.typx.Callable[ [ T ], U ]
-    ) -> Result[ U, E ]: return Value( function( self.value ) )
+    ) -> "Result[ U, E ]": return Value( function( self.value ) )
 
 
 class Error( Result[ T, E ] ):
