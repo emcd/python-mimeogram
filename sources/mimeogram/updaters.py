@@ -43,9 +43,9 @@ class Reverter( __.immut.DataclassObject ):
     ''' Backup and restore filesystem state. '''
 
     originals: dict[ __.Path, str ] = (
-        __.dataclass_declare( default_factory = dict[ __.Path, str ] ) )
+        __.dcls.field( default_factory = dict[ __.Path, str ] ) )
     revisions: list[ __.Path ] = (
-        __.dataclass_declare( default_factory = list[ __.Path ] ) )
+        __.dcls.field( default_factory = list[ __.Path ] ) )
 
     async def save( self, part: _parts.Part, path: __.Path ) -> None:
         ''' Saves original file content if it exists. '''
@@ -76,10 +76,9 @@ class Queue( __.immut.DataclassObject ):
     ''' Manages queued file updates for batch application. '''
 
     updates: list[ tuple[ _parts.Part, __.Path, str ] ] = (
-        __.dataclass_declare(
+        __.dcls.field(
             default_factory = list[ tuple[ _parts.Part, __.Path, str ] ] ) )
-    reverter: Reverter = (
-        __.dataclass_declare( default_factory = Reverter ) )
+    reverter: Reverter = ( __.dcls.field( default_factory = Reverter ) )
 
     def enqueue(
         self, part: _parts.Part, target: __.Path, content: str

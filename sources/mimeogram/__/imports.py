@@ -26,6 +26,7 @@
 import abc
 import asyncio
 import collections.abc as   cabc
+import dataclasses as       dcls
 import enum
 import os
 import re
@@ -33,10 +34,6 @@ import sys
 import types
 
 from contextlib import AsyncExitStack as ExitsAsync
-from dataclasses import (
-    dataclass,
-    field as dataclass_declare,
-)
 from logging import getLogger as produce_scribe
 from pathlib import Path
 from uuid import uuid4
@@ -52,5 +49,4 @@ from absence import Absential, absent, is_absent
 from platformdirs import PlatformDirs
 
 simple_tyro_class = tyro.conf.configure( )
-standard_dataclass = dataclass( frozen = True, kw_only = True, slots = True )
 standard_tyro_class = tyro.conf.configure( tyro.conf.OmitArgPrefixes )

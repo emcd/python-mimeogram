@@ -48,6 +48,8 @@ class VersionCommand(
         return ( )
 
 
+_inscription_mode_default = (
+    __.InscriptionControl( mode = __.InscriptionModes.Rich ) )
 class Cli(
     __.immut.DataclassObject,
     decorators = ( __.simple_tyro_class, ),
@@ -58,7 +60,7 @@ class Cli(
     configfile: __.typx.Optional[ str ] = None
     # display: ConsoleDisplay
     inscription: __.InscriptionControl = (
-        __.InscriptionControl( mode = __.InscriptionModes.Rich ) )
+        __.dcls.field( default_factory = lambda: _inscription_mode_default ) )
     command: __.typx.Union[
         __.typx.Annotated[
             _create.Command,
