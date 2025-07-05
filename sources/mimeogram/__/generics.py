@@ -22,8 +22,6 @@
 # TODO: Independent package.
 
 
-from __future__ import annotations
-
 from . import imports as __
 
 

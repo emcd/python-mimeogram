@@ -22,8 +22,6 @@
 # TODO? Use BSD sysexits.
 
 
-from __future__ import annotations
-
 from . import __
 from . import interfaces as _interfaces
 from . import tokenizers as _tokenizers

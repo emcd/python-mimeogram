@@ -21,8 +21,6 @@
 ''' Sensitive filesystem locations on Unix/POSIX/Linux. '''
 
 
-from __future__ import annotations
-
 from . import __
 
 

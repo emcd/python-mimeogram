@@ -21,8 +21,6 @@
 ''' Cache for filesystem protection checks. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import core as _core
 

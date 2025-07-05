@@ -21,8 +21,6 @@
 ''' Content acquisition from various sources. '''
 
 
-from __future__ import annotations
-
 import aiofiles as _aiofiles
 import httpx as _httpx
 

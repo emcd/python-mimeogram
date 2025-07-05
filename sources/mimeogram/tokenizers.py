@@ -21,8 +21,6 @@
 ''' Language model tokenizers. '''
 
 
-from __future__ import annotations
-
 import tiktoken as _tiktoken
 
 from . import __
@@ -41,7 +39,7 @@ class Tokenizers( __.enum.Enum ):
     @classmethod
     async def produce(
         selfclass, name: str, variant: __.Absential[ str ] = __.absent
-    ) -> Tokenizer:
+    ) -> "Tokenizer":
         ''' Produces tokenizer from name and optional variant. '''
         tokenizer = selfclass( name )
         match tokenizer:

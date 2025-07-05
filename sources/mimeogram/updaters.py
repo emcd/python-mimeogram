@@ -21,8 +21,6 @@
 ''' File content updates. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import fsprotect as _fsprotect
 from . import interactions as _interactions

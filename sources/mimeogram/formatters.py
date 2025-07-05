@@ -21,8 +21,6 @@
 ''' Formatting of mimeogram bundles. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import parts as _parts
 

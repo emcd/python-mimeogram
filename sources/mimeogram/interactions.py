@@ -21,8 +21,6 @@
 ''' User interactions and automations. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import interfaces as _interfaces
 from . import parts as _parts

@@ -21,8 +21,6 @@
 ''' Sensitive filesystem locations relative to project directory. '''
 
 
-from __future__ import annotations
-
 from . import __
 
 

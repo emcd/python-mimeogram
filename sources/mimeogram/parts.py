@@ -21,8 +21,6 @@
 ''' Mimeogram parts. '''
 
 
-from __future__ import annotations
-
 from . import __
 from . import fsprotect as _fsprotect
 
@@ -37,7 +35,7 @@ class LineSeparators( __.enum.Enum ):
     @classmethod
     def detect_bytes(
         selfclass, content: bytes, limit = 1024
-    ) -> LineSeparators | None:
+    ) -> "LineSeparators | None":
         ''' Detects newline characters in bytes array. '''
         sample = content[ : limit ]
         found_cr = False
@@ -81,7 +79,7 @@ class Part( __.immut.DataclassObject ):
     location: str # TODO? 'Url' class
     mimetype: str
     charset: str
-    linesep: LineSeparators
+    linesep: "LineSeparators"
     content: str
 
     # TODO? 'format' method
