@@ -10,8 +10,6 @@
         https://jareddillard.com/blog/common-ways-to-customize-sphinx-themes.html
 '''
 
-# ruff: noqa: E402,F401
-
 
 def _calculate_copyright_notice( ):
     from datetime import datetime as DateTime, timezone as TimeZone
@@ -136,6 +134,7 @@ linkcheck_ignore = [
     r'https://claude\.ai/',
     r'https://grok\.com',
     # Other blockades...
+    r'https://claude\.site/artifacts/.*',
     r'https://docs\.anthropic\.com/.*',
 ]
 

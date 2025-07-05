@@ -82,6 +82,7 @@ year-of-origin = 2025
 gha-runners = [
   '/home/runner/work/python-mimeogram/python-mimeogram/',
   '/Users/runner/work/python-mimeogram/python-mimeogram/',
+  'C:\a\python-mimeogram\python-mimeogram\',
   'D:\a\python-mimeogram\python-mimeogram\',
 ]
 [tool.coverage.run]
@@ -126,9 +127,7 @@ description = ''' Development environment. '''
 dependencies = [
   'Jinja2',
   'coverage[toml]',
-  'emcd-projects',
   'furo',
-  'icecream-truck',
   'packaging',
   'pre-commit',
   'pyright',
