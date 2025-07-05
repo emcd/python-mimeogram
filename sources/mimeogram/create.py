@@ -86,6 +86,17 @@ class Command(
                 If not specified, then the default variant is used.
             ''' ),
     ] = None
+    deterministic_boundary: __.typx.Annotated[
+        __.typx.Optional[ bool ],
+        __.typx.Doc(
+            ''' Use deterministic boundary for reproducible output.
+
+                When enabled, the MIME boundary marker will be a hash of the
+                content, making output reproducible and diff-friendly.
+                Useful for testing, CI, and batch processing.
+            ''' ),
+        __.tyro.conf.arg( aliases = ( '--deterministic-boundary', ) ),
+    ] = None
 
     async def __call__( self, auxdata: __.Globals ) -> None:
         ''' Executes command to create mimeogram. '''
@@ -113,6 +124,10 @@ class Command(
             edits.append( __.SimpleDictionaryEdit( # pyright: ignore
                 address = ( 'tokenizers', 'default' ),
                 value = self.tokenizer ) )
+        if None is not self.deterministic_boundary:
+            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+                address = ( 'create', 'deterministic-boundary' ),
+                value = self.deterministic_boundary ) )
         return tuple( edits )
 
 
@@ -154,12 +169,18 @@ async def create(
             _scribe, "Could not acquire user message."
         ): message = await editor( )
     else: message = None
-    mimeogram = format_mimeogram( parts, message = message )
+    options = auxdata.configuration.get( 'create', { } )
+    deterministic_boundary = (
+        command.deterministic_boundary
+        if command.deterministic_boundary is not None
+        else options.get( 'deterministic-boundary', False ) )
+    mimeogram = format_mimeogram(
+        parts, message = message,
+        deterministic_boundary = deterministic_boundary )
     # TODO? Pass prompt to 'format_mimeogram'.
     if command.prepend_prompt:
         prompt = await prompter( auxdata )
         mimeogram = f"{prompt}\n\n{mimeogram}"
-    options = auxdata.configuration.get( 'create', { } )
     if options.get( 'count-tokens', False ):
         with __.report_exceptions(
             _scribe, "Could not count mimeogram tokens."
@@ -171,7 +192,7 @@ async def create(
         with __.report_exceptions(
             _scribe, "Could not copy mimeogram to clipboard."
         ): await clipcopier( mimeogram )
-    else: print( mimeogram ) # TODO? Use output stream from configuration.
+    else: print( mimeogram )
     raise SystemExit( 0 )
 
 

@@ -247,3 +247,88 @@ def test_070_verify_boundary_uniqueness( ):
     assert match1 is not None
     assert match2 is not None
     assert match1.group( 1 ) != match2.group( 1 )
+
+
+def test_080_deterministic_boundary_basic( ):
+    ''' Deterministic boundary produces reproducible output. '''
+    formatters = cache_import_module( f"{PACKAGE_NAME}.formatters" )
+    part = _create_sample_part(
+        location = 'deterministic.txt',
+        content = 'Deterministic content'
+    )
+    mimeogram1 = formatters.format_mimeogram(
+        [ part ], deterministic_boundary = True
+    )
+    mimeogram2 = formatters.format_mimeogram(
+        [ part ], deterministic_boundary = True
+    )
+    assert mimeogram1 == mimeogram2
+    boundary_pattern = r'--====MIMEOGRAM_([0-9a-f]{64})===='
+    match = re.search( boundary_pattern, mimeogram1 )
+    assert match is not None, 'Boundary should be a 64-character hex hash'
+
+
+def test_090_deterministic_boundary_with_message( ):
+    ''' Deterministic boundary works with message. '''
+    formatters = cache_import_module( f"{PACKAGE_NAME}.formatters" )
+    part = _create_sample_part( content = 'Test content' )
+    message = 'Test message'
+    mimeogram1 = formatters.format_mimeogram(
+        [ part ], message = message, deterministic_boundary = True
+    )
+    mimeogram2 = formatters.format_mimeogram(
+        [ part ], message = message, deterministic_boundary = True
+    )
+    assert mimeogram1 == mimeogram2
+    mimeogram3 = formatters.format_mimeogram(
+        [ part ], message = 'Different message', deterministic_boundary = True
+    )
+    assert mimeogram1 != mimeogram3
+
+
+def test_100_deterministic_boundary_different_content( ):
+    ''' Deterministic boundary changes with different content. '''
+    formatters = cache_import_module( f"{PACKAGE_NAME}.formatters" )
+    part1 = _create_sample_part( content = 'Content 1' )
+    part2 = _create_sample_part( content = 'Content 2' )
+    mimeogram1 = formatters.format_mimeogram(
+        [ part1 ], deterministic_boundary = True
+    )
+    mimeogram2 = formatters.format_mimeogram(
+        [ part2 ], deterministic_boundary = True
+    )
+    assert mimeogram1 != mimeogram2
+    boundary_pattern = r'--====MIMEOGRAM_([0-9a-f]{64})===='
+    match1 = re.search( boundary_pattern, mimeogram1 )
+    match2 = re.search( boundary_pattern, mimeogram2 )
+    assert match1 is not None
+    assert match2 is not None
+    assert match1.group( 1 ) != match2.group( 1 )
+
+
+def test_110_deterministic_boundary_order_sensitivity( ):
+    ''' Deterministic boundary is sensitive to part order. '''
+    formatters = cache_import_module( f"{PACKAGE_NAME}.formatters" )
+    part1 = _create_sample_part( location = 'first.txt', content = 'First' )
+    part2 = _create_sample_part( location = 'second.txt', content = 'Second' )
+    mimeogram1 = formatters.format_mimeogram(
+        [ part1, part2 ], deterministic_boundary = True
+    )
+    mimeogram2 = formatters.format_mimeogram(
+        [ part2, part1 ], deterministic_boundary = True
+    )
+    assert mimeogram1 != mimeogram2
+
+
+def test_120_deterministic_boundary_metadata_sensitivity( ):
+    ''' Deterministic boundary is sensitive to part metadata. '''
+    formatters = cache_import_module( f"{PACKAGE_NAME}.formatters" )
+    part1 = _create_sample_part( mimetype = 'text/plain', content = 'Same' )
+    part2 = _create_sample_part( mimetype = 'text/html', content = 'Same' )
+    mimeogram1 = formatters.format_mimeogram(
+        [ part1 ], deterministic_boundary = True
+    )
+    mimeogram2 = formatters.format_mimeogram(
+        [ part2 ], deterministic_boundary = True
+    )
+    assert mimeogram1 != mimeogram2

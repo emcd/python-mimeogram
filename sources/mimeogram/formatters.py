@@ -28,12 +28,17 @@ from . import parts as _parts
 def format_mimeogram(
     parts: __.cabc.Sequence[ _parts.Part ],
     message: __.typx.Optional[ str ] = None,
+    deterministic_boundary: bool = False,
 ) -> str:
     ''' Formats parts into mimeogram. '''
     if not parts and message is None:
         from .exceptions import MimeogramFormatEmpty
         raise MimeogramFormatEmpty( )
-    boundary = "====MIMEOGRAM_{uuid}====".format( uuid = __.uuid4( ).hex )
+    if deterministic_boundary:
+        content_hash = _compute_content_hash( parts, message )
+        boundary = f"====MIMEOGRAM_{content_hash}===="
+    else:
+        boundary = "====MIMEOGRAM_{uuid}====".format( uuid = __.uuid4( ).hex )
     lines: list[ str ] = [ ]
     if message:
         message_part = _parts.Part(
@@ -59,3 +64,20 @@ def format_part( part: _parts.Part, boundary: str ) -> str:
         f"linesep={part.linesep.name}",
         '',
         part.content ) )
+
+
+def _compute_content_hash(
+    parts: __.cabc.Sequence[ _parts.Part ],
+    message: __.typx.Optional[ str ] = None,
+) -> str:
+    ''' Computes deterministic hash for mimeogram content. '''
+    hasher = __.hashlib.sha256( )
+    if message is not None:
+        hasher.update( message.encode( 'utf-8' ) )
+    for part in parts:
+        hasher.update( str( part.location ).encode( 'utf-8' ) )
+        hasher.update( str( part.mimetype ).encode( 'utf-8' ) )
+        hasher.update( str( part.charset ).encode( 'utf-8' ) )
+        hasher.update( str( part.linesep.name ).encode( 'utf-8' ) )
+        hasher.update( str( part.content ).encode( 'utf-8' ) )
+    return hasher.hexdigest( )

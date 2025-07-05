@@ -5,6 +5,7 @@ from-clipboard = true
 
 [create]
 count-tokens = true
+deterministic-boundary = false
 to-clipboard = true
 
 [prompt]
