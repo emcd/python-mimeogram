@@ -53,7 +53,7 @@ async def acquire(
     distribution: _distribution.Information,
     edits: _dictedits.Edits = ( ),
     file: __.Absential[ __.Path ] = __.absent,
-) -> __.AccretiveDictionary[ str, __.typx.Any ]:
+) -> __.accret.Dictionary[ str, __.typx.Any ]:
     ''' Loads configuration as dictionary. '''
     if __.is_absent( file ):
         file = _discover_copy_template( directories, distribution )
@@ -62,7 +62,7 @@ async def acquire(
         application_name, directories, configuration.get( 'includes', ( ) ) )
     for include in includes: configuration.update( include )
     for edit in edits: edit( configuration )
-    return __.AccretiveDictionary( configuration )
+    return __.accret.Dictionary( configuration )
 
 
 async def _acquire( file: __.Path ) -> _nomina.NominativeDictionary:

@@ -41,10 +41,7 @@ class ReviewModes( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     Partitive = 'partitive'     # Interactively review each part.
 
 
-class Reverter(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Reverter( __.immut.DataclassObject ):
     ''' Backup and restore filesystem state. '''
 
     originals: dict[ __.Path, str ] = (
@@ -77,10 +74,7 @@ class Reverter(
             else: path.unlink( )
 
 
-class Queue(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Queue( __.immut.DataclassObject ):
     ''' Manages queued file updates for batch application. '''
 
     updates: list[ tuple[ _parts.Part, __.Path, str ] ] = (

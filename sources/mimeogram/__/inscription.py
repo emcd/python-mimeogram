@@ -33,10 +33,7 @@ class Modes( __.enum.Enum ): # TODO: Python 3.11: StrEnum
     Rich = 'rich' # print rich library logs to stderr
 
 
-class Control(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Control( __.immut.DataclassObject ):
     ''' Logging and debug printing behavior. '''
 
     mode: Modes = Modes.Null

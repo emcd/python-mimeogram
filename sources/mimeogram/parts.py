@@ -76,10 +76,7 @@ class Resolutions( __.enum.Enum ):
     Ignore =    'ignore'
 
 
-class Part(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Part( __.immut.DataclassObject ):
     ''' Part of mimeogram. '''
     location: str # TODO? 'Url' class
     mimetype: str
@@ -91,10 +88,7 @@ class Part(
     # TODO? 'parse' method
 
 
-class Target(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Target( __.immut.DataclassObject ):
     ''' Target information for mimeogram part. '''
     part: Part
     destination: __.Path

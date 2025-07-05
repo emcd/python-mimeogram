@@ -81,11 +81,11 @@ def test_200_cache_initialization( ):
     cache_obj = cache.Cache(
         rules = rules,
         defaults_disablement = frozenset( ),
-        rules_supercession = cache.__.ImmutableDictionary( ) )
+        rules_supercession = cache.__.immut.Dictionary( ) )
 
     assert cache_obj.rules == rules
     assert cache_obj.defaults_disablement == frozenset( )
-    assert cache_obj.rules_supercession == cache.__.ImmutableDictionary( )
+    assert cache_obj.rules_supercession == cache.__.immut.Dictionary( )
 
 
 def test_210_cache_verify_unprotected( ):
@@ -100,7 +100,7 @@ def test_210_cache_verify_unprotected( ):
     cache_obj = cache.Cache(
         rules = rules,
         defaults_disablement = frozenset( ),
-        rules_supercession = cache.__.ImmutableDictionary( ) )
+        rules_supercession = cache.__.immut.Dictionary( ) )
 
     # Test unprotected path
     status = cache_obj.verify( Path( '/unprotected/path' ) )
@@ -121,7 +121,7 @@ def test_220_cache_verify_protected_path( ):
     cache_obj = cache.Cache(
         rules = rules,
         defaults_disablement = frozenset( ),
-        rules_supercession = cache.__.ImmutableDictionary( ) )
+        rules_supercession = cache.__.immut.Dictionary( ) )
 
     # Test exact path match
     status = cache_obj.verify( protected_path )
@@ -148,7 +148,7 @@ def test_230_cache_verify_protected_pattern( ):
     cache_obj = cache.Cache(
         rules = rules,
         defaults_disablement = frozenset( ),
-        rules_supercession = cache.__.ImmutableDictionary( ) )
+        rules_supercession = cache.__.immut.Dictionary( ) )
 
     # Test matching path
     status = cache_obj.verify( Path( '/some/path/secrets/file.txt' ) )
@@ -172,7 +172,7 @@ def test_240_cache_verify_defaults_disablement( ):
     cache_obj = cache.Cache(
         rules = rules,
         defaults_disablement = frozenset( [ 'protected' ] ),
-        rules_supercession = cache.__.ImmutableDictionary( ) )
+        rules_supercession = cache.__.immut.Dictionary( ) )
 
     # Test path that would be protected but is disabled
     status = cache_obj.verify( protected_path )
@@ -186,7 +186,7 @@ def test_250_cache_verify_rules_supercession( ):
 
     # Create cache with supercession rules
     base_path = Path( '/project' )
-    supercession = cache.__.ImmutableDictionary( {
+    supercession = cache.__.immut.Dictionary( {
         base_path: (
             frozenset( [ 'ignore/**' ] ),
             frozenset( [ 'protect/**' ] ),
@@ -254,7 +254,7 @@ def test_400_from_configuration_basic( ):
     # Should have some default rules (platform, credentials, etc.)
     assert cache_obj.rules
     assert cache_obj.defaults_disablement == frozenset( )
-    assert cache_obj.rules_supercession == cache.__.ImmutableDictionary( )
+    assert cache_obj.rules_supercession == cache.__.immut.Dictionary( )
 
 
 def test_410_from_configuration_custom_additions( ):
@@ -390,7 +390,7 @@ def test_460_verify_supercession_non_relative( ):
 
     # Create cache with supercession rule for a specific directory
     rules = { }
-    supercession = cache.__.ImmutableDictionary( {
+    supercession = cache.__.immut.Dictionary( {
         Path( '/workspace' ): (
             frozenset( [ '.git' ] ),
             frozenset( [ '**/secret' ] ),
@@ -412,7 +412,7 @@ def test_470_verify_supercession_unprotected( ):
 
     # Create cache with supercession rules
     rules = { }
-    supercession = cache.__.ImmutableDictionary( {
+    supercession = cache.__.immut.Dictionary( {
         Path( '/workspace' ): (
             frozenset( [ 'temp/**' ] ),
             frozenset( [ 'secret/**' ] ),

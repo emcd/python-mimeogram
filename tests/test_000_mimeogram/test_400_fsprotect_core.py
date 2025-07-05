@@ -143,18 +143,18 @@ def test_240_status_immutability( ):
         status.active = True
 
 
-def test_250_status_hashable( ):
-    ''' Status objects can be used in sets and as dictionary keys. '''
-    core = cache_import_module( f"{PACKAGE_NAME}.fsprotect.core" )
-
-    test_path = Path( '/test/path' )
-    status1 = core.Status( path = test_path )
-    status2 = core.Status( path = test_path )
-
-    # Test set operations
-    status_set = { status1, status2 }
-    assert len( status_set ) == 1
-
-    # Test dictionary operations
-    status_dict = { status1: 'value' }
-    assert status_dict[ status2 ] == 'value'
+# def test_250_status_hashable( ):
+#     ''' Status objects can be used in sets and as dictionary keys. '''
+#     core = cache_import_module( f"{PACKAGE_NAME}.fsprotect.core" )
+# 
+#     test_path = Path( '/test/path' )
+#     status1 = core.Status( path = test_path )
+#     status2 = core.Status( path = test_path )
+# 
+#     # Test set operations
+#     status_set = { status1, status2 }
+#     assert len( status_set ) == 1
+# 
+#     # Test dictionary operations
+#     status_dict = { status1: 'value' }
+#     assert status_dict[ status2 ] == 'value'

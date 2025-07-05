@@ -31,9 +31,7 @@ from . import parts as _parts
 _scribe = __.produce_scribe( __name__ )
 
 
-class ConsoleDisplay(
-    _interfaces.DifferencesDisplay, decorators = ( __.standard_dataclass, )
-):
+class ConsoleDisplay( _interfaces.DifferencesDisplay ):
     ''' Default display of differences to console. '''
 
     async def __call__( self, lines: __.cabc.Sequence[ str ] ) -> None:

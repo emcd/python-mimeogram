@@ -52,9 +52,8 @@ class Tokenizers( __.enum.Enum ):
 
 
 class Tokenizer(
-    __.typx.Protocol,
-    metaclass = __.ImmutableStandardProtocolDataclass,
-    decorators = ( __.standard_dataclass, __.typx.runtime_checkable, ),
+    __.immut.DataclassProtocol, __.typx.Protocol,
+    decorators = ( __.typx.runtime_checkable, ),
 ):
     ''' Language model tokenizer. '''
 
@@ -74,9 +73,7 @@ class Tokenizer(
 # TODO: Implement 'AnthropicApi' tokenizer.
 
 
-class Tiktoken(
-    Tokenizer, decorators = ( __.standard_dataclass, )
-):
+class Tiktoken( Tokenizer ):
     ''' Tokenization via 'tiktoken' package. '''
 
     codec: _tiktoken.Encoding

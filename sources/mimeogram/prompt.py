@@ -33,7 +33,7 @@ _scribe = __.produce_scribe( __name__ )
 
 class Command(
     _interfaces.CliCommand,
-    decorators = ( __.standard_dataclass, __.standard_tyro_class ),
+    decorators = ( __.standard_tyro_class, ),
 ):
     ''' Provides LLM prompt text for mimeogram format. '''
 

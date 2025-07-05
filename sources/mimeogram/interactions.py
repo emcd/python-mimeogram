@@ -97,10 +97,7 @@ def _validate_choice(
     else: print( "Invalid choice." )
 
 
-class GenericInteractor(
-    _interfaces.PartInteractor,
-    decorators = ( __.standard_dataclass, ),
-):
+class GenericInteractor( _interfaces.PartInteractor ):
     ''' Default console-based interaction handler. '''
 
     prompter: __.cabc.Callable[

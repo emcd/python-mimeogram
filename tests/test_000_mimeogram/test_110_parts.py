@@ -104,8 +104,8 @@ def test_020_line_separators_normalization( ):
 def test_100_part_immutability( ):
     ''' Part class immutability. '''
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
-    import dataclasses
     import pytest
+    from frigid.exceptions import AttributeImmutability
 
     # Create a Part instance
     part = parts.Part(
@@ -116,16 +116,16 @@ def test_100_part_immutability( ):
         content = 'test content'
     )
 
-    # Verify immutability through dataclass
-    with pytest.raises( dataclasses.FrozenInstanceError ):
+    # Verify immutability through frigid
+    with pytest.raises( AttributeImmutability ):
         part.location = 'new.txt'
-    with pytest.raises( dataclasses.FrozenInstanceError ):
+    with pytest.raises( AttributeImmutability ):
         part.mimetype = 'application/json'
-    with pytest.raises( dataclasses.FrozenInstanceError ):
+    with pytest.raises( AttributeImmutability ):
         part.charset = 'ascii'
-    with pytest.raises( dataclasses.FrozenInstanceError ):
+    with pytest.raises( AttributeImmutability ):
         part.linesep = parts.LineSeparators.CRLF
-    with pytest.raises( dataclasses.FrozenInstanceError ):
+    with pytest.raises( AttributeImmutability ):
         part.content = 'new content'
 
 

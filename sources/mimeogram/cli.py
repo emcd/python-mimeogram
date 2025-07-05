@@ -33,7 +33,7 @@ _scribe = __.produce_scribe( __name__ )
 
 class VersionCommand(
     _interfaces.CliCommand,
-    decorators = ( __.standard_dataclass, __.standard_tyro_class ),
+    decorators = ( __.standard_tyro_class, ),
 ):
     ''' Prints version information. '''
 
@@ -49,8 +49,8 @@ class VersionCommand(
 
 
 class Cli(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, __.simple_tyro_class ),
+    __.immut.DataclassObject,
+    decorators = ( __.simple_tyro_class, ),
 ):
     ''' Mimeogram: hierarchical data exchange between humans and LLMs. '''
 

@@ -30,26 +30,23 @@ from . import core as _core
 _scribe = __.produce_scribe( __name__ )
 
 
-class Rule(
-    metaclass = __.ImmutableStandardDataclass,
-    decorators = ( __.standard_dataclass, ),
-):
+class Rule( __.immut.DataclassObject ):
     ''' Rule for path protection. '''
 
     paths: frozenset[ __.Path ]
     patterns: frozenset[ str ] = frozenset( )
 
 
-class Cache( _core.Protector, decorators = ( __.standard_dataclass, ) ):
+class Cache( _core.Protector ):
     ''' Cache of protected paths and patterns for platform. '''
 
     rules: dict[ _core.Reasons, Rule ]
     defaults_disablement: frozenset[ str ]
-    rules_supercession: __.ImmutableDictionary[
+    rules_supercession: __.immut.Dictionary[
         __.Path, tuple[ frozenset[ str ], frozenset[ str ] ] ]
 
     @classmethod
-    def from_configuration( selfclass, auxdata: __.Globals ) -> Cache:
+    def from_configuration( selfclass, auxdata: __.Globals ) -> __.typx.Self:
         ''' Initializes protection cache for current platform. '''
         _scribe.debug( 'Initializing protection cache.' )
         rules: dict[ _core.Reasons, Rule ] = { }
@@ -185,11 +182,11 @@ def _process_configuration(
     rules: dict[ _core.Reasons, Rule ],
 ) -> tuple[
     frozenset[ str ],
-    __.ImmutableDictionary[
+    __.immut.Dictionary[
         __.Path, tuple[ frozenset[ str ], frozenset[ str ] ] ],
 ]:
     config = auxdata.configuration.get( 'protection', { } )
-    if not config: return frozenset( ), __.ImmutableDictionary( )
+    if not config: return frozenset( ), __.immut.Dictionary( )
     # Additional locations and patterns.
     locations_add = {
         _expand_location( path )
@@ -210,4 +207,4 @@ def _process_configuration(
         supercession_rules[ full_path ] = (
             frozenset( dir_rules.get( 'ignore', [ ] ) ),
             frozenset( dir_rules.get( 'protect', [ ] ) ) )
-    return patterns_remove, __.ImmutableDictionary( supercession_rules )
+    return patterns_remove, __.immut.Dictionary( supercession_rules )

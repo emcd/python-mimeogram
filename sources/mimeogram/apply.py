@@ -35,7 +35,7 @@ _scribe = __.produce_scribe( __name__ )
 
 class Command(
     _interfaces.CliCommand,
-    decorators = ( __.standard_dataclass, __.standard_tyro_class ),
+    decorators = ( __.standard_tyro_class, ),
 ):
     ''' Applies mimeogram to filesystem locations. '''
 
@@ -98,9 +98,8 @@ class Command(
 
 
 class ContentAcquirer(
-    __.typx.Protocol,
-    metaclass = __.ImmutableStandardProtocolDataclass,
-    decorators = ( __.standard_dataclass, __.typx.runtime_checkable ),
+    __.immut.DataclassProtocol, __.typx.Protocol,
+    decorators = ( __.typx.runtime_checkable, ),
 ):
     ''' Acquires content for apply command. '''
 
@@ -125,9 +124,7 @@ class ContentAcquirer(
         raise NotImplementedError
 
 
-class StandardContentAcquirer(
-    ContentAcquirer, decorators = ( __.standard_dataclass, )
-):
+class StandardContentAcquirer( ContentAcquirer ):
     ''' Standard implementation of content acquisition. '''
 
     def stdin_is_tty( self ) -> bool:

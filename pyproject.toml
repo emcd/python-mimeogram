@@ -17,14 +17,14 @@ readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
 requires-python = '>= 3.10'
 dependencies = [
   'absence~=1.1',
-  'accretive~=3.0',
+  'accretive~=4.1',
   'aiofiles',
   'chardet',
   'exceptiongroup',
-  'frigid~=3.0',
+  'frigid~=4.1',
   'gitignorefile',
   'httpx',
-  'icecream-truck~=1.3',
+  'icecream-truck~=1.4',
   'importlib-metadata',
   'importlib-resources',
   'patiencediff',

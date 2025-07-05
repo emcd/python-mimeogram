@@ -147,7 +147,7 @@ async def test_100_acquire_basic_config(
             directories = provide_test_platform_dirs,
             distribution = provide_test_distribution,
             file = provide_tempdir / 'general.toml' )
-        assert isinstance( config, imports.AccretiveDictionary )
+        assert isinstance( config, imports.accret.Dictionary )
         assert 'value' == config[ 'example' ][ 'key' ]
         assert 42 == config[ 'example' ][ 'number' ]
 

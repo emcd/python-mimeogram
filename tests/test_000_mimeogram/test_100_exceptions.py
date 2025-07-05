@@ -189,16 +189,29 @@ def test_200_exception_chaining( ):
 
 
 def test_210_visible_attributes( ):
-    ''' Visibility of exception attributes. '''
+    ''' Visibility of exception attributes through proper chaining. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
-    cause = ValueError( 'test cause' )
-    exc = exceptions.Omniexception( )
-    exc.__cause__ = cause
-    assert hasattr( exc, '__cause__' )
-    assert exc.__cause__ is cause
+    # Test __cause__ visibility with Omniexception using raise...from syntax
+    try:
+        try:
+            raise ValueError( 'test cause' )
+        except ValueError as original:
+            raise exceptions.Omniexception( ) from original
+    except exceptions.Omniexception as exc:
+        assert hasattr( exc, '__cause__' )
+        assert isinstance( exc.__cause__, ValueError )
+        assert 'test cause' in str( exc.__cause__ )
 
-    exc = exceptions.ContentAcquireFailure( '/test' )
-    exc.__cause__ = cause
-    assert hasattr( exc, '__cause__' )
-    assert exc.__cause__ is cause
+    # Test __cause__ visibility with ContentAcquireFailure
+    try:
+        try:
+            raise ValueError( 'original error' )
+        except ValueError as original:
+            raise exceptions.ContentAcquireFailure( '/test' ) from original
+    except exceptions.ContentAcquireFailure as exc:
+        assert hasattr( exc, '__cause__' )
+        assert isinstance( exc.__cause__, ValueError )
+        assert 'original error' in str( exc.__cause__ )
+
+
