@@ -81,6 +81,7 @@ nitpick_ignore = [
     ( 'py:class', "Suppress" ),
     ( 'py:class', "absence.objects.AbsentSingleton" ),
     ( 'py:class', "accretive.dictionaries.Dictionary" ),
+    ( 'py:class', "builtins.NotImplementedType" ),
     ( 'py:class', "frigid.classes.Class" ),
     ( 'py:class', "frigid.classes.DataclassObject" ),
     ( 'py:class', "frigid.classes.DataclassProtocol" ),

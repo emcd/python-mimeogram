@@ -46,6 +46,7 @@ from . import exceptions
 # TODO: Export various module contents.
 
 
+__verison__: str
 __version__ = '1.4a0'
 
 
@@ -55,5 +56,4 @@ def main( ):
     execute( )
 
 
-# TODO: Also reclassify package modules as concealed.
-__.immut.reclassify_modules( __name__ )
+__.immut.finalize_module( __name__, recursive = True )

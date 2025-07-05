@@ -24,7 +24,7 @@ dependencies = [
   'frigid~=4.1',
   'gitignorefile',
   'httpx',
-  'icecream-truck~=1.4',
+  'icecream-truck~=1.5',
   'importlib-metadata',
   'importlib-resources',
   'patiencediff',
