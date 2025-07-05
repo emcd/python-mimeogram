@@ -26,6 +26,7 @@ from . import __
 
 class Omniexception(
     __.immut.Object, BaseException,
+    instances_mutables = ( '__cause__', ), # for PyPy
     instances_visibles = (
         '__cause__', '__context__', __.immut.is_public_identifier ),
 ):
