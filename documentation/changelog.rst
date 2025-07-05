@@ -23,6 +23,28 @@ Release Notes
 
 .. towncrier release notes start
 
+Mimeogram 1.4 (2025-07-05)
+==========================
+
+Enhancements
+------------
+
+- Add deterministic boundary option for reproducible mimeogram output. When
+  enabled via ``--deterministic-boundary`` CLI flag or ``deterministic-boundary``
+  configuration setting, boundaries are generated from content hashes instead of
+  random UUIDs, making output diff-friendly for version control workflows.
+  (Feature request from @developingjames.)
+- Call ``finalize_module`` instead of ``reclassify_modules`` to improve
+  documentation by applying Dynadoc to it.
+
+
+Repairs
+-------
+
+- Replace call to ``reclassify_modules`` with ``finalize_module`` to address
+  deprecation warning.
+
+
 Mimeogram 1.3 (2025-06-06)
 ==========================
 
