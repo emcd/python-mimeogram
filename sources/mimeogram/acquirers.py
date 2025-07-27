@@ -190,25 +190,64 @@ def _detect_mimetype_and_charset(
     if not mimetype_:
         if charset_: mimetype_ = 'text/plain' # noqa: SIM108
         else: mimetype_ = 'application/octet-stream'
-    if not _is_textual_mimetype( mimetype_ ):
+    if _is_textual_mimetype( mimetype_ ):
+        return mimetype_, charset_
+    if charset_ is None:
         raise TextualMimetypeInvalidity( location, mimetype_ )
-    return mimetype_, charset_
+    try: text = content.decode( charset_ )
+    except ( UnicodeDecodeError, LookupError ) as exc:
+        raise TextualMimetypeInvalidity( location, mimetype_ ) from exc
+    if _is_reasonable_text_content( text ):
+        _scribe.debug(
+            f"MIME type '{mimetype_}' accepted after successful "
+            f"decode test with charset '{charset_}' for '{location}'." )
+        return mimetype_, charset_
+    raise TextualMimetypeInvalidity( location, mimetype_ )
 
 
-# MIME types that are considered textual beyond those starting with 'text/'
+def _is_reasonable_text_content( content: str ) -> bool:
+    ''' Checks if decoded content appears to be meaningful text. '''
+    if not content: return False
+    # Check for excessive repetition of single characters (likely binary)
+    if len( set( content ) ) == 1: return False
+    # Check for excessive control characters (excluding common whitespace)
+    common_whitespace = '\t\n\r'
+    ascii_control_limit = 32
+    control_chars = sum(
+        1 for c in content
+        if ord( c ) < ascii_control_limit and c not in common_whitespace )
+    if control_chars > len( content ) * 0.1: return False  # >10% control chars
+    # Check for reasonable printable character ratio
+    printable_chars = sum(
+        1 for c in content if c.isprintable( ) or c in common_whitespace )
+    return printable_chars >= len( content ) * 0.8  # >=80% printable
+
+
+# MIME types that are considered textual beyond those starting with 'text/'.
 _TEXTUAL_MIME_TYPES = frozenset( (
     'application/json',
     'application/xml',
     'application/xhtml+xml',
+    'application/x-perl',
+    'application/x-python',
+    'application/x-php',
+    'application/x-ruby',
+    'application/x-shell',
     'application/javascript',
     'image/svg+xml',
 ) )
+# MIME type suffixes that indicate textual content.
+_TEXTUAL_SUFFIXES = ( '+xml', '+json', '+yaml', '+toml' )
 def _is_textual_mimetype( mimetype: str ) -> bool:
     ''' Checks if MIME type represents textual content. '''
     _scribe.debug( f"MIME type: {mimetype}" )
-    if mimetype.startswith( ( 'text/', 'application/x-', 'text/x-' ) ):
+    if mimetype.startswith( ( 'text/', 'text/x-' ) ): return True
+    if mimetype in _TEXTUAL_MIME_TYPES: return True
+    if mimetype.endswith( _TEXTUAL_SUFFIXES ):
+        _scribe.debug(
+            f"MIME type '{mimetype}' accepted due to textual suffix." )
         return True
-    return mimetype in _TEXTUAL_MIME_TYPES
+    return False
 
 
 def _produce_fs_tasks(
