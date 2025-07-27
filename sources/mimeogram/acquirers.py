@@ -188,21 +188,19 @@ def _detect_mimetype_and_charset(
         charset_ = _detect_charset( content )
     else: charset_ = charset
     if not mimetype_:
-        if charset_: mimetype_ = 'text/plain' # noqa: SIM108
-        else: mimetype_ = 'application/octet-stream'
+        if charset_:
+            mimetype_ = 'text/plain'
+            _validate_mimetype_with_trial_decode(
+                content, location, mimetype_, charset_ )
+            return mimetype_, charset_
+        mimetype_ = 'application/octet-stream'
     if _is_textual_mimetype( mimetype_ ):
         return mimetype_, charset_
     if charset_ is None:
         raise TextualMimetypeInvalidity( location, mimetype_ )
-    try: text = content.decode( charset_ )
-    except ( UnicodeDecodeError, LookupError ) as exc:
-        raise TextualMimetypeInvalidity( location, mimetype_ ) from exc
-    if _is_reasonable_text_content( text ):
-        _scribe.debug(
-            f"MIME type '{mimetype_}' accepted after successful "
-            f"decode test with charset '{charset_}' for '{location}'." )
-        return mimetype_, charset_
-    raise TextualMimetypeInvalidity( location, mimetype_ )
+    _validate_mimetype_with_trial_decode(
+        content, location, mimetype_, charset_ )
+    return mimetype_, charset_
 
 
 def _is_reasonable_text_content( content: str ) -> bool:
@@ -274,3 +272,19 @@ def _produce_http_task(
         ) as client: return await _acquire_via_http( client, url )
 
     return _execute_session( )
+
+
+def _validate_mimetype_with_trial_decode(
+    content: bytes, location: str | __.Path, mimetype: str, charset: str
+) -> None:
+    ''' Validates charset fallback and returns appropriate MIME type. '''
+    from .exceptions import TextualMimetypeInvalidity
+    try: text = content.decode( charset )
+    except ( UnicodeDecodeError, LookupError ) as exc:
+        raise TextualMimetypeInvalidity( location, mimetype ) from exc
+    if _is_reasonable_text_content( text ):
+        _scribe.debug(
+            f"MIME type '{mimetype}' accepted after successful "
+            f"decode test with charset '{charset}' for '{location}'." )
+        return
+    raise TextualMimetypeInvalidity( location, mimetype )
