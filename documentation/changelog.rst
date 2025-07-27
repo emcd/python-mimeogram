@@ -23,6 +23,15 @@ Release Notes
 
 .. towncrier release notes start
 
+Mimeogram 1.5 (2025-07-27)
+==========================
+
+Enhancements
+------------
+
+- Acquirers: Improve detection of files with textual content.
+
+
 Mimeogram 1.4 (2025-07-05)
 ==========================
 
