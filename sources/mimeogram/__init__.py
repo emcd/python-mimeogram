@@ -47,7 +47,7 @@ from . import exceptions
 
 
 __verison__: str
-__version__ = '1.5a0'
+__version__ = '1.5'
 
 
 def main( ):
