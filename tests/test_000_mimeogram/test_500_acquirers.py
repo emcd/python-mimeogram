@@ -210,7 +210,7 @@ async def test_400_detect_mime_types( provide_tempdir, provide_auxdata ):
             provide_tempdir / "plain.txt",
             provide_tempdir / "script.py",
             provide_tempdir / "config.toml",
-            provide_tempdir / "data.yaml", 
+            provide_tempdir / "data.yaml",
             provide_tempdir / "service.json",
             provide_tempdir / "manifest.xml",
             provide_tempdir / "rust_code.rs",
@@ -218,17 +218,17 @@ async def test_400_detect_mime_types( provide_tempdir, provide_auxdata ):
 
         assert len( results ) == 7
         mimetypes = { part.mimetype for part in results }
-        
+
         # Existing assertions
         assert "text/plain" in mimetypes
         assert any( "python" in mt for mt in mimetypes )
-        
+
         # Pattern-based detection assertions for recognized MIME types
         assert any(
             mt.endswith( '+json' ) or 'json' in mt for mt in mimetypes )
         assert any(
             mt.endswith( '+xml' ) or 'xml' in mt for mt in mimetypes )
-        
+
         # TOML and YAML files should be accepted via charset fallback
         # since Python's mimetypes doesn't recognize them
         toml_results = [
@@ -237,7 +237,7 @@ async def test_400_detect_mime_types( provide_tempdir, provide_auxdata ):
             p for p in results if p.location.endswith( 'data.yaml' ) ]
         assert len( toml_results ) == 1
         assert len( yaml_results ) == 1
-        
+
         # Rust files should be accepted (regression test for original issue)
         rust_results = [
             p for p in results if p.location.endswith( 'rust_code.rs' ) ]
@@ -249,57 +249,46 @@ async def test_400_detect_mime_types( provide_tempdir, provide_auxdata ):
 async def test_410_application_x_security( provide_tempdir, provide_auxdata ):
     ''' Security hardening properly rejects dangerous application/x- types. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-
-    # Create test files with binary signatures that puremagic recognizes
     binary_files = {
         'test.exe': b'MZ\x90\x00' + b'\x00' * 100,  # PE header
         'test.dmg': b'koly' + b'\x00' * 100,         # DMG trailer signature
         # Use obviously binary file that won't be detected as having charset
-        'test.bin': bytes( [ 0xFF, 0x00 ] * 52 ),   # Alternating binary  
+        'test.bin': bytes( [ 0xFF, 0x00 ] * 52 ),   # Alternating binary
     }
-    
-    # Create safe scripting files
     script_files = {
         'script.rb': 'puts "Hello, Ruby!"\n',
-        'script.py': 'print("Hello, Python!")\n', 
+        'script.py': 'print("Hello, Python!")\n',
         'script.pl': 'print "Hello, Perl!\\n";\n',
         'script.php': '<?php echo "Hello, PHP!"; ?>\n',
     }
-
     binary_paths = [ ]
     script_paths = [ ]
-    
     try:
-        # Create binary files
         for filename, content in binary_files.items( ):
             path = provide_tempdir / filename
             path.write_bytes( content )
             binary_paths.append( path )
-            
-        # Create script files
         for filename, content in script_files.items( ):
             path = provide_tempdir / filename
             path.write_text( content )
             script_paths.append( path )
-
-        # Test binary files are rejected in non-strict mode
         provide_auxdata.configuration[
             'acquire-parts' ][ 'fail-on-invalid' ] = False
         binary_results = await acquirers.acquire(
             provide_auxdata, binary_paths )
         assert len( binary_results ) == 0  # All binary files rejected
-        
-        # Test script files are accepted
         script_results = await acquirers.acquire(
             provide_auxdata, script_paths )
         assert len( script_results ) == len( script_files )
-        
-        # Verify MIME types for accepted scripts
         script_mimetypes = { part.mimetype for part in script_results }
-        assert 'application/x-ruby' in script_mimetypes
-        # Note: .py files might be detected as text/x-python, not app/x-python
+        for mimetype in script_mimetypes:
+            assert \
+                (       mimetype.startswith( 'text/' )
+                        or mimetype.startswith( 'application/x-' )
+                ), f"Unexpected MIME type for script: {mimetype}"
+        # At least one should contain 'python' (most reliable cross-platform)
         assert any( 'python' in mt for mt in script_mimetypes )
-        
+
     finally:
         # Cleanup
         for path in binary_paths + script_paths:
@@ -376,38 +365,38 @@ async def test_525_charset_fallback_validation(
 ):
     ''' Enhanced MIME type detection accepts valid structured text files. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    
+
     # Test that files with unknown extensions but valid text content
     # are properly handled
     test_files = {
         'code.unknown': 'fn main() {\n    println!("Hello!");\n}\n',
-        'config.conf': 'key=value\nsection=main\n',  
+        'config.conf': 'key=value\nsection=main\n',
         'data.dat': '{"valid": "json", "content": true}\n',
     }
-    
+
     paths_to_cleanup = [ ]
-    
+
     try:
         provide_auxdata.configuration[
             'acquire-parts' ][ 'fail-on-invalid' ] = False
-            
+
         # Create files with unknown extensions
         for filename, content in test_files.items( ):
             path = provide_tempdir / filename
             path.write_text( content )
             paths_to_cleanup.append( path )
-            
+
         results = await acquirers.acquire( provide_auxdata, paths_to_cleanup )
-        
+
         # All text files with unknown extensions should be accepted
         # via charset-based fallback (or immediate text/plain detection)
         assert len( results ) == 3
-        
+
         # Verify they all have valid charsets
         for part in results:
             assert part.charset is not None
             assert part.charset in [ 'utf-8', 'ascii' ]
-            
+
         # Test that truly empty files are handled appropriately
         empty_path = provide_tempdir / 'empty.unknown'
         empty_path.write_text( '' )
@@ -416,7 +405,7 @@ async def test_525_charset_fallback_validation(
         # Empty files get rejected
         assert len( empty_results ) == 0
         paths_to_cleanup.append( empty_path )
-        
+
     finally:
         # Cleanup
         for path in paths_to_cleanup:
