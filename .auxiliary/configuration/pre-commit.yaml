@@ -49,6 +49,15 @@ repos:
 - repo: local
   hooks:
 
+  - id: hatch-pytest
+    name: 'Test Code Units (Python)'
+    stages: [ 'pre-commit' ] # push is covered below
+    fail_fast: true
+    language: system
+    always_run: true
+    pass_filenames: false
+    entry: 'hatch --env develop run pytest'
+
   - id: hatch-pyright
     name: 'Lint: Pyright'
     stages: [ 'pre-push' ]
@@ -83,4 +92,4 @@ repos:
     language: system
     always_run: true
     pass_filenames: false
-    entry: 'hatch --env develop run packagers'
+    entry: 'hatch build'

@@ -1,5 +1,90 @@
 {
   "env": {
     "CLAUDE_BASH_MAINTAIN_PROJECT_WORKING_DIR": 1
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".auxiliary/scripts/claude/pre-bash-python-check",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|MultiEdit|Write|mcp__text-editor__edit_text_file_contents",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".auxiliary/scripts/claude/post-edit-linter",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "auto_allow": [
+      "Bash(awk *)",
+      "Bash(cat *)",
+      "Bash(cut *)",
+      "Bash(df *)",
+      "Bash(du *)",
+      "Bash(echo *)",
+      "Bash(file *)",
+      "Bash(find *)",
+      "Bash(gh browse *)",
+      "Bash(gh issue list *)",
+      "Bash(gh issue view *)",
+      "Bash(gh pr checks *)",
+      "Bash(gh pr list *)",
+      "Bash(gh pr view *)",
+      "Bash(gh release list *)",
+      "Bash(gh release view *)",
+      "Bash(gh repo list *)",
+      "Bash(gh repo view *)",
+      "Bash(gh run list *)",
+      "Bash(gh run view *)",
+      "Bash(gh run watch *)",
+      "Bash(gh status *)",
+      "Bash(git add *)",
+      "Bash(git branch *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git status)",
+      "Bash(grep *)",
+      "Bash(hatch run python *)",
+      "Bash(hatch --env develop run docsgen)",
+      "Bash(hatch --env develop run linters)",
+      "Bash(hatch --env develop run testers)",
+      "Bash(head *)",
+      "Bash(ls *)",
+      "Bash(ps *)",
+      "Bash(pwd *)",
+      "Bash(rg *)",
+      "Bash(sed *)",
+      "Bash(sort *)",
+      "Bash(tail *)",
+      "Bash(uniq *)",
+      "Bash(wc *)",
+      "Bash(which *)",
+      "mcp__context7__get-library-docs",
+      "mcp__context7__resolve-library-id",
+      "mcp__pyright__definition",
+      "mcp__pyright__diagnostics",
+      "mcp__pyright__hover",
+      "mcp__pyright__references",
+      "mcp__ruff__definition",
+      "mcp__ruff__diagnostics",
+      "mcp__ruff__hover",
+      "mcp__ruff__references",
+      "mcp__text-editor__get_text_file_contents"
+    ]
   }
 }

@@ -196,17 +196,109 @@ async def test_400_detect_mime_types( provide_tempdir, provide_auxdata ):
             "#!/usr/bin/env python3\n"
             "from __future__ import annotations\n\n"
             "def hello() -> str:\n    return 'Python'\n" ),
+        # Test pattern-based detection for structured text formats
+        "config.toml": "[package]\nname = 'test'\n",
+        "data.yaml": "key: value\nlist:\n  - item1\n",
+        "service.json": '{"name": "test", "version": "1.0"}\n',
+        "manifest.xml": (
+            '<?xml version="1.0"?><root><item>test</item></root>\n' ),
+        "rust_code.rs": 'fn main() { println!("Hello, world!"); }\n',
     }
 
     with create_test_files( provide_tempdir, test_files ):
         results = await acquirers.acquire( provide_auxdata, [
             provide_tempdir / "plain.txt",
             provide_tempdir / "script.py",
+            provide_tempdir / "config.toml",
+            provide_tempdir / "data.yaml",
+            provide_tempdir / "service.json",
+            provide_tempdir / "manifest.xml",
+            provide_tempdir / "rust_code.rs",
         ] )
 
+        assert len( results ) == 7
         mimetypes = { part.mimetype for part in results }
+
+        # Existing assertions
         assert "text/plain" in mimetypes
         assert any( "python" in mt for mt in mimetypes )
+
+        # Pattern-based detection assertions for recognized MIME types
+        assert any(
+            mt.endswith( '+json' ) or 'json' in mt for mt in mimetypes )
+        assert any(
+            mt.endswith( '+xml' ) or 'xml' in mt for mt in mimetypes )
+
+        # TOML and YAML files should be accepted via charset fallback
+        # since Python's mimetypes doesn't recognize them
+        toml_results = [
+            p for p in results if p.location.endswith( 'config.toml' ) ]
+        yaml_results = [
+            p for p in results if p.location.endswith( 'data.yaml' ) ]
+        assert len( toml_results ) == 1
+        assert len( yaml_results ) == 1
+
+        # Rust files should be accepted (regression test for original issue)
+        rust_results = [
+            p for p in results if p.location.endswith( 'rust_code.rs' ) ]
+        assert len( rust_results ) == 1
+        # Platform-agnostic: accept any textual MIME type for Rust files
+        rust_mimetype = rust_results[ 0 ].mimetype
+        assert \
+            (       rust_mimetype.startswith( 'text/' )
+                    or rust_mimetype.startswith( 'application/' )
+            ), f"Rust file should have textual MIME type, got: {rust_mimetype}"
+
+
+@pytest.mark.asyncio
+async def test_410_application_x_security( provide_tempdir, provide_auxdata ):
+    ''' Security hardening properly rejects dangerous application/x- types. '''
+    acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
+    binary_files = {
+        'test.exe': b'MZ\x90\x00' + b'\x00' * 100,  # PE header
+        'test.dmg': b'koly' + b'\x00' * 100,         # DMG trailer signature
+        # Use obviously binary file that won't be detected as having charset
+        'test.bin': bytes( [ 0xFF, 0x00 ] * 52 ),   # Alternating binary
+    }
+    script_files = {
+        'script.rb': 'puts "Hello, Ruby!"\n',
+        'script.py': 'print("Hello, Python!")\n',
+        'script.pl': 'print "Hello, Perl!\\n";\n',
+        'script.php': '<?php echo "Hello, PHP!"; ?>\n',
+    }
+    binary_paths = [ ]
+    script_paths = [ ]
+    try:
+        for filename, content in binary_files.items( ):
+            path = provide_tempdir / filename
+            path.write_bytes( content )
+            binary_paths.append( path )
+        for filename, content in script_files.items( ):
+            path = provide_tempdir / filename
+            path.write_text( content )
+            script_paths.append( path )
+        provide_auxdata.configuration[
+            'acquire-parts' ][ 'fail-on-invalid' ] = False
+        binary_results = await acquirers.acquire(
+            provide_auxdata, binary_paths )
+        assert len( binary_results ) == 0  # All binary files rejected
+        script_results = await acquirers.acquire(
+            provide_auxdata, script_paths )
+        assert len( script_results ) == len( script_files )
+        script_mimetypes = { part.mimetype for part in script_results }
+        for mimetype in script_mimetypes:
+            assert \
+                (       mimetype.startswith( 'text/' )
+                        or mimetype.startswith( 'application/x-' )
+                ), f"Unexpected MIME type for script: {mimetype}"
+        # At least one should contain 'python' (most reliable cross-platform)
+        assert any( 'python' in mt for mt in script_mimetypes )
+
+    finally:
+        # Cleanup
+        for path in binary_paths + script_paths:
+            if path.exists( ):
+                path.unlink( )
 
 
 # Error Handling Tests
@@ -270,6 +362,60 @@ async def test_520_nontextual_mime( provide_tempdir, provide_auxdata ):
         assert len( results ) == 0
     finally:
         if binary_path.exists( ): binary_path.unlink( )
+
+
+@pytest.mark.asyncio
+async def test_525_charset_fallback_validation(
+    provide_tempdir, provide_auxdata
+):
+    ''' Enhanced MIME type detection accepts valid structured text files. '''
+    acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
+
+    # Test that files with unknown extensions but valid text content
+    # are properly handled
+    test_files = {
+        'code.unknown': 'fn main() {\n    println!("Hello!");\n}\n',
+        'config.conf': 'key=value\nsection=main\n',
+        'data.dat': '{"valid": "json", "content": true}\n',
+    }
+
+    paths_to_cleanup = [ ]
+
+    try:
+        provide_auxdata.configuration[
+            'acquire-parts' ][ 'fail-on-invalid' ] = False
+
+        # Create files with unknown extensions
+        for filename, content in test_files.items( ):
+            path = provide_tempdir / filename
+            path.write_text( content )
+            paths_to_cleanup.append( path )
+
+        results = await acquirers.acquire( provide_auxdata, paths_to_cleanup )
+
+        # All text files with unknown extensions should be accepted
+        # via charset-based fallback (or immediate text/plain detection)
+        assert len( results ) == 3
+
+        # Verify they all have valid charsets
+        for part in results:
+            assert part.charset is not None
+            assert part.charset in [ 'utf-8', 'ascii' ]
+
+        # Test that truly empty files are handled appropriately
+        empty_path = provide_tempdir / 'empty.unknown'
+        empty_path.write_text( '' )
+        empty_results = await acquirers.acquire(
+            provide_auxdata, [ empty_path ] )
+        # Empty files get rejected
+        assert len( empty_results ) == 0
+        paths_to_cleanup.append( empty_path )
+
+    finally:
+        # Cleanup
+        for path in paths_to_cleanup:
+            if path.exists( ):
+                path.unlink( )
 
 
 @pytest.mark.asyncio

@@ -1,5 +1,13 @@
 # General Advice
 
+**IMPORTANT:** Read the comprehensive documentation guides:
+
+- **Practices**: https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/practices.rst
+- **Style**: https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/style.rst
+- **Nomenclature**: https://raw.githubusercontent.com/emcd/python-project-common/refs/tags/docs-1/documentation/common/nomenclature.rst
+
+For detailed patterns, examples, and architectural guidance, refer to the comprehensive guides above.
+
 ### Context
 
 - Be sure the look at any README files in the directories which contain the
@@ -88,58 +96,53 @@
 
 ## Python
 
-### Design and Idioms
+### Essentials
 
-- Target Python 3.10 and use idioms appropriate for that version
-  (`match`..`case`, type unions via `|`, etc...).
-- Note the internal `__` subpackage which exposes imports used internally
-  throughout the package (`cabc` alias for `collections.abc`, `enum`, `types`,
-  `typx` alias for `typing_extensions`, etc...).
-- Do not pollute the module namespace with public imports. Either reference
-  common imports from the `__` subpackage or alias module-level imports as
-  private.
-- Do not use `__all__` to advertise the public API of a module. Name anything,
-  which should not be part of this API, with a private name starting with `_`.
-- Do not conflate optional arguments (`__.Absential`/`__.absent`) with nullable
-  values (`__.typx.Optional`/`None`).
-- Prefer custom exceptions, derived from the package base exception,
-  `Omniexception`, rather than standard Python exceptions with long custom
-  messages.
+- Avoid namespace pollution - use private aliases and `__` subpackage.
+- Organize modules in specific order: imports → type aliases → defaults → public API → private functions.
+- Maintain readability with spaces inside of delimiters.
+- Maintain readability with vertical compactness of function bodies.
+- Prefer immutability wherever possible.
+- Use wide abstract types for function parameters (`__.cabc.Sequence`, `__.cabc.Mapping`).
+- Return narrow concrete types (`list`, `dict`, `frozenset`, `__.immut.Dictionary`).
+- Use narrow try blocks (only risky statements).
+- Subclass `Omniexception` or `Omnierror` for package-specific exceptions.
 
-### Documentation and Annotations
+**Example:**
 
-- Pad inside of delimiter pairs with spaces. E.g., `( foo )` and not `(foo)`.
-  Except in f-strings and `str.format` inputs.
-- Pad binary operators with spaces. E.g., `foo = 42` and not `foo=42`, `1 + 1`
-  and not `1+1`, `[ 1 : -n ]` and not `[1:-n]`.
-- Docstrings look like `''' Space-padded headline inside of triple-single
-  quotes. '''` and not `"""Double quotes and no spaces are hard to read."""`.
-- Use double-quoted strings for f-strings, `str.format` templates, and log
-  messages. Otherwise, use single-quoted strings.
-- Add type hints for arguments, attributes, and return values.
-- Do not write "param spam" documentation which states the obvious. Only
-  document non-obvious or complex behaviors on arguments and attributes.
-- Use PEP 593 `Annotated` with PEP 727 `Doc` for argument, attribute, and
-  return value documentation, when necessary.
-- Use `TypeAlias` aliases to reuse complex annotations or expose them as part
-  of the public API.
+```python
+# ✅ Correct: proper spacing, wide parameters, narrow returns, proper imports
+import aiofiles as _aiofiles
+
+from . import __
+
+UserData: __.typx.TypeAlias = dict[ str, str | int ]
+
+def process_items(
+    items: __.cabc.Sequence[ str ],           # Wide input type
+    config: __.cabc.Mapping[ str, int ] = __.immut.Dictionary( )
+) -> tuple[ str, ... ]:                      # Narrow return type
+    ''' Processes items according to configuration. '''
+    return tuple( item.upper( ) for item in items )
+```
 
 ### Quality Assurance
 
-- Ensure the package imports in interpreter.
-- Ensure linters give a clean report.
-  To run linters, use `hatch --env develop run linters`.
-- Ensure tests pass.
-  To run testers, use `hatch --env develop run testers`.
-- Ensure documentation generates without error.
-  To generate documentation, use `hatch --env develop run docsgen`.
-
-### Lines
-
-- One empty line between attribute blocks and methods on classes.
-- Two empty lines between attribute blocks, classes, and functions on modules.
-- Split lines at 79 columns. Use parentheses for continuations and not
-  backslashes.
+- Ensure linters give a clean report: `hatch --env develop run linters`
+- Address linting issues within the first few conversation turns from when they
+  appear.
+- Do **not** suppress linter warnings via `noqa` pragma comments without
+  explicit user approval.
+- Do **not** avoid `TRY003` exceptions from Ruff. Instead, use appropriate
+  custom exceptions in the `exceptions` module for the package. If an
+  appropriate exception does not exist, then create it.
+- Do **not** suppress typechecker warnings via `type` pragma comments without
+  explicit user approval. For missing third-party stubs, you can generate them
+  with `hatch --env develop run pyright --createstub <import>` and then edit
+  the stubs (under `sources/<package>/_typedecls`) to flesh out what you need,
+  discarding the remainder.
+- Ensure tests pass: `hatch --env develop run testers`
+- Ensure documentation generates without error: `hatch --env develop run docsgen`
 
 # Commits
 

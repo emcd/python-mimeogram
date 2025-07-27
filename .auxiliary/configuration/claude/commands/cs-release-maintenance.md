@@ -100,6 +100,11 @@ git log --graph --oneline master --since="1 month ago"
 git log --oneline release-$ARGUMENTS..master --since="1 month ago"
 ```
 
+**IMPORTANT**
+- Do **not** cherry-pick commits which were previously cherry-picked onto the
+  branch.
+- Look at the Towncrier news fragments to help you decide what to pick.
+
 **Patch commits** (always cherry-pick):
 - Bug fixes
 - Security patches
@@ -147,13 +152,24 @@ git commit -am "Update changelog for v$(hatch version) patch release."
 Push branch and monitor QA workflow:
 ```bash
 git push origin release-$ARGUMENTS
-
-# Monitor QA workflow - get run ID from output
-gh run list --workflow=qa --limit=1
-gh run watch <qa-run-id> --interval 30 --compact
 ```
+
+**CRITICAL - WORKFLOW MONITORING REQUIREMENTS:**
+After pushing, you MUST ensure you monitor the correct QA workflow run:
+
+1. **Wait for workflow trigger**: Wait 30-60 seconds after pushing to allow GitHub to trigger the workflow
+2. **Verify correct workflow**: Use `gh run list --workflow=qa --limit=5` to list recent runs
+3. **Check timestamps**: Compare the workflow creation time with your push time using `date --utc`
+4. **Ensure fresh run**: Only monitor a workflow run that was created AFTER your push timestamp
+5. **If no new run appears**: Wait additional time and check again - do NOT assume an old completed run is your workflow
+
+Once you've identified the correct QA run ID:
+```bash
+gh run watch <correct-qa-run-id> --interval 30 --compact
+```
+
 **CRITICAL - DO NOT PROCEED UNTIL WORKFLOW COMPLETES:**
-- Monitor QA workflow with `gh run watch`
+- Monitor QA workflow with `gh run watch` using the correct run ID
 - Use `timeout: 300000` (5 minutes) parameter in Bash tool for monitoring commands
 - If command times out, immediately rerun `gh run watch` until completion
 - Only proceed to next step after seeing "✓ [workflow-name] completed with 'success'"
@@ -164,12 +180,24 @@ gh run watch <qa-run-id> --interval 30 --compact
 ```bash
 git tag -m "Release v$(hatch version) patch: <brief-description>." v$(hatch version)
 git push --tags
-
-gh run list --workflow=release --limit=1
-gh run watch <release-run-id> --interval 30 --compact
 ```
+
+**CRITICAL - RELEASE WORKFLOW MONITORING REQUIREMENTS:**
+After pushing the tag, you MUST ensure you monitor the correct release workflow run:
+
+1. **Wait for workflow trigger**: Wait 30-60 seconds after pushing tags to allow GitHub to trigger the release workflow
+2. **Verify correct workflow**: Use `gh run list --workflow=release --limit=5` to list recent runs
+3. **Check timestamps**: Compare the workflow creation time with your tag push time using `date --utc`
+4. **Ensure fresh run**: Only monitor a workflow run that was created AFTER your tag push timestamp
+5. **If no new run appears**: Wait additional time and check again - do NOT assume an old completed run is your workflow
+
+Once you've identified the correct release run ID:
+```bash
+gh run watch <correct-release-run-id> --interval 30 --compact
+```
+
 **CRITICAL - DO NOT PROCEED UNTIL WORKFLOW COMPLETES:**
-- Monitor release workflow with `gh run watch`
+- Monitor release workflow with `gh run watch` using the correct run ID
 - Use `timeout: 600000` (10 minutes) parameter in Bash tool for monitoring commands
 - If command times out, immediately rerun `gh run watch` until completion
 - Only proceed to next step after seeing "✓ [workflow-name] completed with 'success'"
