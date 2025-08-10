@@ -23,6 +23,7 @@
 
 
 from . import __
+from . import exceptions as _exceptions
 from . import interfaces as _interfaces
 from . import parts as _parts
 from . import updaters as _updaters
@@ -78,18 +79,22 @@ class Command(
         __.typx.Doc( '''Override protected path checks.''' ),
     ] = None
 
-    async def __call__( self, auxdata: __.Globals ) -> None:
+    async def __call__(
+        self, auxdata: __.appcore.state.Globals
+    ) -> None:
         ''' Executes command to apply mimeogram. '''
         await apply( auxdata, self )
 
-    def provide_configuration_edits( self ) -> __.DictionaryEdits:
+    def provide_configuration_edits(
+        self,
+    ) -> __.appcore.dictedits.Edits:
         ''' Provides edits against configuration from options. '''
-        edits: list[ __.DictionaryEdit ] = [ ]
+        edits: list[ __.appcore.dictedits.Edit ] = [ ]
         if None is not self.clip:
-            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+            edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
                 address = ( 'apply', 'from-clipboard' ), value = self.clip ) )
         if None is not self.force:
-            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+            edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
                 address = ( 'update-parts', 'disable-protections' ),
                 value = self.force ) )
         return tuple( edits )
@@ -133,14 +138,14 @@ class StandardContentAcquirer( ContentAcquirer ):
         return paste( )
 
     async def acquire_file( self, path: str | __.Path ) -> str:
-        return await __.acquire_text_file_async( path )
+        return await __.appcore.io.acquire_text_file_async( path )
 
     async def acquire_stdin( self ) -> str:
         return __.sys.stdin.read( )
 
 
 async def apply(
-    auxdata: __.Globals,
+    auxdata: __.appcore.state.Globals,
     command: Command,
     *,
     acquirer: __.Absential[ ContentAcquirer ] = __.absent,
@@ -149,7 +154,7 @@ async def apply(
     ] = __.absent,
     updater: __.Absential[
         __.cabc.Callable[
-            [   __.Globals,
+            [   __.appcore.state.Globals,
                 __.cabc.Sequence[ _parts.Part ],
                 _updaters.ReviewModes ],
             __.cabc.Coroutine[ None, None, None ]
@@ -164,17 +169,21 @@ async def apply(
     if __.is_absent( updater ):
         from .updaters import update as updater
     review_mode = _determine_review_mode( command, acquirer )
-    with __.report_exceptions(
+    with _exceptions.report_exceptions(
         _scribe, "Could not acquire mimeogram to apply."
     ): mgtext = await _acquire( auxdata, command, acquirer )
     if not mgtext:
         _scribe.error( "Cannot apply empty mimeogram." )
         raise SystemExit( 1 )
-    with __.report_exceptions( _scribe, "Could not parse mimeogram." ):
+    with _exceptions.report_exceptions(
+        _scribe, "Could not parse mimeogram."
+    ):
         parts = parser( mgtext )
     nomargs: dict[ str, __.typx.Any ] = { }
     if command.base: nomargs[ 'base' ] = command.base
-    with __.report_exceptions( _scribe, "Could not apply mimeogram." ):
+    with _exceptions.report_exceptions(
+        _scribe, "Could not apply mimeogram."
+    ):
         await updater( auxdata, parts, review_mode, **nomargs )
     # TODO: If all parts ignored or inapplicable, then do not mention success.
     _scribe.info( "Successfully applied mimeogram" )
@@ -182,7 +191,9 @@ async def apply(
 
 
 async def _acquire(
-    auxdata: __.Globals, cmd: Command, acquirer: ContentAcquirer
+    auxdata: __.appcore.state.Globals,
+    cmd: Command,
+    acquirer: ContentAcquirer,
 ) -> str:
     ''' Acquires content to parse from clipboard, file, or stdin. '''
     options = auxdata.configuration.get( 'apply', { } )

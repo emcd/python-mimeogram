@@ -26,6 +26,7 @@
 import                      abc
 import                      asyncio
 import collections.abc as   cabc
+import contextlib as        ctxl
 import dataclasses as       dcls
 import                      enum
 import                      hashlib
@@ -34,20 +35,24 @@ import                      re
 import                      sys
 import                      types
 
-from contextlib import AsyncExitStack as ExitsAsync
 from logging import getLogger as produce_scribe
 from pathlib import Path
 from uuid import uuid4
 
 import accretive as         accret
+import                      appcore
+import                      appcore.dictedits
+import                      appcore.io
 import frigid as            immut
+import appcore.state
 import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
 import tyro
 # --- END: Injected by Copier ---
 
 from absence import Absential, absent, is_absent
-from platformdirs import PlatformDirs
+from appcore import asyncf
+from appcore import generics
 
 simple_tyro_class = tyro.conf.configure( )
 standard_tyro_class = tyro.conf.configure( tyro.conf.OmitArgPrefixes )

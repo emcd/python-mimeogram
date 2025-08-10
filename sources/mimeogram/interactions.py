@@ -45,7 +45,7 @@ async def _display_differences(
         from .exceptions import ContentAcquireFailure
         try:
             original = (
-                await __.acquire_text_file_async(
+                await __.appcore.io.acquire_text_file_async(
                     destination, charset = part.charset ) )
         except Exception as exc:
             raise ContentAcquireFailure( destination ) from exc

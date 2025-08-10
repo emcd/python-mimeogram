@@ -23,6 +23,7 @@
 
 
 from . import __
+from . import exceptions as _exceptions
 from . import interfaces as _interfaces
 
 
@@ -41,35 +42,45 @@ class Command(
         __.tyro.conf.arg( aliases = ( '--clipboard', '--to-clipboard' ) ),
     ] = None
 
-    async def __call__( self, auxdata: __.Globals ) -> None:
+    async def __call__(
+        self, auxdata: __.appcore.state.Globals
+    ) -> None:
         ''' Executes command to provide prompt text. '''
         await provide_prompt( auxdata )
 
-    def provide_configuration_edits( self ) -> __.DictionaryEdits:
+    def provide_configuration_edits(
+        self,
+    ) -> __.appcore.dictedits.Edits:
         ''' Provides edits against configuration from options. '''
-        edits: list[ __.DictionaryEdit ] = [ ]
+        edits: list[ __.appcore.dictedits.Edit ] = [ ]
         if None is not self.clip:
-            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+            edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
                 address = ( 'prompt', 'to-clipboard' ), value = self.clip ) )
         return tuple( edits )
 
 
-async def acquire_prompt( auxdata: __.Globals ) -> str:
+async def acquire_prompt(
+    auxdata: __.appcore.state.Globals,
+) -> str:
     ''' Acquires prompt text from package data. '''
     location = (
         auxdata.distribution.provide_data_location(
             'prompts', 'mimeogram.md' ) )
-    return await __.acquire_text_file_async( location )
+    return await __.appcore.io.acquire_text_file_async( location )
 
 
-async def provide_prompt( auxdata: __.Globals ) -> None:
+async def provide_prompt(
+    auxdata: __.appcore.state.Globals,
+) -> None:
     ''' Provides mimeogram prompt text. '''
-    with __.report_exceptions( _scribe, "Could not acquire prompt text." ):
+    with _exceptions.report_exceptions(
+        _scribe, "Could not acquire prompt text."
+    ):
         prompt = await acquire_prompt( auxdata )
     options = auxdata.configuration.get( 'prompt', { } )
     if options.get( 'to-clipboard', False ):
         from pyperclip import copy
-        with __.report_exceptions(
+        with _exceptions.report_exceptions(
             _scribe, "Could not copy prompt to clipboard."
         ): copy( prompt )
         _scribe.info( "Copied prompt to clipboard." )

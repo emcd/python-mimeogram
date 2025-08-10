@@ -82,7 +82,7 @@ async def select_segments(
     # TODO: Acquire destination content from cache.
     part = target.part
     original = (
-        await __.acquire_text_file_async(
+        await __.appcore.io.acquire_text_file_async(
             target.destination, charset = part.charset ) )
     original = part.linesep.normalize( original )
     if original == revision:

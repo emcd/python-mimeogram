@@ -44,7 +44,10 @@ class Cache( _core.Protector ):
         __.Path, tuple[ frozenset[ str ], frozenset[ str ] ] ]
 
     @classmethod
-    def from_configuration( selfclass, auxdata: __.Globals ) -> __.typx.Self:
+    def from_configuration(
+        selfclass,
+        auxdata: __.appcore.state.Globals,
+    ) -> __.typx.Self:
         ''' Initializes protection cache for current platform. '''
         _scribe.debug( 'Initializing protection cache.' )
         rules: dict[ _core.Reasons, Rule ] = { }
@@ -127,7 +130,8 @@ def _check_path_patterns( path: __.Path, patterns: frozenset[ str ] ) -> bool:
 
 
 def discover_platform_locations(
-    auxdata: __.Globals, rules: dict[ _core.Reasons, Rule ]
+    auxdata: __.appcore.state.Globals,
+    rules: dict[ _core.Reasons, Rule ],
 ) -> None:
     ''' Discovers system and user locations based on platform. '''
     match __.sys.platform:
@@ -176,7 +180,7 @@ def _normalize_path( path: __.Path ) -> __.Path:
 
 
 def _process_configuration(
-    auxdata: __.Globals,
+    auxdata: __.appcore.state.Globals,
     rules: dict[ _core.Reasons, Rule ],
 ) -> tuple[
     frozenset[ str ],

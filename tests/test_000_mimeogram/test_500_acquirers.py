@@ -42,12 +42,10 @@ def provide_auxdata( provide_tempdir, provide_tempenv ):
     from platformdirs import PlatformDirs
 
     __ = cache_import_module( f"{PACKAGE_NAME}.__" )
-    _app = cache_import_module( f"{PACKAGE_NAME}.__.application" )
-    _dist = cache_import_module( f"{PACKAGE_NAME}.__.distribution" )
 
     provide_tempenv.update( produce_test_environment( ) )
-    return __.Globals(
-        application = _app.Information( name = 'test-app' ),
+    return __.appcore.state.Globals(
+        application = __.appcore.application.Information( name = 'test-app' ),
         configuration = accret.Dictionary( {
             'acquire-parts': {
                 'fail-on-invalid': False,
@@ -55,11 +53,11 @@ def provide_auxdata( provide_tempdir, provide_tempenv ):
             }
         } ),
         directories = PlatformDirs( appname = 'test-app' ),
-        distribution = _dist.Information(
+        distribution = __.appcore.distribution.Information(
             name = 'test-package',
             location = provide_tempdir / 'test-package',
             editable = True ),
-        exits = __.ExitsAsync( ) )
+        exits = __.ctxl.AsyncExitStack( ) )
 
 
 # Basic File Acquisition Tests

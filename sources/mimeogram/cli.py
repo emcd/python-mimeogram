@@ -37,29 +37,36 @@ class VersionCommand(
 ):
     ''' Prints version information. '''
 
-    async def __call__( self, auxdata: __.Globals ) -> None:
+    async def __call__(
+        self, auxdata: __.appcore.state.Globals
+    ) -> None:
         ''' Executes command to print version information. '''
         from . import __version__
         print( f"{__package__} {__version__}" )
         raise SystemExit( 0 )
 
-    def provide_configuration_edits( self ) -> __.DictionaryEdits:
+    def provide_configuration_edits(
+        self,
+    ) -> __.appcore.dictedits.Edits:
         ''' Provides edits against configuration from options. '''
         return ( )
 
 
 _inscription_mode_default = (
-    __.InscriptionControl( mode = __.InscriptionModes.Rich ) )
+    __.appcore.inscription.Control(
+        mode = __.appcore.inscription.Presentations.Rich,
+    )
+)
 class Cli(
     __.immut.DataclassObject,
     decorators = ( __.simple_tyro_class, ),
 ):
     ''' Mimeogram: hierarchical data exchange between humans and LLMs. '''
 
-    application: __.ApplicationInformation
+    application: __.appcore.application.Information
     configfile: __.typx.Optional[ str ] = None
     # display: ConsoleDisplay
-    inscription: __.InscriptionControl = (
+    inscription: __.appcore.inscription.Control = (
         __.dcls.field( default_factory = lambda: _inscription_mode_default ) )
     command: __.typx.Union[
         __.typx.Annotated[
@@ -87,8 +94,8 @@ class Cli(
     async def __call__( self ):
         ''' Invokes command after library preparation. '''
         nomargs = self.prepare_invocation_args( )
-        async with __.ExitsAsync( ) as exits:
-            auxdata = await _prepare( exits = exits, **nomargs )
+        async with __.ctxl.AsyncExitStack( ) as exits:
+            auxdata = await __.appcore.prepare( exits = exits, **nomargs )
             await self.command( auxdata = auxdata )
             # await self.command( auxdata = auxdata, display = self.display )
 
@@ -96,7 +103,7 @@ class Cli(
         self,
     ) -> __.cabc.Mapping[ str, __.typx.Any ]:
         ''' Prepares arguments for initial configuration. '''
-        configedits: __.DictionaryEdits = (
+        configedits: __.appcore.dictedits.Edits = (
             self.command.provide_configuration_edits( ) )
         args: dict[ str, __.typx.Any ] = dict(
             application = self.application,
@@ -128,58 +135,3 @@ def execute( ):
             "Program terminated from uncaught exception. "
             "Please file a bug report." )
         raise SystemExit( 1 ) from None
-
-
-def _discover_inscription_level_name(
-    application: __.ApplicationInformation,
-    control: __.InscriptionControl,
-) -> str:
-    if control.level is None:
-        from os import environ
-        for envvar_name_base in ( 'INSCRIPTION', 'LOG' ):
-            envvar_name = (
-                "{name}_{base}_LEVEL".format(
-                    base = envvar_name_base,
-                    name = application.name.upper( ) ) )
-            if envvar_name not in environ: continue
-            return environ[ envvar_name ]
-        return 'INFO'
-    return control.level
-
-
-async def _prepare(
-    application: __.ApplicationInformation,
-    configedits: __.DictionaryEdits,
-    environment: bool,
-    exits: __.ExitsAsync,
-    inscription: __.InscriptionControl,
-) -> __.Globals:
-    ''' Configures logging based on verbosity. '''
-    auxdata = await __.prepare(
-        application = application,
-        configedits = configedits,
-        environment = environment,
-        exits = exits,
-        inscription = inscription )
-    _prepare_scribes( application, inscription )
-    return auxdata
-
-
-def _prepare_scribes(
-    application: __.ApplicationInformation,
-    inscription: __.InscriptionControl,
-) -> None:
-    import logging
-    from rich.console import Console
-    from rich.logging import RichHandler
-    level_name = _discover_inscription_level_name( application, inscription )
-    level = getattr( logging, level_name.upper( ) )
-    handler = RichHandler(
-        console = Console( stderr = True ),
-        rich_tracebacks = True,
-        show_time = False )
-    logging.basicConfig(
-        format = '%(name)s: %(message)s',
-        level = level,
-        handlers = [ handler ] )
-    logging.captureWarnings( True )
