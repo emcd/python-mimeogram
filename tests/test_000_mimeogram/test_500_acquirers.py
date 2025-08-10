@@ -57,7 +57,7 @@ def provide_auxdata( provide_tempdir, provide_tempenv ):
             name = 'test-package',
             location = provide_tempdir / 'test-package',
             editable = True ),
-        exits = __.ExitsAsync( ) )
+        exits = __.ctxl.AsyncExitStack( ) )
 
 
 # Basic File Acquisition Tests

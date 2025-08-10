@@ -19,7 +19,7 @@ dependencies = [
   'absence~=1.1',
   'accretive~=4.1',
   'aiofiles',
-  'chardet', # TODO? Remove after cutover to appcore.
+  'chardet',
   'dynadoc~=1.4',
   'emcd-appcore~=1.4',
   'exceptiongroup',
@@ -27,11 +27,8 @@ dependencies = [
   'gitignorefile',
   'httpx',
   'icecream-truck~=1.5',
-  'importlib-metadata', # TODO? Remove after cutover to appcore.
-  'importlib-resources', # TODO? Remove after cutover to appcore.
   'patiencediff',
-  'platformdirs', # TODO: Remove after cutover to appcore.
-  'puremagic', # TODO? Remove after cutover to appcore.
+  'puremagic',
   'pyperclip',
   'python-dotenv', # TODO: Remove after cutover to appcore.
   'readchar',
