@@ -20,6 +20,7 @@ dependencies = [
   'accretive~=4.1',
   'aiofiles',
   'chardet',
+  'emcd-appcore~=1.4',
   'exceptiongroup',
   'frigid~=4.1',
   'gitignorefile',

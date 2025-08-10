@@ -23,6 +23,11 @@
 
 from . import __
 
+import contextlib as _contextlib
+import logging as _logging
+
+import exceptiongroup as _exceptiongroup
+
 
 class Omniexception(
     __.immut.Object, BaseException,
@@ -137,3 +142,36 @@ class UserOperateCancellation( Omniexception ):
 
     def __init__( self, cause: BaseException ):
         super( ).__init__( f"Operation cancelled by user. Cause: {cause}" )
+
+
+@_contextlib.contextmanager
+def report_exceptions(
+    scribe: _logging.Logger,
+    message: str,
+    eclass: type[ BaseException ] = SystemExit,
+    eposargs: __.cabc.Sequence[ __.typx.Any ] = ( 1, ),
+) -> __.cabc.Generator[ None, None, None ]:
+    """Intercept and report exceptions.
+
+    By default, raises ``SystemExit(1)``.
+    """
+    level = scribe.getEffectiveLevel( )
+    try:
+        yield
+    except _exceptiongroup.ExceptionGroup as excg:  # pyright: ignore
+        scribe.error( message )
+        for exc in excg.exceptions:  # pyright: ignore
+            if level <= _logging.DEBUG:  # noqa: SIM108
+                nomargs = dict( exc_info = exc )  # pyright: ignore
+            else:
+                nomargs = { }
+            scribe.error( f"\tCause: {exc}", **nomargs )  # pyright: ignore
+        if eclass:
+            raise eclass( *eposargs ) from None
+    except Exception as exc:
+        if level <= _logging.DEBUG:
+            scribe.exception( f"{message}" )
+        else:
+            scribe.error( f"{message} Cause: {exc}" )
+        if eclass:
+            raise eclass( *eposargs ) from None

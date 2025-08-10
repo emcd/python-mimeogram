@@ -79,15 +79,13 @@ def produce_mock_auxdata( config = None ):
     from contextlib import AsyncExitStack
     from platformdirs import PlatformDirs
 
-    application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
-    distribution = cache_import_module( f"{PACKAGE_NAME}.__.distribution" )
-    state = cache_import_module( f"{PACKAGE_NAME}.__.state" )
+    __ = cache_import_module( f"{PACKAGE_NAME}.__" )
 
     if config is None:
         config = { }
 
-    return state.Globals(
-        application = application.Information(
+    return __.appcore.state.Globals(
+        application = __.appcore.application.Information(
             name = 'mimeogram-test',
             version = '0.0.0'
         ),
@@ -96,7 +94,7 @@ def produce_mock_auxdata( config = None ):
             appname = 'mimeogram-test',
             version = '0.0.0'
         ),
-        distribution = distribution.Information(
+        distribution = __.appcore.distribution.Information(
             name = 'mimeogram-test',
             location = Path( ).resolve( ),
             editable = True

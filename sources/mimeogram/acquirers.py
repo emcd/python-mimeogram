@@ -33,7 +33,8 @@ _scribe = __.produce_scribe( __name__ )
 
 
 async def acquire(
-    auxdata: __.Globals, sources: __.cabc.Sequence[ str | __.Path ]
+    auxdata: __.appcore.state.Globals,
+    sources: __.cabc.Sequence[ str | __.Path ],
 ) -> __.cabc.Sequence[ _parts.Part ]:
     ''' Acquires content from multiple sources. '''
     from urllib.parse import urlparse
@@ -54,12 +55,16 @@ async def acquire(
                 tasks.append( _produce_http_task( str( source ) ) )
             case _:
                 raise _exceptions.UrlSchemeNoSupport( str( source ) )
-    if strict: return await __.gather_async( *tasks )
-    results = await __.gather_async( *tasks, return_exceptions = True )
+    if strict: return await __.asyncf.gather_async( *tasks )
+    results: tuple[ __.generics.GenericResult, ... ] = (
+        await __.asyncf.gather_async(
+            *tasks, return_exceptions = True
+        )
+    )
     # TODO: Factor into '__.generics.extract_results_filter_errors'.
     values: list[ _parts.Part ] = [ ]
     for result in results:
-        if result.is_error( ):
+        if __.generics.is_error( result ):
             _scribe.warning( str( result.error ) )
             continue
         values.append( result.extract( ) )

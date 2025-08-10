@@ -41,6 +41,15 @@ from uuid import uuid4
 
 import accretive as         accret
 import frigid as            immut
+import appcore
+import appcore.application
+import appcore.distribution
+import appcore.dictedits
+import appcore.inscription
+import appcore.io
+import appcore.state
+from appcore import asyncf
+from appcore import generics
 import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
 import tyro
