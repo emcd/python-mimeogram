@@ -38,6 +38,9 @@ from . import (
     create_test_files,
 )
 
+__ = cache_import_module( f"{PACKAGE_NAME}.__" )
+LineSeparators = __.detextive.LineSeparators
+
 
 @dataclass( frozen = True )
 class _TestProtector:
@@ -117,7 +120,7 @@ async def test_100_update_simple_file(
             location = 'test.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = 'updated content'
         )
 
@@ -146,7 +149,7 @@ async def test_110_update_skips_mimeogram_protocol(
         location = 'mimeogram://message',
         mimetype = 'text/plain',
         charset = 'utf-8',
-        linesep = parts.LineSeparators.LF,
+        linesep = LineSeparators.LF,
         content = 'test content'
     )
 
@@ -176,7 +179,7 @@ async def test_120_update_respects_protection(
             location = 'test.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = 'updated content'
         )
 
@@ -208,7 +211,7 @@ async def test_130_update_override_protections(
             location = 'test.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = 'updated content'
         )
 
@@ -244,7 +247,7 @@ async def test_140_update_respects_interactor( provide_tempdir ):
             location = 'test.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = 'test content'
         )
 
@@ -293,7 +296,7 @@ async def test_160_partitive_ignore_mode( provide_tempdir ):
             location = 'test.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = 'new content'
         )
 
@@ -333,14 +336,14 @@ async def test_170_queue_and_reverter_rollback_on_error(
             location = 'file1.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts_mod.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = 'file1 updated'
         )
         part2 = parts_mod.Part(
             location = 'file2.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts_mod.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = 'file2 updated'
         )
 
@@ -384,7 +387,7 @@ async def test_180_line_endings_preserved( provide_tempdir ):
             location = 'test_windows.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts_mod.LineSeparators.CRLF,
+            linesep = LineSeparators.CRLF,
             content = 'line1\r\nline2\r\nline3\r\n'
         )
 
@@ -413,7 +416,7 @@ async def test_190_reverter_direct_coverage( provide_tempdir ):
         location = str( nonexistent_path ),
         mimetype = 'text/plain',
         charset = 'utf-8',
-        linesep = parts_mod.LineSeparators.LF,
+        linesep = LineSeparators.LF,
         content = ''
     )
     # 1) Non-existent => skip saving

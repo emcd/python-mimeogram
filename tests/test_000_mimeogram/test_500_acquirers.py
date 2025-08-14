@@ -34,6 +34,12 @@ from . import (
     produce_test_environment,
 )
 
+__ = cache_import_module( f"{PACKAGE_NAME}.__" )
+LineSeparators = __.detextive.LineSeparators
+DetextiveTextualMimetypeInvalidity = (
+    __.detextive.exceptions.TextualMimetypeInvalidity
+)
+
 
 @pytest.fixture
 def provide_auxdata( provide_tempdir, provide_tempenv ):
@@ -127,7 +133,6 @@ async def test_120_acquire_recursive_directory(
 async def test_200_detect_line_endings( provide_tempdir, provide_auxdata ):
     ''' Successfully detects and normalizes different line endings. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
     test_files = {
         "unix.txt": "line1\nline2\n",          # LF
         "windows.txt": "line1\r\nline2\r\n",   # CRLF
@@ -139,8 +144,7 @@ async def test_200_detect_line_endings( provide_tempdir, provide_auxdata ):
         ] )
         assert len( results ) == 2
         lineseps = { part.linesep for part in results }
-        assert lineseps == {
-            parts.LineSeparators.LF, parts.LineSeparators.CRLF }
+        assert lineseps == { LineSeparators.LF, LineSeparators.CRLF }
         # All content should be normalized to LF
         for part in results:
             assert part.content.count( '\r\n' ) == 0
@@ -207,7 +211,6 @@ async def test_500_invalid_file( provide_tempdir, provide_auxdata ):
     ''' Properly handles missing files. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
-
     nonexistent = provide_tempdir / "nonexistent.txt"
     with pytest.raises( exceptions.ContentAcquireFailure ) as excinfo:
         await acquirers.acquire( provide_auxdata, [ nonexistent ] )
@@ -220,7 +223,6 @@ async def test_510_unsupported_scheme( provide_auxdata ):
     ''' Properly handles unsupported URL schemes. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
-
     with pytest.raises( exceptions.UrlSchemeNoSupport ) as excinfo:
         await acquirers.acquire(
             provide_auxdata, [ "ftp://example.com/file.txt" ] )
@@ -234,8 +236,6 @@ async def test_520_nontextual_mime( provide_tempdir, provide_auxdata ):
         modes.
     '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
-
     binary_path = provide_tempdir / 'binary.bin'
     binary_path.write_bytes( bytes( [ 0xFF, 0x00 ] * 128 ) )
 
@@ -249,7 +249,7 @@ async def test_520_nontextual_mime( provide_tempdir, provide_auxdata ):
         assert len( excinfo.value.exceptions ) == 1
         assert isinstance(
             excinfo.value.exceptions[ 0 ],
-            exceptions.TextualMimetypeInvalidity )
+            DetextiveTextualMimetypeInvalidity )
         err_msg = str( excinfo.value.exceptions[ 0 ] )
         assert str( binary_path ) in err_msg
         assert 'application/octet-stream' in err_msg
@@ -321,7 +321,6 @@ async def test_525_charset_fallback_validation(
 async def test_530_strict_mode_handling( provide_tempdir, provide_auxdata ):
     ''' Tests strict mode handling of invalid files. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     test_files = {
         'valid.txt': 'Valid text content\n',
@@ -345,7 +344,7 @@ async def test_530_strict_mode_handling( provide_tempdir, provide_auxdata ):
         assert len( excinfo.value.exceptions ) == 1
         assert isinstance(
             excinfo.value.exceptions[ 0 ],
-            exceptions.TextualMimetypeInvalidity )
+            DetextiveTextualMimetypeInvalidity )
 
         # Test non-strict mode
         provide_auxdata.configuration[
@@ -368,7 +367,6 @@ async def test_540_strict_mode_multiple_failures(
 ):
     ''' Tests strict mode handling of multiple invalid files. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     test_files = {
         'valid.txt': 'Valid text content\n',
@@ -395,7 +393,7 @@ async def test_540_strict_mode_multiple_failures(
 
         assert len( excinfo.value.exceptions ) == 2
         for exc in excinfo.value.exceptions:
-            assert isinstance( exc, exceptions.TextualMimetypeInvalidity )
+            assert isinstance( exc, DetextiveTextualMimetypeInvalidity )
 
         # Test non-strict mode
         provide_auxdata.configuration[
@@ -560,7 +558,6 @@ async def test_620_http_nontextual_mimetype( provide_auxdata, httpx_mock ):
         and non-strict modes.
     '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     test_url = 'https://example.com/test.bin'
     httpx_mock.add_response(
@@ -579,7 +576,7 @@ async def test_620_http_nontextual_mimetype( provide_auxdata, httpx_mock ):
     assert len( excinfo.value.exceptions ) == 1
     assert isinstance(
         excinfo.value.exceptions[ 0 ],
-        exceptions.TextualMimetypeInvalidity )
+        DetextiveTextualMimetypeInvalidity )
     assert test_url in str( excinfo.value.exceptions[ 0 ] )
 
     # Reset mock for non-strict mode test

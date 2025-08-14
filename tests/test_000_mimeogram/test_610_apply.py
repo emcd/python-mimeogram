@@ -27,6 +27,9 @@ import pytest
 
 from . import PACKAGE_NAME, cache_import_module
 
+__ = cache_import_module( f"{PACKAGE_NAME}.__" )
+LineSeparators = __.detextive.LineSeparators
+
 
 @pytest.mark.usefixtures( )
 class MockContentAcquirer:
@@ -209,7 +212,7 @@ async def test_400_apply_success( ):
             location = "test.txt",
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = "test content" ) ]
 
     async def mock_updater(
@@ -284,7 +287,7 @@ async def test_430_apply_update_failure( ):
             location = "test.txt",
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = "test content" ) ]
 
     async def failing_updater( auxdata, parts, **kwargs ):

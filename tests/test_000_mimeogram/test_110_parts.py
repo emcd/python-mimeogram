@@ -23,21 +23,20 @@
 
 from . import PACKAGE_NAME, cache_import_module
 
+__ = cache_import_module( f"{PACKAGE_NAME}.__" )
+LineSeparators = __.detextive.LineSeparators
+
 
 def test_000_line_separators_enum( ):
     ''' Line separator enum values and attributes. '''
-    parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
-
     # Check enum values
-    assert parts.LineSeparators.CR.value == '\r'
-    assert parts.LineSeparators.CRLF.value == '\r\n'
-    assert parts.LineSeparators.LF.value == '\n'
+    assert LineSeparators.CR.value == '\r'
+    assert LineSeparators.CRLF.value == '\r\n'
+    assert LineSeparators.LF.value == '\n'
 
 
 def test_010_line_separators_detection( ):
     ''' Line separator detection from bytes. '''
-    parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
-
     # Test detection of different line separators
     cr_bytes = b'line1\rline2\rline3'
     crlf_bytes = b'line1\r\nline2\r\nline3'
@@ -48,44 +47,42 @@ def test_010_line_separators_detection( ):
     no_terminator_bytes = b'line1line2line3'
 
     assert (
-        parts.LineSeparators.detect_bytes( cr_bytes )
-        == parts.LineSeparators.CR )
+        LineSeparators.detect_bytes( cr_bytes )
+        == LineSeparators.CR )
     assert (
-        parts.LineSeparators.detect_bytes( crlf_bytes )
-        == parts.LineSeparators.CRLF )
+        LineSeparators.detect_bytes( crlf_bytes )
+        == LineSeparators.CRLF )
     assert (
-        parts.LineSeparators.detect_bytes( lf_bytes )
-        == parts.LineSeparators.LF )
+        LineSeparators.detect_bytes( lf_bytes )
+        == LineSeparators.LF )
 
     # With mixed bytes, it detects the first encountered line separator
     assert (
-        parts.LineSeparators.detect_bytes( mixed_bytes )
-        == parts.LineSeparators.CR )
+        LineSeparators.detect_bytes( mixed_bytes )
+        == LineSeparators.CR )
 
     # Double CR case
     assert (
-        parts.LineSeparators.detect_bytes( double_cr_bytes )
-        == parts.LineSeparators.CR )
+        LineSeparators.detect_bytes( double_cr_bytes )
+        == LineSeparators.CR )
 
     # Empty bytes and bytes without terminators
-    assert parts.LineSeparators.detect_bytes( empty_bytes ) is None
-    assert parts.LineSeparators.detect_bytes( no_terminator_bytes ) is None
+    assert LineSeparators.detect_bytes( empty_bytes ) is None
+    assert LineSeparators.detect_bytes( no_terminator_bytes ) is None
 
 
 def test_020_line_separators_normalization( ):
     ''' Line separator normalization methods. '''
-    parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
-
     # Test universal normalization
     mixed_content = "line1\rline2\r\nline3\n"
-    normalized = parts.LineSeparators.normalize_universal( mixed_content )
+    normalized = LineSeparators.normalize_universal( mixed_content )
     assert normalized == "line1\nline2\nline3\n"
 
     # Test specific separator nativization and normalization
     cr_content = "line1\rline2\rline3"
-    lf_sep = parts.LineSeparators.LF
-    cr_sep = parts.LineSeparators.CR
-    crlf_sep = parts.LineSeparators.CRLF
+    lf_sep = LineSeparators.LF
+    cr_sep = LineSeparators.CR
+    crlf_sep = LineSeparators.CRLF
 
     # Test LF nativization (no change)
     assert lf_sep.nativize( cr_content ) == cr_content
@@ -112,7 +109,7 @@ def test_100_part_immutability( ):
         location = 'test.txt',
         mimetype = 'text/plain',
         charset = 'utf-8',
-        linesep = parts.LineSeparators.LF,
+        linesep = LineSeparators.LF,
         content = 'test content'
     )
 
@@ -124,7 +121,7 @@ def test_100_part_immutability( ):
     with pytest.raises( AttributeImmutability ):
         part.charset = 'ascii'
     with pytest.raises( AttributeImmutability ):
-        part.linesep = parts.LineSeparators.CRLF
+        part.linesep = LineSeparators.CRLF
     with pytest.raises( AttributeImmutability ):
         part.content = 'new content'
 
@@ -138,7 +135,7 @@ def test_110_part_creation( ):
         location = '/path/to/file.txt',
         mimetype = 'text/plain',
         charset = 'utf-8',
-        linesep = parts.LineSeparators.LF,
+        linesep = LineSeparators.LF,
         content = 'Sample text content'
     )
 
@@ -146,7 +143,7 @@ def test_110_part_creation( ):
     assert part_1.location == '/path/to/file.txt'
     assert part_1.mimetype == 'text/plain'
     assert part_1.charset == 'utf-8'
-    assert part_1.linesep == parts.LineSeparators.LF
+    assert part_1.linesep == LineSeparators.LF
     assert part_1.content == 'Sample text content'
 
     # Test with URL location
@@ -154,11 +151,11 @@ def test_110_part_creation( ):
         location = 'https://example.com/data.txt',
         mimetype = 'text/csv',
         charset = 'ascii',
-        linesep = parts.LineSeparators.CRLF,
+        linesep = LineSeparators.CRLF,
         content = 'header,value\n1,2\n'
     )
 
     assert part_2.location == 'https://example.com/data.txt'
     assert part_2.mimetype == 'text/csv'
     assert part_2.charset == 'ascii'
-    assert part_2.linesep == parts.LineSeparators.CRLF
+    assert part_2.linesep == LineSeparators.CRLF

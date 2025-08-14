@@ -82,7 +82,7 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
         content_bytes, location
     )
     if not __.detextive.is_textual_mimetype( mimetype ):
-        raise _exceptions.TextualMimetypeInvalidity(
+        raise __.detextive.exceptions.TextualMimetypeInvalidity(
             str( location ), mimetype
         )
     if charset is None: raise ContentDecodeFailure( location, '???' )
@@ -120,16 +120,13 @@ async def _acquire_via_http(
     )
     if charset is None: raise ContentDecodeFailure( url, '???' )
     if not __.detextive.is_textual_mimetype( mimetype ):
-        try:
-            mimetype, _ = __.detextive.detect_mimetype_and_charset(
-                content_bytes, url, charset = charset
-            )
-        except __.detextive.exceptions.TextualMimetypeInvalidity as exc:
-            raise _exceptions.TextualMimetypeInvalidity(
-                url, mimetype
-            ) from exc
+        mimetype, _ = __.detextive.detect_mimetype_and_charset(
+            content_bytes, url, charset = charset
+        )
         if not __.detextive.is_textual_mimetype( mimetype ):
-            raise _exceptions.TextualMimetypeInvalidity( url, mimetype )
+            raise __.detextive.exceptions.TextualMimetypeInvalidity(
+                url, mimetype
+            )
     linesep = __.detextive.LineSeparators.detect_bytes( content_bytes )
     if linesep is None:
         _scribe.warning( f"No line separator detected in '{url}'." )

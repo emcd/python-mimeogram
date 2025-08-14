@@ -24,8 +24,6 @@
 from . import __
 from . import fsprotect as _fsprotect
 
-LineSeparators = __.detextive.LineSeparators
-
 
 class Resolutions( __.enum.Enum ):
     ''' Available resolutions for each part. '''
@@ -39,7 +37,7 @@ class Part( __.immut.DataclassObject ):
     location: str # TODO? 'Url' class
     mimetype: str
     charset: str
-    linesep: "LineSeparators"
+    linesep: __.detextive.LineSeparators
     content: str
 
     # TODO? 'format' method

@@ -114,14 +114,6 @@ class ProgramAbsenceError( Omnierror ):
         super( ).__init__( f"Could not discover valid {species}." )
 
 
-class TextualMimetypeInvalidity( Omnierror ):
-    ''' Invalid textual MIME type for content at location. '''
-
-    def __init__( self, location: str | __.Path, mimetype: str ):
-        super( ).__init__(
-            f"Invalid MIME type '{mimetype}' for content at '{location}'." )
-
-
 class TokenizerVariantInvalidity( Omnierror ):
     ''' Invalid tokenizer variant. '''
 
