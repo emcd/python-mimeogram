@@ -78,12 +78,18 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
         async with _aiofiles.open( location, 'rb' ) as f: # pyright: ignore
             content_bytes = await f.read( )
     except Exception as exc: raise ContentAcquireFailure( location ) from exc
-    mimetype, charset = _detect_mimetype_and_charset( content_bytes, location )
+    mimetype, charset = __.detextive.detect_mimetype_and_charset(
+        content_bytes, location
+    )
+    if not __.detextive.is_textual_mimetype( mimetype ):
+        raise _exceptions.TextualMimetypeInvalidity(
+            str( location ), mimetype
+        )
     if charset is None: raise ContentDecodeFailure( location, '???' )
-    linesep = _parts.LineSeparators.detect_bytes( content_bytes )
+    linesep = __.detextive.LineSeparators.detect_bytes( content_bytes )
     if linesep is None:
         _scribe.warning( f"No line separator detected in '{location}'." )
-        linesep = _parts.LineSeparators( __.os.linesep )
+        linesep = __.detextive.LineSeparators( __.os.linesep )
     try: content = content_bytes.decode( charset )
     except Exception as exc:
         raise ContentDecodeFailure( location, charset ) from exc
@@ -109,16 +115,25 @@ async def _acquire_via_http(
         response.headers.get( 'content-type', 'application/octet-stream' )
         .split( ';' )[ 0 ].strip( ) )
     content_bytes = response.content
-    charset = response.encoding or _detect_charset( content_bytes )
+    charset = response.encoding or __.detextive.detect_charset(
+        content_bytes
+    )
     if charset is None: raise ContentDecodeFailure( url, '???' )
-    if not _is_textual_mimetype( mimetype ):
-        mimetype, _ = (
-            _detect_mimetype_and_charset(
-                content_bytes, url, charset = charset ) )
-    linesep = _parts.LineSeparators.detect_bytes( content_bytes )
+    if not __.detextive.is_textual_mimetype( mimetype ):
+        try:
+            mimetype, _ = __.detextive.detect_mimetype_and_charset(
+                content_bytes, url, charset = charset
+            )
+        except __.detextive.exceptions.TextualMimetypeInvalidity as exc:
+            raise _exceptions.TextualMimetypeInvalidity(
+                url, mimetype
+            ) from exc
+        if not __.detextive.is_textual_mimetype( mimetype ):
+            raise _exceptions.TextualMimetypeInvalidity( url, mimetype )
+    linesep = __.detextive.LineSeparators.detect_bytes( content_bytes )
     if linesep is None:
         _scribe.warning( f"No line separator detected in '{url}'." )
-        linesep = _parts.LineSeparators( __.os.linesep )
+        linesep = __.detextive.LineSeparators( __.os.linesep )
     try: content = content_bytes.decode( charset )
     except Exception as exc:
         raise ContentDecodeFailure( url, charset ) from exc
@@ -157,102 +172,6 @@ def _collect_directory_files(
     return paths
 
 
-def _detect_charset( content: bytes ) -> str | None:
-    from chardet import detect
-    charset = detect( content )[ 'encoding' ]
-    if charset is None: return charset
-    if charset.startswith( 'utf' ): return charset
-    match charset:
-        case 'ascii': return 'utf-8' # Assume superset.
-        case _: pass
-    # Shake out false positives, like 'MacRoman'.
-    try: content.decode( 'utf-8' )
-    except UnicodeDecodeError: return charset
-    return 'utf-8'
-
-
-def _detect_mimetype( content: bytes, location: str | __.Path ) -> str | None:
-    from mimetypes import guess_type
-    from puremagic import PureError, from_string # pyright: ignore
-    try: return from_string( content, mime = True )
-    except ( PureError, ValueError ):
-        return guess_type( str( location ) )[ 0 ]
-
-
-def _detect_mimetype_and_charset(
-    content: bytes,
-    location: str | __.Path, *,
-    mimetype: __.Absential[ str ] = __.absent,
-    charset: __.Absential[ str ] = __.absent,
-) -> tuple[ str, str | None ]:
-    from .exceptions import TextualMimetypeInvalidity
-    if __.is_absent( mimetype ):
-        mimetype_ = _detect_mimetype( content, location )
-    else: mimetype_ = mimetype
-    if __.is_absent( charset ): # noqa: SIM108
-        charset_ = _detect_charset( content )
-    else: charset_ = charset
-    if not mimetype_:
-        if charset_:
-            mimetype_ = 'text/plain'
-            _validate_mimetype_with_trial_decode(
-                content, location, mimetype_, charset_ )
-            return mimetype_, charset_
-        mimetype_ = 'application/octet-stream'
-    if _is_textual_mimetype( mimetype_ ):
-        return mimetype_, charset_
-    if charset_ is None:
-        raise TextualMimetypeInvalidity( location, mimetype_ )
-    _validate_mimetype_with_trial_decode(
-        content, location, mimetype_, charset_ )
-    return mimetype_, charset_
-
-
-def _is_reasonable_text_content( content: str ) -> bool:
-    ''' Checks if decoded content appears to be meaningful text. '''
-    if not content: return False
-    # Check for excessive repetition of single characters (likely binary)
-    if len( set( content ) ) == 1: return False
-    # Check for excessive control characters (excluding common whitespace)
-    common_whitespace = '\t\n\r'
-    ascii_control_limit = 32
-    control_chars = sum(
-        1 for c in content
-        if ord( c ) < ascii_control_limit and c not in common_whitespace )
-    if control_chars > len( content ) * 0.1: return False  # >10% control chars
-    # Check for reasonable printable character ratio
-    printable_chars = sum(
-        1 for c in content if c.isprintable( ) or c in common_whitespace )
-    return printable_chars >= len( content ) * 0.8  # >=80% printable
-
-
-# MIME types that are considered textual beyond those starting with 'text/'.
-_TEXTUAL_MIME_TYPES = frozenset( (
-    'application/json',
-    'application/xml',
-    'application/xhtml+xml',
-    'application/x-perl',
-    'application/x-python',
-    'application/x-php',
-    'application/x-ruby',
-    'application/x-shell',
-    'application/javascript',
-    'image/svg+xml',
-) )
-# MIME type suffixes that indicate textual content.
-_TEXTUAL_SUFFIXES = ( '+xml', '+json', '+yaml', '+toml' )
-def _is_textual_mimetype( mimetype: str ) -> bool:
-    ''' Checks if MIME type represents textual content. '''
-    _scribe.debug( f"MIME type: {mimetype}" )
-    if mimetype.startswith( ( 'text/', 'text/x-' ) ): return True
-    if mimetype in _TEXTUAL_MIME_TYPES: return True
-    if mimetype.endswith( _TEXTUAL_SUFFIXES ):
-        _scribe.debug(
-            f"MIME type '{mimetype}' accepted due to textual suffix." )
-        return True
-    return False
-
-
 def _produce_fs_tasks(
     location: str | __.Path, recursive: bool = False
 ) -> tuple[ __.cabc.Coroutine[ None, None, _parts.Part ], ...]:
@@ -277,19 +196,3 @@ def _produce_http_task(
         ) as client: return await _acquire_via_http( client, url )
 
     return _execute_session( )
-
-
-def _validate_mimetype_with_trial_decode(
-    content: bytes, location: str | __.Path, mimetype: str, charset: str
-) -> None:
-    ''' Validates charset fallback and returns appropriate MIME type. '''
-    from .exceptions import TextualMimetypeInvalidity
-    try: text = content.decode( charset )
-    except ( UnicodeDecodeError, LookupError ) as exc:
-        raise TextualMimetypeInvalidity( location, mimetype ) from exc
-    if _is_reasonable_text_content( text ):
-        _scribe.debug(
-            f"MIME type '{mimetype}' accepted after successful "
-            f"decode test with charset '{charset}' for '{location}'." )
-        return
-    raise TextualMimetypeInvalidity( location, mimetype )
