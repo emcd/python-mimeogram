@@ -20,6 +20,7 @@ dependencies = [
   'accretive~=4.1',
   'aiofiles',
   'chardet',
+  'detextive~=1.0',
   'dynadoc~=1.4',
   'emcd-appcore~=1.4',
   'exceptiongroup',

@@ -43,8 +43,9 @@ import accretive as         accret
 import                      appcore
 import                      appcore.dictedits
 import                      appcore.io
+import                      appcore.state
+import                      detextive
 import frigid as            immut
-import appcore.state
 import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
 import tyro
