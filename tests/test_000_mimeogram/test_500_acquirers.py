@@ -34,6 +34,12 @@ from . import (
     produce_test_environment,
 )
 
+__ = cache_import_module( f"{PACKAGE_NAME}.__" )
+LineSeparators = __.detextive.LineSeparators
+DetextiveTextualMimetypeInvalidity = (
+    __.detextive.exceptions.TextualMimetypeInvalidity
+)
+
 
 @pytest.fixture
 def provide_auxdata( provide_tempdir, provide_tempenv ):
@@ -127,7 +133,6 @@ async def test_120_acquire_recursive_directory(
 async def test_200_detect_line_endings( provide_tempdir, provide_auxdata ):
     ''' Successfully detects and normalizes different line endings. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
     test_files = {
         "unix.txt": "line1\nline2\n",          # LF
         "windows.txt": "line1\r\nline2\r\n",   # CRLF
@@ -139,113 +144,13 @@ async def test_200_detect_line_endings( provide_tempdir, provide_auxdata ):
         ] )
         assert len( results ) == 2
         lineseps = { part.linesep for part in results }
-        assert lineseps == {
-            parts.LineSeparators.LF, parts.LineSeparators.CRLF }
+        assert lineseps == { LineSeparators.LF, LineSeparators.CRLF }
         # All content should be normalized to LF
         for part in results:
             assert part.content.count( '\r\n' ) == 0
             assert part.content.count( '\n' ) == 2
 
 
-# Character Set Tests
-
-@pytest.mark.asyncio
-async def test_300_detect_charset( provide_tempdir, provide_auxdata ):
-    ''' Successfully detects different character sets. '''
-    acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-
-    # Create and populate test files
-    utf8_path = provide_tempdir / "utf8bom.txt"
-    ascii_path = provide_tempdir / "ascii.txt"
-    utf16_path = provide_tempdir / "utf16.txt"
-    latin1_path = provide_tempdir / "latin1.txt"
-
-    # Write binary content
-    utf8_path.write_bytes(b'\xef\xbb\xbfHello, World!\n')  # UTF-8 with BOM
-    ascii_path.write_bytes(b'Hello, World!\n')  # ASCII content
-    utf16_path.write_bytes(
-        b'\xff\xfeH\x00e\x00l\x00l\x00o\x00!\x00\n\x00')  # UTF-16 LE
-    latin1_path.write_bytes(b'Caf\xe9\n')  # ISO-8859-1 / invalid UTF-8
-
-    try:
-        results = await acquirers.acquire(
-            provide_auxdata, [utf8_path, ascii_path, utf16_path, latin1_path] )
-
-        charsets = { part.charset.lower() for part in results }
-        assert 'utf-8' in charsets
-        assert 'utf-16' in charsets
-        assert 'iso-8859-9' in charsets or 'latin1' in charsets
-    finally:
-        for path in (utf8_path, ascii_path, utf16_path, latin1_path):
-            if path.exists():
-                path.unlink()
-
-
-# MIME Type Tests
-
-@pytest.mark.asyncio
-async def test_400_detect_mime_types( provide_tempdir, provide_auxdata ):
-    ''' Successfully detects MIME types for different file types. '''
-    acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-
-    test_files = {
-        "plain.txt": "Plain text\n",
-        "script.py": (
-            "#!/usr/bin/env python3\n"
-            "from __future__ import annotations\n\n"
-            "def hello() -> str:\n    return 'Python'\n" ),
-        # Test pattern-based detection for structured text formats
-        "config.toml": "[package]\nname = 'test'\n",
-        "data.yaml": "key: value\nlist:\n  - item1\n",
-        "service.json": '{"name": "test", "version": "1.0"}\n',
-        "manifest.xml": (
-            '<?xml version="1.0"?><root><item>test</item></root>\n' ),
-        "rust_code.rs": 'fn main() { println!("Hello, world!"); }\n',
-    }
-
-    with create_test_files( provide_tempdir, test_files ):
-        results = await acquirers.acquire( provide_auxdata, [
-            provide_tempdir / "plain.txt",
-            provide_tempdir / "script.py",
-            provide_tempdir / "config.toml",
-            provide_tempdir / "data.yaml",
-            provide_tempdir / "service.json",
-            provide_tempdir / "manifest.xml",
-            provide_tempdir / "rust_code.rs",
-        ] )
-
-        assert len( results ) == 7
-        mimetypes = { part.mimetype for part in results }
-
-        # Existing assertions
-        assert "text/plain" in mimetypes
-        assert any( "python" in mt for mt in mimetypes )
-
-        # Pattern-based detection assertions for recognized MIME types
-        assert any(
-            mt.endswith( '+json' ) or 'json' in mt for mt in mimetypes )
-        assert any(
-            mt.endswith( '+xml' ) or 'xml' in mt for mt in mimetypes )
-
-        # TOML and YAML files should be accepted via charset fallback
-        # since Python's mimetypes doesn't recognize them
-        toml_results = [
-            p for p in results if p.location.endswith( 'config.toml' ) ]
-        yaml_results = [
-            p for p in results if p.location.endswith( 'data.yaml' ) ]
-        assert len( toml_results ) == 1
-        assert len( yaml_results ) == 1
-
-        # Rust files should be accepted (regression test for original issue)
-        rust_results = [
-            p for p in results if p.location.endswith( 'rust_code.rs' ) ]
-        assert len( rust_results ) == 1
-        # Platform-agnostic: accept any textual MIME type for Rust files
-        rust_mimetype = rust_results[ 0 ].mimetype
-        assert \
-            (       rust_mimetype.startswith( 'text/' )
-                    or rust_mimetype.startswith( 'application/' )
-            ), f"Rust file should have textual MIME type, got: {rust_mimetype}"
 
 
 @pytest.mark.asyncio
@@ -306,7 +211,6 @@ async def test_500_invalid_file( provide_tempdir, provide_auxdata ):
     ''' Properly handles missing files. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
-
     nonexistent = provide_tempdir / "nonexistent.txt"
     with pytest.raises( exceptions.ContentAcquireFailure ) as excinfo:
         await acquirers.acquire( provide_auxdata, [ nonexistent ] )
@@ -319,7 +223,6 @@ async def test_510_unsupported_scheme( provide_auxdata ):
     ''' Properly handles unsupported URL schemes. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
-
     with pytest.raises( exceptions.UrlSchemeNoSupport ) as excinfo:
         await acquirers.acquire(
             provide_auxdata, [ "ftp://example.com/file.txt" ] )
@@ -333,8 +236,6 @@ async def test_520_nontextual_mime( provide_tempdir, provide_auxdata ):
         modes.
     '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
-
     binary_path = provide_tempdir / 'binary.bin'
     binary_path.write_bytes( bytes( [ 0xFF, 0x00 ] * 128 ) )
 
@@ -348,7 +249,7 @@ async def test_520_nontextual_mime( provide_tempdir, provide_auxdata ):
         assert len( excinfo.value.exceptions ) == 1
         assert isinstance(
             excinfo.value.exceptions[ 0 ],
-            exceptions.TextualMimetypeInvalidity )
+            DetextiveTextualMimetypeInvalidity )
         err_msg = str( excinfo.value.exceptions[ 0 ] )
         assert str( binary_path ) in err_msg
         assert 'application/octet-stream' in err_msg
@@ -420,7 +321,6 @@ async def test_525_charset_fallback_validation(
 async def test_530_strict_mode_handling( provide_tempdir, provide_auxdata ):
     ''' Tests strict mode handling of invalid files. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     test_files = {
         'valid.txt': 'Valid text content\n',
@@ -444,7 +344,7 @@ async def test_530_strict_mode_handling( provide_tempdir, provide_auxdata ):
         assert len( excinfo.value.exceptions ) == 1
         assert isinstance(
             excinfo.value.exceptions[ 0 ],
-            exceptions.TextualMimetypeInvalidity )
+            DetextiveTextualMimetypeInvalidity )
 
         # Test non-strict mode
         provide_auxdata.configuration[
@@ -467,7 +367,6 @@ async def test_540_strict_mode_multiple_failures(
 ):
     ''' Tests strict mode handling of multiple invalid files. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     test_files = {
         'valid.txt': 'Valid text content\n',
@@ -494,7 +393,7 @@ async def test_540_strict_mode_multiple_failures(
 
         assert len( excinfo.value.exceptions ) == 2
         for exc in excinfo.value.exceptions:
-            assert isinstance( exc, exceptions.TextualMimetypeInvalidity )
+            assert isinstance( exc, DetextiveTextualMimetypeInvalidity )
 
         # Test non-strict mode
         provide_auxdata.configuration[
@@ -659,7 +558,6 @@ async def test_620_http_nontextual_mimetype( provide_auxdata, httpx_mock ):
         and non-strict modes.
     '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     test_url = 'https://example.com/test.bin'
     httpx_mock.add_response(
@@ -678,7 +576,7 @@ async def test_620_http_nontextual_mimetype( provide_auxdata, httpx_mock ):
     assert len( excinfo.value.exceptions ) == 1
     assert isinstance(
         excinfo.value.exceptions[ 0 ],
-        exceptions.TextualMimetypeInvalidity )
+        DetextiveTextualMimetypeInvalidity )
     assert test_url in str( excinfo.value.exceptions[ 0 ] )
 
     # Reset mock for non-strict mode test

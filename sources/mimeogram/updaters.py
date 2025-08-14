@@ -182,7 +182,7 @@ async def _update_content_atomic(
     location: __.Path,
     content: str,
     charset: str = 'utf-8',
-    linesep: _parts.LineSeparators = _parts.LineSeparators.LF
+    linesep: __.detextive.LineSeparators = __.detextive.LineSeparators.LF
 ) -> None:
     ''' Updates file content atomically, if possible. '''
     import aiofiles.os as os # noqa: PLR0402

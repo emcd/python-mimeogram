@@ -26,6 +26,9 @@ import re
 
 from . import PACKAGE_NAME, cache_import_module
 
+__ = cache_import_module( f"{PACKAGE_NAME}.__" )
+LineSeparators = __.detextive.LineSeparators
+
 
 def _create_sample_part(
     location = 'test.txt',
@@ -39,7 +42,7 @@ def _create_sample_part(
         location = location,
         mimetype = mimetype,
         charset = charset,
-        linesep = parts.LineSeparators[ linesep ],
+        linesep = LineSeparators[ linesep ],
         content = content
     )
 

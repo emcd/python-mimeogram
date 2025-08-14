@@ -109,17 +109,19 @@ def _parse_descriptor_and_content(
 
 
 _QUOTES = '"\''
-def _parse_mimetype( header: str ) -> tuple[ str, str, _parts.LineSeparators ]:
+def _parse_mimetype( header: str ) -> tuple[
+    str, str, __.detextive.LineSeparators
+]:
     ''' Extracts MIME type and charset from Content-Type header. '''
     parts = [ p.strip( ) for p in header.split( ';' ) ]
     mimetype = parts[ 0 ]
     charset = 'utf-8'
-    linesep = _parts.LineSeparators.LF
+    linesep = __.detextive.LineSeparators.LF
     for part in parts[ 1: ]:
         if part.startswith( 'charset=' ):
             charset = part[ 8: ].strip( _QUOTES )
         if part.startswith( 'linesep=' ):
-            linesep = _parts.LineSeparators[
+            linesep = __.detextive.LineSeparators[
                 part[ 8: ].strip( _QUOTES ).upper( ) ]
     return mimetype, charset, linesep
 

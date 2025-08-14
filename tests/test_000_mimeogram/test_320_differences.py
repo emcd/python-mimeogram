@@ -27,6 +27,9 @@ import pytest
 
 from . import PACKAGE_NAME, cache_import_module, create_test_files
 
+__ = cache_import_module( f"{PACKAGE_NAME}.__" )
+LineSeparators = __.detextive.LineSeparators
+
 
 class MockDisplay:
     ''' Simple display implementation for testing. '''
@@ -72,7 +75,7 @@ async def test_100_select_segments_empty_revision( provide_tempdir ):
             location = str( test_path ),
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = current )
         target = parts.Target(
             part = part,
@@ -104,7 +107,7 @@ async def test_110_select_segments_with_changes( provide_tempdir ):
             location = str( test_path ),
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = current )
         target = parts.Target(
             part = part,
@@ -139,7 +142,7 @@ async def test_120_select_segments_reject_changes( provide_tempdir ):
             location = str( test_path ),
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = current )
         target = parts.Target(
             part = part,
@@ -176,7 +179,7 @@ async def test_130_select_segments_multiple_changes(
             location = str( test_path ),
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = current )
         target = parts.Target(
             part = part,
@@ -289,7 +292,7 @@ async def test_140_select_segments_handles_errors( provide_tempdir ):
             location = str( test_path ),
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = LineSeparators.LF,
             content = current )
         target = parts.Target(
             part = part,

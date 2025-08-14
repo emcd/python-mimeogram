@@ -121,18 +121,6 @@ def test_070_mimeogram_format_failures( ):
     assert reason in str( exc )
 
 
-def test_080_mimetype_failures( ):
-    ''' MIME type failure exceptions. '''
-    exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
-
-    location = Path( '/test/path' )
-    mimetype = 'application/octet-stream'
-    exc = exceptions.TextualMimetypeInvalidity( location, mimetype )
-    assert isinstance( exc, exceptions.Omnierror )
-    assert str( location ) in str( exc )
-    assert mimetype in str( exc )
-
-
 def test_090_program_absence( ):
     ''' Program absence error exceptions. '''
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
