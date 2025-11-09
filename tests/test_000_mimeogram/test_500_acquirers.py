@@ -510,7 +510,7 @@ async def test_540_strict_mode_multiple_failures(
 
         assert len( excinfo.value.exceptions ) == 2
         for exc in excinfo.value.exceptions:
-            # ContentDecodeFailure when Detextive detects charset but can't decode
+            # ContentDecodeFailure or TextualMimetypeInvalidity expected
             assert isinstance(
                 exc,
                 ( exceptions.TextualMimetypeInvalidity,
@@ -572,7 +572,7 @@ async def test_550_strict_mode_http_failures( provide_auxdata, httpx_mock ):
         for exc in excinfo.value.exceptions }
 
     assert len( exceptions_by_type ) == 2
-    # Detextive may raise ContentDecodeFailure instead of TextualMimetypeInvalidity
+    # Detextive may raise ContentDecodeFailure or TextualMimetypeInvalidity
     assert (
         'TextualMimetypeInvalidity' in exceptions_by_type
         or 'ContentDecodeFailure' in exceptions_by_type )
@@ -699,7 +699,7 @@ async def test_620_http_nontextual_mimetype( provide_auxdata, httpx_mock ):
         await acquirers.acquire( provide_auxdata, [ test_url ] )
 
     assert len( excinfo.value.exceptions ) == 1
-    # Detextive may raise ContentDecodeFailure instead of TextualMimetypeInvalidity
+    # Detextive may raise ContentDecodeFailure or TextualMimetypeInvalidity
     assert isinstance(
         excinfo.value.exceptions[ 0 ],
         ( exceptions.TextualMimetypeInvalidity,
