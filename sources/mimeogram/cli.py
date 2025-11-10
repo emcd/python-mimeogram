@@ -57,13 +57,15 @@ _inscription_mode_default = (
         presentation = __.appcore.inscription.Presentations.Rich,
     )
 )
+_application_default = __.appcore.application.Information( name = 'mimeogram' )
 class Cli(
     __.immut.DataclassObject,
     decorators = ( __.simple_tyro_class, ),
 ):
     ''' Mimeogram: hierarchical data exchange between humans and LLMs. '''
 
-    application: __.appcore.application.Information
+    application: __.appcore.application.Information = (
+        __.dcls.field( default_factory = lambda: _application_default ) )
     configfile: __.typx.Optional[ str ] = None
     # display: ConsoleDisplay
     inscription: __.appcore_cli.InscriptionControl = (
