@@ -127,7 +127,7 @@ async def test_120_acquire_recursive_directory(
 async def test_200_detect_line_endings( provide_tempdir, provide_auxdata ):
     ''' Successfully detects and normalizes different line endings. '''
     acquirers = cache_import_module( f"{PACKAGE_NAME}.acquirers" )
-    parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     test_files = {
         "unix.txt": "line1\nline2\n",          # LF
         "windows.txt": "line1\r\nline2\r\n",   # CRLF
@@ -140,7 +140,7 @@ async def test_200_detect_line_endings( provide_tempdir, provide_auxdata ):
         assert len( results ) == 2
         lineseps = { part.linesep for part in results }
         assert lineseps == {
-            parts.LineSeparators.LF, parts.LineSeparators.CRLF }
+            detextive.LineSeparators.LF, detextive.LineSeparators.CRLF }
         # All content should be normalized to LF
         for part in results:
             assert part.content.count( '\r\n' ) == 0

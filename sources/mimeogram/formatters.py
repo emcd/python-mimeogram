@@ -45,7 +45,7 @@ def format_mimeogram(
             location = 'mimeogram://message',
             mimetype = 'text/plain', # TODO? Markdown
             charset = 'utf-8',
-            linesep = _parts.LineSeparators.LF,
+            linesep = __.detextive.LineSeparators.LF,
             content = message )
         lines.append( format_part( message_part, boundary ) )
     for part in parts:

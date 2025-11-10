@@ -81,10 +81,10 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
     mimetype, charset = __.detextive.infer_mimetype_charset(
         content_bytes, location = str( location ) )
     if charset is None: raise ContentDecodeFailure( location, '???' )
-    linesep = _parts.LineSeparators.detect_bytes( content_bytes )
+    linesep = __.detextive.LineSeparators.detect_bytes( content_bytes )
     if linesep is None:
         _scribe.warning( f"No line separator detected in '{location}'." )
-        linesep = _parts.LineSeparators( __.os.linesep )
+        linesep = __.detextive.LineSeparators( __.os.linesep )
     try:
         content = __.detextive.decode(
             content_bytes, location = str( location ) )
@@ -115,10 +115,10 @@ async def _acquire_via_http(
         location = url,
         http_content_type = http_content_type or __.absent )
     if charset is None: raise ContentDecodeFailure( url, '???' )
-    linesep = _parts.LineSeparators.detect_bytes( content_bytes )
+    linesep = __.detextive.LineSeparators.detect_bytes( content_bytes )
     if linesep is None:
         _scribe.warning( f"No line separator detected in '{url}'." )
-        linesep = _parts.LineSeparators( __.os.linesep )
+        linesep = __.detextive.LineSeparators( __.os.linesep )
     try:
         content = __.detextive.decode(
             content_bytes,
