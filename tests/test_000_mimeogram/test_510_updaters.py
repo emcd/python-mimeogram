@@ -27,9 +27,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import patch
 
+import accretive as accret
 import pytest
 
-import accretive as accret
 from exceptiongroup import ExceptionGroup
 
 from . import (
@@ -77,6 +77,7 @@ def provide_test_interactor( ):
 def produce_mock_auxdata( config = None ):
     ''' Creates a mock Globals object for testing. '''
     from contextlib import AsyncExitStack
+
     from platformdirs import PlatformDirs
 
     __ = cache_import_module( f"{PACKAGE_NAME}.__" )

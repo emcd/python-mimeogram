@@ -21,8 +21,9 @@
 ''' Tests for formatters module. '''
 
 
-import pytest
 import re
+
+import pytest
 
 from . import PACKAGE_NAME, cache_import_module
 

@@ -21,12 +21,13 @@
 ''' Family of exceptions for package API. '''
 
 
-from . import __
-
 import contextlib as _contextlib
 import logging as _logging
 
 import exceptiongroup as _exceptiongroup
+
+from . import __
+
 
 class Omniexception( __.immut.exceptions.Omniexception ):
     ''' Base for all exceptions raised by package API. '''

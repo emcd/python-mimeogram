@@ -21,10 +21,10 @@
 ''' Tests for content acquisition module. '''
 
 
-import exceptiongroup
 import os
 import sys
 
+import exceptiongroup
 import pytest
 
 from . import (
@@ -39,6 +39,7 @@ from . import (
 def provide_auxdata( provide_tempdir, provide_tempenv ):
     ''' Provides test auxiliary data. '''
     import accretive as accret
+
     from platformdirs import PlatformDirs
 
     __ = cache_import_module( f"{PACKAGE_NAME}.__" )
