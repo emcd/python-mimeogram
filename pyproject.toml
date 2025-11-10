@@ -19,8 +19,7 @@ dependencies = [
   'absence~=1.1',
   'accretive~=4.1',
   'aiofiles',
-  'chardet',
-  'detextive~=1.0',
+  'detextive~=2.0',
   'dynadoc~=1.4',
   'emcd-appcore~=1.4',
   'exceptiongroup',
@@ -29,7 +28,6 @@ dependencies = [
   'httpx',
   'icecream-truck~=1.5',
   'patiencediff',
-  'puremagic',
   'pyperclip',
   'python-dotenv', # TODO: Remove after cutover to appcore.
   'readchar',

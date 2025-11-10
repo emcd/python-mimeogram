@@ -61,6 +61,7 @@ async def test_100_select_segments_empty_revision( provide_tempdir ):
     ''' Original content remains unchanged when revision matches. '''
     differences = cache_import_module( f"{PACKAGE_NAME}.differences" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     current = "test content"
@@ -72,7 +73,7 @@ async def test_100_select_segments_empty_revision( provide_tempdir ):
             location = str( test_path ),
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = current )
         target = parts.Target(
             part = part,
@@ -92,6 +93,7 @@ async def test_110_select_segments_with_changes( provide_tempdir ):
     ''' Change acceptance preserves modified content. '''
     differences = cache_import_module( f"{PACKAGE_NAME}.differences" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     current = "line 1\nline 2\nline 3"
@@ -104,7 +106,7 @@ async def test_110_select_segments_with_changes( provide_tempdir ):
             location = str( test_path ),
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = current )
         target = parts.Target(
             part = part,
@@ -127,6 +129,7 @@ async def test_120_select_segments_reject_changes( provide_tempdir ):
     ''' Change rejection maintains original content. '''
     differences = cache_import_module( f"{PACKAGE_NAME}.differences" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     current = "line 1\nline 2\nline 3"
@@ -139,7 +142,7 @@ async def test_120_select_segments_reject_changes( provide_tempdir ):
             location = str( test_path ),
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = current )
         target = parts.Target(
             part = part,
@@ -164,6 +167,7 @@ async def test_130_select_segments_multiple_changes(
     ''' Multiple changes handled correctly. '''
     differences = cache_import_module( f"{PACKAGE_NAME}.differences" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     current = "line 1\nline 2\nline 3\nline 4"
@@ -176,7 +180,7 @@ async def test_130_select_segments_multiple_changes(
             location = str( test_path ),
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = current )
         target = parts.Target(
             part = part,
@@ -270,6 +274,7 @@ async def test_140_select_segments_handles_errors( provide_tempdir ):
     ''' Processing errors preserve original revision. '''
     differences = cache_import_module( f"{PACKAGE_NAME}.differences" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     current = "line 1\nline 2\nline 3"
@@ -289,7 +294,7 @@ async def test_140_select_segments_handles_errors( provide_tempdir ):
             location = str( test_path ),
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = current )
         target = parts.Target(
             part = part,

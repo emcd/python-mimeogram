@@ -202,6 +202,7 @@ async def test_400_apply_success( ):
     ''' apply function handles successful case correctly. '''
     apply = cache_import_module( f"{PACKAGE_NAME}.apply" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     test_content = "test mimeogram"
     test_parts = [
@@ -209,7 +210,7 @@ async def test_400_apply_success( ):
             location = "test.txt",
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = "test content" ) ]
 
     async def mock_updater(
@@ -277,6 +278,7 @@ async def test_430_apply_update_failure( ):
     ''' apply function handles update failures appropriately. '''
     apply = cache_import_module( f"{PACKAGE_NAME}.apply" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     test_content = "test mimeogram"
     test_parts = [
@@ -284,7 +286,7 @@ async def test_430_apply_update_failure( ):
             location = "test.txt",
             mimetype = "text/plain",
             charset = "utf-8",
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = "test content" ) ]
 
     async def failing_updater( auxdata, parts, **kwargs ):
