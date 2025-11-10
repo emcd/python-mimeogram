@@ -6,7 +6,7 @@ default_install_hook_types: [ 'pre-commit', 'pre-push' ]
 repos:
 
 - repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v5.0.0
+  rev: v6.0.0
   hooks:
   - id: check-added-large-files
     name: 'Check: Large Files'
@@ -40,7 +40,7 @@ repos:
     name: 'Check: Debug Statements (Python)'
 
 - repo: https://github.com/astral-sh/ruff-pre-commit
-  rev: v0.12.1
+  rev: v0.14.3
   hooks:
   - id: ruff
     name: 'Lint: Ruff'
@@ -48,6 +48,15 @@ repos:
 
 - repo: local
   hooks:
+
+  - id: hatch-vulture
+    name: 'Lint: Vulture'
+    stages: [ 'pre-commit' ]
+    fail_fast: true
+    language: system
+    always_run: true
+    pass_filenames: false
+    entry: 'hatch --env develop run vulture'
 
   - id: hatch-pytest
     name: 'Test Code Units (Python)'

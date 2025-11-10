@@ -89,7 +89,7 @@ jobs:
               platform-name: linux-x86_64
             - os: windows-latest
               platform-name: windows-x86_64
-            - os: macos-13
+            - os: macos-15-intel
               platform-name: macos-x86_64
             - os: macos-latest
               platform-name: macos-arm64

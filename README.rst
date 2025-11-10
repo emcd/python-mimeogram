@@ -448,7 +448,7 @@ more smoothly, though it is one more syllable than "mime-o-gram". Preferred
 IPA: /ˈmɪm.i.ˌoʊ.ɡræm/.
 
 
-`More Flair <https://www.imdb.com/title/tt0151804/characters/nm0431918>`_
+Additional Indicia
 ===============================================================================
 
 .. image:: https://img.shields.io/github/last-commit/emcd/python-mimeogram

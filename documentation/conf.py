@@ -133,6 +133,8 @@ linkcheck_ignore = [
     # Other blockades...
     r'https://claude\.site/artifacts/.*',
     r'https://docs\.anthropic\.com/.*',
+    # Avoid timeouts for slow sites.
+    r'http://www\.catb\.org/~esr/faqs/smart-questions\.html',
 ]
 
 # -- Options for HTML output -------------------------------------------------
@@ -168,6 +170,14 @@ intersphinx_mapping = {
         'https://docs.python.org/3', None),
     'typing-extensions': (
         'https://typing-extensions.readthedocs.io/en/latest', None),
+  # --- BEGIN: Injected by Copier ---
+    'absence': (
+        'https://emcd.github.io/python-absence/stable/sphinx-html', None),
+    'dynadoc': (
+        'https://emcd.github.io/python-dynadoc/stable/sphinx-html', None),
+    'frigid': (
+        'https://emcd.github.io/python-frigid/stable/sphinx-html', None),
+  # --- END: Injected by Copier ---
 }
 
 # -- Options for todo extension ----------------------------------------------

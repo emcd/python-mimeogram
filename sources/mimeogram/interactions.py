@@ -29,6 +29,7 @@ from . import parts as _parts
 async def _display_content( target: _parts.Target, content: str ) -> None:
     ''' Displays content in system pager. '''
     from .display import display_content
+
     # Suffix from location for proper syntax highlighting.
     suffix = __.Path( target.part.location ).suffix or '.txt'
     display_content( content, suffix = suffix )
@@ -61,6 +62,7 @@ async def _display_differences(
 async def _edit_content( target: _parts.Target, content: str ) -> str:
     ''' Edits content in system editor. '''
     from .edit import edit_content
+
     # Suffix from location for proper syntax highlighting.
     suffix = __.Path( target.destination ).suffix or '.txt'
     return edit_content( content, suffix = suffix )
@@ -70,6 +72,7 @@ def _prompt_action(
     target: _parts.Target, content: str, protect: bool
 ) -> str:
     from readchar import readkey
+
     from .exceptions import UserOperateCancellation
     menu = _produce_actions_menu( target.part, content, protect )
     print( f"\n{menu} > ", end = '' )
@@ -153,8 +156,8 @@ def _calculate_differences(
     original: __.Absential[ str ] = __.absent,
 ) -> list[ str ]:
     ''' Generates unified diff between contents. '''
-    from patiencediff import (
-        unified_diff, PatienceSequenceMatcher ) # pyright: ignore
+    from patiencediff import PatienceSequenceMatcher  # pyright: ignore
+    from patiencediff import unified_diff  # pyright: ignore
     from_lines = (
         original.split( '\n' ) if not __.is_absent( original ) else [ ] )
     to_lines = revision.split( '\n' )
