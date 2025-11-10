@@ -54,6 +54,7 @@ import tyro
 from absence import Absential, absent, is_absent
 from appcore import asyncf
 from appcore import generics
+from appcore import cli as appcore_cli
 
 simple_tyro_class = tyro.conf.configure( )
 standard_tyro_class = tyro.conf.configure( tyro.conf.OmitArgPrefixes )

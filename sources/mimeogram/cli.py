@@ -53,8 +53,8 @@ class VersionCommand(
 
 
 _inscription_mode_default = (
-    __.appcore.inscription.Control(
-        mode = __.appcore.inscription.Presentations.Rich,
+    __.appcore_cli.InscriptionControl(
+        presentation = __.appcore.inscription.Presentations.Rich,
     )
 )
 class Cli(
@@ -66,7 +66,7 @@ class Cli(
     application: __.appcore.application.Information
     configfile: __.typx.Optional[ str ] = None
     # display: ConsoleDisplay
-    inscription: __.appcore.inscription.Control = (
+    inscription: __.appcore_cli.InscriptionControl = (
         __.dcls.field( default_factory = lambda: _inscription_mode_default ) )
     command: __.typx.Union[
         __.typx.Annotated[
@@ -93,14 +93,15 @@ class Cli(
 
     async def __call__( self ):
         ''' Invokes command after library preparation. '''
-        nomargs = self.prepare_invocation_args( )
         async with __.ctxl.AsyncExitStack( ) as exits:
+            nomargs = self.prepare_invocation_args( exits )
             auxdata = await __.appcore.prepare( exits = exits, **nomargs )
             await self.command( auxdata = auxdata )
             # await self.command( auxdata = auxdata, display = self.display )
 
     def prepare_invocation_args(
         self,
+        exits: __.ctxl.AsyncExitStack,
     ) -> __.cabc.Mapping[ str, __.typx.Any ]:
         ''' Prepares arguments for initial configuration. '''
         configedits: __.appcore.dictedits.Edits = (
@@ -109,7 +110,7 @@ class Cli(
             application = self.application,
             configedits = configedits,
             environment = True,
-            inscription = self.inscription,
+            inscription = self.inscription.as_control( exits ),
         )
         if self.configfile: args[ 'configfile' ] = self.configfile
         return args

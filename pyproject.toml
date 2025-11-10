@@ -21,7 +21,7 @@ dependencies = [
   'aiofiles',
   'detextive~=2.0',
   'dynadoc~=1.4',
-  'emcd-appcore~=1.4',
+  'emcd-appcore[cli]~=1.6',
   'exceptiongroup',
   'frigid~=4.1',
   'gitignorefile',
