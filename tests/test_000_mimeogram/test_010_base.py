@@ -23,7 +23,7 @@
 
 import pytest
 
-from . import PACKAGE_NAME, cache_import_module
+from . import __
 
 
 @pytest.mark.parametrize(
@@ -31,5 +31,5 @@ from . import PACKAGE_NAME, cache_import_module
 )
 def test_100_exports( module_name ):
     ''' Module exports expected names. '''
-    module = cache_import_module( f"{PACKAGE_NAME}.__.imports" )
+    module = __.cache_import_module( f"{__.PACKAGE_NAME}.__.imports" )
     assert hasattr( module, module_name )
