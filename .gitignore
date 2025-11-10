@@ -12,3 +12,4 @@ __pycache__/
 bugs/
 build/
 dist/
+copier-update-data.yaml
