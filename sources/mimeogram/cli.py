@@ -52,12 +52,14 @@ class VersionCommand(
         return ( )
 
 
+_application_default = __.appcore.application.Information( name = 'mimeogram' )
 _inscription_mode_default = (
     __.appcore_cli.InscriptionControl(
         presentation = __.appcore.inscription.Presentations.Rich,
     )
 )
-_application_default = __.appcore.application.Information( name = 'mimeogram' )
+
+
 class Cli(
     __.immut.DataclassObject,
     decorators = ( __.simple_tyro_class, ),
