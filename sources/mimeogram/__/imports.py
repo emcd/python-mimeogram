@@ -52,6 +52,7 @@ import tyro
 # --- END: Injected by Copier ---
 
 from absence import Absential, absent, is_absent
+from appcore import cli as appcore_cli
 from appcore import asyncf
 from appcore import generics
 
