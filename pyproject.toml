@@ -16,14 +16,10 @@ license = 'Apache-2.0'
 readme = { 'file' = 'README.rst', 'content-type' = 'text/x-rst' }
 requires-python = '>= 3.10'
 dependencies = [
-  'absence~=1.1',
   'accretive~=4.1',
   'aiofiles',
   'detextive~=2.0',
-  'dynadoc~=1.4',
-  'emcd-appcore[cli]~=1.6',
   'exceptiongroup',
-  'frigid~=4.1',
   'gitignorefile',
   'httpx',
   'icecream-truck~=1.5',

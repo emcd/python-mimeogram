@@ -45,10 +45,10 @@ import                      appcore.dictedits
 import                      appcore.io
 import                      appcore.state
 import                      detextive
-import frigid as            immut
 import typing_extensions as typx
 # --- BEGIN: Injected by Copier ---
 import dynadoc as           ddoc
+import frigid as            immut
 import tyro
 # --- END: Injected by Copier ---
 
