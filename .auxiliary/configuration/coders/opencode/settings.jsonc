@@ -1,0 +1,95 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+
+  "agent": {
+    "build": {
+      "mode": "primary",
+      "model": "zai-coding-plan/glm-4.6"
+    },
+    "plan": {
+      "mode": "primary",
+      "model": "zai-coding-plan/glm-4.6"
+    }
+  },
+
+  "mcp": {
+    "context7": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": true
+    },
+    "librovore": {
+      "type": "local",
+      "command": ["uvx", "librovore", "serve"],
+      "enabled": true
+    },
+    "pyright": {
+      "type": "local",
+      "command": ["mcp-language-server", "--lsp", "pyright-langserver", "--workspace", ".", "--", "--stdio"],
+      "enabled": true
+    }
+  },
+
+  "permission": {
+    "edit": "allow",
+    "bash": {
+      "awk *": "allow",
+      "cat *": "allow",
+      "cut *": "allow",
+      "df *": "allow",
+      "du *": "allow",
+      "echo *": "allow",
+      "file *": "allow",
+      "find *": "allow",
+      "gh browse *": "allow",
+      "gh issue list *": "allow",
+      "gh issue view *": "allow",
+      "gh pr checks *": "allow",
+      "gh pr list *": "allow",
+      "gh pr view *": "allow",
+      "gh release list *": "allow",
+      "gh release view *": "allow",
+      "gh repo list *": "allow",
+      "gh repo view *": "allow",
+      "gh run list *": "allow",
+      "gh run view *": "allow",
+      "gh run watch *": "allow",
+      "gh status *": "allow",
+      "git add *": "allow",
+      "git branch *": "allow",
+      "git diff *": "allow",
+      "git log *": "allow",
+      "git show *": "allow",
+      "git status": "allow",
+      "grep *": "allow",
+      "hatch run python *": "allow",
+      "hatch --env develop run *": "allow",
+      "head *": "allow",
+      "ls *": "allow",
+      "ps *": "allow",
+      "pwd *": "allow",
+      "rg *": "allow",
+      "sed *": "allow",
+      "sort *": "allow",
+      "tail *": "allow",
+      "uniq *": "allow",
+      "wc *": "allow",
+      "which *": "allow"
+    }
+  },
+
+  "formatter": {
+    "ruff": {
+      "disabled": true
+    },
+    "prettier": {
+      "disabled": true
+    }
+  },
+
+  "lsp": {
+    "pyright": {
+      "disabled": true
+    }
+  }
+}

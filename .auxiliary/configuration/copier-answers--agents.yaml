@@ -1,0 +1,16 @@
+# Changes here will be overwritten by Copier
+_commit: v1.0a5-7-g6e59ef6
+_src_path: gh:emcd/agents-common
+coders:
+- claude
+- opencode
+instructions_sources:
+-   files:
+        '*.rst':
+            strip_header_lines: 20
+    source: github:emcd/python-project-common@docs-1#documentation/common
+instructions_target: .auxiliary/instructions
+languages:
+- python
+project_name: python-mimeogram
+provide_instructions: true
