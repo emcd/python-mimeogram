@@ -47,7 +47,7 @@ class Command(
             ''' ),
     ] = '-'
     clip: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc(
             ''' Read mimeogram from clipboard instead of file or stdin. ''' ),
         __.tyro.conf.arg( aliases = ( '--clipboard', '--from-clipboard' ) ),
@@ -75,7 +75,7 @@ class Command(
         __.tyro.conf.arg( aliases = ( '--base-directory', ) ),
     ] = None
     force: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc( '''Override protected path checks.''' ),
     ] = None
 

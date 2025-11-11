@@ -37,7 +37,7 @@ class Command(
     ''' Provides LLM prompt text for mimeogram format. '''
 
     clip: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc( ''' Copy prompt to clipboard. ''' ),
         __.tyro.conf.arg( aliases = ( '--clipboard', '--to-clipboard' ) ),
     ] = None

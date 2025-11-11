@@ -43,12 +43,12 @@ class Command(
         __.tyro.conf.arg( prefix_name = False ),
     ]
     clip: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc( ''' Copy mimeogram to clipboard. ''' ),
         __.tyro.conf.arg( aliases = ( '--clipboard', '--to-clipboard' ) ),
     ] = None
     count_tokens: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc( ''' Count total tokens in mimeogram. ''' ),
     ] = None
     edit: __.typx.Annotated[
@@ -61,18 +61,18 @@ class Command(
         __.typx.Doc( ''' Prepend mimeogram format instructions. ''' ),
     ] = False
     recurse: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc( ''' Recurse into directories. ''' ),
         __.tyro.conf.arg(
             aliases = ( '-r', '--recurse-directories', '--recursive' ) ),
     ] = None
     no_ignores: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc(
             ''' Disable gitignore filtering for file collection. ''' ),
     ] = None
     strict: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc(
             ''' Fail on invalid contents? True, fail. False, skip. ''' ),
         __.tyro.conf.arg( aliases = ( '--fail-on-invalid', ) ),
@@ -93,7 +93,7 @@ class Command(
             ''' ),
     ] = None
     deterministic_boundary: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc(
             ''' Use deterministic boundary for reproducible output.
 
