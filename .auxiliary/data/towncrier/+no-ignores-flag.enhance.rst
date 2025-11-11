@@ -1,0 +1,1 @@
+CLI: Add --no-ignores flag to disable gitignore filtering during file collection. When gitignore filtering is enabled (default), warnings are emitted for skipped files with guidance to use --no-ignores flag.

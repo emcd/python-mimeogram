@@ -66,6 +66,11 @@ class Command(
         __.tyro.conf.arg(
             aliases = ( '-r', '--recurse-directories', '--recursive' ) ),
     ] = None
+    no_ignores: __.typx.Annotated[
+        __.typx.Optional[ bool ],
+        __.typx.Doc(
+            ''' Disable gitignore filtering for file collection. ''' ),
+    ] = None
     strict: __.typx.Annotated[
         __.typx.Optional[ bool ],
         __.typx.Doc(
@@ -121,6 +126,10 @@ class Command(
             edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
                 address = ( 'acquire-parts', 'recurse-directories' ),
                 value = self.recurse ) )
+        if None is not self.no_ignores:
+            edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
+                address = ( 'acquire-parts', 'no-ignores' ),
+                value = self.no_ignores ) )
         if None is not self.strict:
             edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
                 address = ( 'acquire-parts', 'fail-on-invalid' ),

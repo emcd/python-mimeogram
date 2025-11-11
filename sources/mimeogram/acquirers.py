@@ -41,6 +41,7 @@ async def acquire(
     options = auxdata.configuration.get( 'acquire-parts', { } )
     strict = options.get( 'fail-on-invalid', False )
     recursive = options.get( 'recurse-directories', False )
+    no_ignores = options.get( 'no-ignores', False )
     tasks: list[ __.cabc.Coroutine[ None, None, _parts.Part ] ] = [ ]
     for source in sources:
         path = __.Path( source )
@@ -50,7 +51,8 @@ async def acquire(
         scheme = 'file' if path.drive else url_parts.scheme
         match scheme:
             case '' | 'file':
-                tasks.extend( _produce_fs_tasks( source, recursive ) )
+                fs_tasks = _produce_fs_tasks( source, recursive, no_ignores )
+                tasks.extend( fs_tasks )
             case 'http' | 'https':
                 tasks.append( _produce_http_task( str( source ) ) )
             case _:
@@ -138,9 +140,14 @@ async def _acquire_via_http(
 _files_to_ignore = frozenset( ( '.DS_Store', '.env' ) )
 _directories_to_ignore = frozenset( ( '.bzr', '.git', '.hg', '.svn' ) )
 def _collect_directory_files(
-    directory: __.Path, recursive: bool
+    directory: __.Path, recursive: bool, no_ignores: bool = False
 ) -> list[ __.Path ]:
-    ''' Collects and filters files from directory hierarchy. '''
+    ''' Collects and filters files from directory hierarchy.
+
+        When no_ignores is True, gitignore filtering is disabled.
+        When gitignore filtering is enabled, warnings are emitted for
+        filtered paths.
+    '''
     import gitignorefile
     cache = gitignorefile.Cache( )
     paths: list[ __.Path ] = [ ]
@@ -152,23 +159,27 @@ def _collect_directory_files(
         if entry.is_file( ) and entry.name in _files_to_ignore:
             _scribe.debug( f"Ignoring file: {entry}" )
             continue
-        if cache( str( entry ) ):
-            _scribe.debug( f"Ignoring path (matched by .gitignore): {entry}" )
+        if not no_ignores and cache( str( entry ) ):
+            _scribe.warning(
+                f"Skipping path (matched by .gitignore): {entry}. "
+                "Use --no-ignores to include." )
             continue
         if entry.is_dir( ) and recursive:
-            paths.extend( _collect_directory_files( entry, recursive ) )
+            collected = _collect_directory_files(
+                entry, recursive, no_ignores )
+            paths.extend( collected )
         elif entry.is_file( ): paths.append( entry )
     return paths
 
 
 def _produce_fs_tasks(
-    location: str | __.Path, recursive: bool = False
+    location: str | __.Path, recursive: bool = False, no_ignores: bool = False
 ) -> tuple[ __.cabc.Coroutine[ None, None, _parts.Part ], ...]:
     location_ = __.Path( location )
     if location_.is_file( ) or location_.is_symlink( ):
         return ( _acquire_from_file( location_ ), )
     if location_.is_dir( ):
-        files = _collect_directory_files( location_, recursive )
+        files = _collect_directory_files( location_, recursive, no_ignores )
         return tuple( _acquire_from_file( f ) for f in files )
     raise _exceptions.ContentAcquireFailure( location )
 

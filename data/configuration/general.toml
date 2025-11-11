@@ -13,6 +13,7 @@ to-clipboard = true
 
 [acquire-parts]
 fail-on-invalid = false
+no-ignores = false
 recurse-directories = false
 
 [update-parts]
