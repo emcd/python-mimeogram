@@ -79,10 +79,10 @@ async def provide_prompt(
         prompt = await acquire_prompt( auxdata )
     options = auxdata.configuration.get( 'prompt', { } )
     if options.get( 'to-clipboard', False ):
-        from pyperclip import copy
+        from . import clipboard
         with _exceptions.report_exceptions(
             _scribe, "Could not copy prompt to clipboard."
-        ): copy( prompt )
+        ): clipboard.copy_to_clipboard( prompt )
         _scribe.info( "Copied prompt to clipboard." )
     else: print( prompt ) # TODO? Use output stream from configuration.
     raise SystemExit( 0 )

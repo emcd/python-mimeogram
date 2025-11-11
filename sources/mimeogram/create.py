@@ -153,8 +153,8 @@ async def _acquire_prompt(
 
 
 async def _copy_to_clipboard( mimeogram: str ) -> None:
-    from pyperclip import copy
-    copy( mimeogram )
+    from . import clipboard
+    clipboard.copy_to_clipboard( mimeogram )
     _scribe.info( "Copied mimeogram to clipboard." )
 
 

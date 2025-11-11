@@ -134,8 +134,8 @@ class StandardContentAcquirer( ContentAcquirer ):
         return __.sys.stdin.isatty( )
 
     async def acquire_clipboard( self ) -> str:
-        from pyperclip import paste
-        return paste( )
+        from . import clipboard
+        return clipboard.copy_from_clipboard( )
 
     async def acquire_file( self, path: str | __.Path ) -> str:
         return await __.appcore.io.acquire_text_file_async( path )
