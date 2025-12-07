@@ -2,6 +2,7 @@
 # See https://pre-commit.com/hooks.html for more hooks
 
 default_install_hook_types: [ 'pre-commit', 'pre-push' ]
+exclude: ^\.auxiliary/pocs
 
 repos:
 

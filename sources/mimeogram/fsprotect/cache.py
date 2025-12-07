@@ -64,10 +64,8 @@ class Cache( _core.Protector ):
         ''' Verifies if a path should be protected using cached data. '''
         path = _normalize_path( path )
         _scribe.debug( f"Path: {path}" )
-
         if any( part in self.defaults_disablement for part in path.parts ):
             return _core.Status( path = path, active = False )
-
         for dir_path, ( ignore, protect ) in self.rules_supercession.items( ):
             dir_path_ = _normalize_path( dir_path )
             if not path.is_relative_to( dir_path_ ): continue
@@ -79,7 +77,6 @@ class Cache( _core.Protector ):
                     path = path,
                     reason = _core.Reasons.PlatformSensitive,
                     active = True )
-
         for reason, rule in self.rules.items( ):
             for protected_path in rule.paths:
                 protected_path_ = _normalize_path( protected_path )
@@ -93,7 +90,6 @@ class Cache( _core.Protector ):
                     path = path,
                     reason = reason,
                     active = True )
-
         return _core.Status( path = path, active = False )
 
 

@@ -49,17 +49,28 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.githubpages',
+    'myst_parser',
     'sphinx_copybutton',
     'sphinx_inline_tabs',
 ]
 
 templates_path = [ '_templates' ]
 
-exclude_patterns = [ ]
+exclude_patterns = [
+    # Openspec workflow/meta files (not documentation)
+    'architecture/openspec/AGENTS.md',
+    'architecture/openspec/project.md',
+    'architecture/openspec/changes/**',
+]
 
 rst_prolog = f'''
 .. |project| replace:: {project}
 '''
+
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
 nitpicky = True
 nitpick_ignore = [
@@ -179,6 +190,26 @@ intersphinx_mapping = {
         'https://emcd.github.io/python-frigid/stable/sphinx-html', None),
   # --- END: Injected by Copier ---
 }
+
+# -- Options for Myst extension ----------------------------------------------
+
+# https://myst-parser.readthedocs.io/en/latest/syntax/optional.html
+myst_enable_extensions = [
+    # 'amsmath',
+    # 'attrs_inline',
+    'colon_fence',      # ::: blocks
+    'deflist',          # Definition lists
+    # 'dollarmath',
+    # 'fieldlist',
+    # 'html_admonition',
+    # 'html_image',
+    # 'linkify',
+    # 'replacements',
+    # 'smartquotes',
+    # 'strikethrough',
+    # 'substitution',
+    'tasklist',         # - [ ] tasks
+]
 
 # -- Options for todo extension ----------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/todo.html#configuration

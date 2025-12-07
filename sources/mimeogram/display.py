@@ -41,16 +41,12 @@ def discover_pager( ) -> __.cabc.Callable[ [ str ], None ]:
                 case _: pass
             break
     else: pager = ''
-
     if pager:
-
         # TODO? async
         def pager_executor( filename: str ) -> None:
             ''' Executes pager with file. '''
             run( ( pager, filename ), check = True ) # noqa: S603
-
         return pager_executor
-
     # TODO? async
     def console_display( filename: str ) -> None:
         ''' Prints file to stdout and waits for ENTER key. '''
