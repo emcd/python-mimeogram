@@ -1,0 +1,195 @@
+/**
+ * Opencode plugin to prevent git commits when linters or tests fail.
+ * Port of Claude Code hook: template/.auxiliary/configuration/coders/claude/scripts/pre-bash-git-commit-check
+ */
+import { split } from 'shlex';
+
+export const GitCommitGuard = async ({ project, client, $, directory, worktree }) => {
+  const GIT_COMMIT_MIN_TOKENS = 2;
+  const SPLITTERS = new Set([';', '&', '|', '&&', '||']);
+
+  /**
+   * Checks if a command is available in PATH.
+   */
+  async function isCommandAvailable(command) {
+    try {
+      const result = await $`which ${command}`.nothrow().quiet();
+      return result.exitCode === 0;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Checks if a specific Hatch environment exists.
+   */
+  async function isHatchEnvAvailable(envName) {
+    try {
+      const result = await $`hatch env show`.nothrow().quiet();
+      if (result.exitCode !== 0) return false;
+      return result.stdout.toString().includes(envName);
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * Runs a command with timeout using Promise.race.
+   */
+  async function runCommandWithTimeout(command, timeoutMs) {
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(`Command timed out after ${timeoutMs}ms`)), timeoutMs);
+    });
+
+    try {
+      const commandPromise = (async () => {
+        try {
+          const result = await $`sh -c "${command}"`.nothrow().quiet();
+          return {
+            exitCode: result.exitCode,
+            stdout: result.stdout?.toString() || '',
+            stderr: result.stderr?.toString() || ''
+          };
+        } catch (error) {
+          return {
+            exitCode: error.exitCode || 1,
+            stdout: error.stdout?.toString() || '',
+            stderr: error.stderr?.toString() || error.message || ''
+          };
+        }
+      })();
+
+      return await Promise.race([commandPromise, timeoutPromise]);
+    } catch (error) {
+      return {
+        exitCode: 1,
+        stdout: '',
+        stderr: error.message || 'Command execution failed'
+      };
+    }
+  }
+
+  /**
+   * Displays divine admonition and exits.
+   */
+  function errorWithDivineMessage() {
+    const message = (
+      "The Large Language Divinity 🌩️🤖🌩️ in the Celestial Data Center hath " +
+      "commanded that:\n" +
+      "* Thy code shalt pass all lints before thy commit.\n" +
+      "  Run: hatch --env develop run linters\n" +
+      "  Run: hatch --env develop run vulture\n" +
+      "* Thy code shalt pass all tests before thy commit.\n" +
+      "  Run: hatch --env develop run testers\n\n" +
+      "(If you are in the middle of a large refactor, consider commenting " +
+      "out tests and adding a reminder note in the .auxiliary/notes " +
+      "directory.)"
+    );
+    throw new Error(message);
+  }
+
+  /**
+   * Checks if tokens represent a git commit command.
+   */
+  function isGitCommitCommand(tokens) {
+    if (tokens.length < GIT_COMMIT_MIN_TOKENS) {
+      return false;
+    }
+    return tokens[0] === 'git' && tokens[1] === 'commit';
+  }
+
+  /**
+   * Partitions command line into separate commands using shell splitters.
+   */
+  function partitionCommandLine(commandLine) {
+    // Use shlex.split for proper shell parsing (matches Python hook)
+    const tokens = split(commandLine);
+    
+    // Now partition by shell splitters
+    const commands = [];
+    let commandTokens = [];
+
+    for (const token of tokens) {
+      if (SPLITTERS.has(token)) {
+        if (commandTokens.length > 0) {
+          commands.push(commandTokens);
+          commandTokens = [];
+        }
+        continue;
+      }
+      commandTokens.push(token);
+    }
+
+    if (commandTokens.length > 0) {
+      commands.push(commandTokens);
+    }
+
+    return commands;
+  }
+
+  /**
+   * Checks for git commit commands and validates linters/tests.
+   */
+  async function checkGitCommitCommand(tokens) {
+    if (!isGitCommitCommand(tokens)) return;
+
+    // Check if hatch command is available
+    if (!(await isCommandAvailable('hatch'))) {
+      return; // Early exit if hatch not available
+    }
+
+    // Check if develop Hatch environment exists
+    if (!(await isHatchEnvAvailable('develop'))) {
+      return; // Early exit if develop environment not available
+    }
+
+    // Run linters with 120 second timeout
+    try {
+      const result = await runCommandWithTimeout('hatch --env develop run linters', 120000);
+      if (result.exitCode !== 0) {
+        errorWithDivineMessage();
+      }
+    } catch {
+      errorWithDivineMessage();
+    }
+
+    // Run tests with 300 second timeout
+    try {
+      const result = await runCommandWithTimeout('hatch --env develop run testers', 300000);
+      if (result.exitCode !== 0) {
+        errorWithDivineMessage();
+      }
+    } catch {
+      errorWithDivineMessage();
+    }
+
+    // Run vulture with 120 second timeout
+    try {
+      const result = await runCommandWithTimeout('hatch --env develop run vulture', 120000);
+      if (result.exitCode !== 0) {
+        errorWithDivineMessage();
+      }
+    } catch {
+      errorWithDivineMessage();
+    }
+  }
+
+  return {
+    "tool.execute.before": async (input, output) => {
+      // Only run for bash tool
+      if (input.tool !== "bash") return;
+
+      // Extract command from input
+      const command = input.args?.command || '';
+      if (!command) return;
+
+      // Partition command line into separate commands
+      const commands = partitionCommandLine(command);
+
+      // Check each command for git commit
+      for (const commandTokens of commands) {
+        await checkGitCommitCommand(commandTokens);
+      }
+    }
+  };
+};

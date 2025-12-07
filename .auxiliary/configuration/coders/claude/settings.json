@@ -39,6 +39,18 @@
   },
   "permissions": {
     "auto_allow": [
+      "mcp__context7__get-library-docs",
+      "mcp__context7__resolve-library-id",
+      "mcp__librovore__query_content",
+      "mcp__librovore__query_inventory",
+      "mcp__pyright__definition",
+      "mcp__pyright__diagnostics",
+      "mcp__pyright__edit_file",
+      "mcp__pyright__hover",
+      "mcp__pyright__references",
+      "mcp__pyright__rename_symbol",
+      "Bash(hatch run *)",
+      "Bash(hatch --env develop run *)",
       "Bash(awk *)",
       "Bash(cat *)",
       "Bash(cut *)",
@@ -68,8 +80,6 @@
       "Bash(git show *)",
       "Bash(git status)",
       "Bash(grep *)",
-      "Bash(hatch run python *)",
-      "Bash(hatch --env develop run *)",
       "Bash(head *)",
       "Bash(ls *)",
       "Bash(ps *)",
@@ -80,15 +90,7 @@
       "Bash(tail *)",
       "Bash(uniq *)",
       "Bash(wc *)",
-      "Bash(which *)",
-      "mcp__context7__get-library-docs",
-      "mcp__context7__resolve-library-id",
-      "mcp__pyright__definition",
-      "mcp__pyright__diagnostics",
-      "mcp__pyright__edit_file",
-      "mcp__pyright__hover",
-      "mcp__pyright__references",
-      "mcp__pyright__rename_symbol"
+      "Bash(which *)"
     ]
   },
   "sandbox": {

@@ -1,19 +1,19 @@
 {
   "mcpServers": {
-    "librovore": {
-      "command": "uvx",
-      "args": [ "librovore", "serve" ]
-    },
     "pyright": {
       "command": "mcp-language-server",
       "args": [
-        "--lsp",
-        "pyright-langserver",
-        "--workspace",
-        ".",
-        "--",
-        "--stdio"
+        "--lsp", "pyright-langserver", "--workspace", ".",
+        "--", "--stdio"
       ]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [ "-y", "@upstash/context7-mcp" ]
+    },
+    "librovore": {
+      "command": "uvx",
+      "args": [ "librovore", "serve" ]
     }
   }
 }

@@ -4,15 +4,22 @@
   "agent": {
     "build": {
       "mode": "primary",
-      "model": "zai-coding-plan/glm-4.6"
+      // "model": "zai-coding-plan/glm-4.6"
+      "model": "deepseek/deepseek-chat"
     },
     "plan": {
       "mode": "primary",
-      "model": "zai-coding-plan/glm-4.6"
+      // "model": "zai-coding-plan/glm-4.6"
+      "model": "deepseek/deepseek-chat"
     }
   },
 
   "mcp": {
+    "pyright": {
+      "type": "local",
+      "command": ["mcp-language-server", "--lsp", "pyright-langserver", "--workspace", ".", "--", "--stdio"],
+      "enabled": true
+    },
     "context7": {
       "type": "local",
       "command": ["npx", "-y", "@upstash/context7-mcp"],
@@ -22,17 +29,14 @@
       "type": "local",
       "command": ["uvx", "librovore", "serve"],
       "enabled": true
-    },
-    "pyright": {
-      "type": "local",
-      "command": ["mcp-language-server", "--lsp", "pyright-langserver", "--workspace", ".", "--", "--stdio"],
-      "enabled": true
     }
   },
 
   "permission": {
-    "edit": "allow",
     "bash": {
+      "*": "ask",
+      "hatch run *": "allow",
+      "hatch --env develop run *": "allow",
       "awk *": "allow",
       "cat *": "allow",
       "cut *": "allow",
@@ -60,10 +64,8 @@
       "git diff *": "allow",
       "git log *": "allow",
       "git show *": "allow",
-      "git status": "allow",
+      "git status *": "allow",
       "grep *": "allow",
-      "hatch run python *": "allow",
-      "hatch --env develop run *": "allow",
       "head *": "allow",
       "ls *": "allow",
       "ps *": "allow",
@@ -75,7 +77,9 @@
       "uniq *": "allow",
       "wc *": "allow",
       "which *": "allow"
-    }
+    },
+    "edit": "allow",
+    "webfetch": "ask"
   },
 
   "formatter": {

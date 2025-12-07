@@ -1,0 +1,149 @@
+/**
+ * Opencode plugin to detect improper Python usage in Bash commands.
+ * Port of Claude Code hook: template/.auxiliary/configuration/coders/claude/scripts/pre-bash-python-check
+ */
+import { split } from 'shlex';
+
+export const PythonEnvironmentGuard = async ({ project, client, $, directory, worktree }) => {
+  const SPLITTERS = new Set([';', '&', '|', '&&', '||']);
+
+  /**
+   * Checks if token is a Python command.
+   */
+  function isPythonCommand(token) {
+    return (
+      token === 'python' ||
+      token === 'python3' ||
+      token.startsWith('python3.')
+    );
+  }
+
+  /**
+   * Checks if token is a Python development tool.
+   */
+  function isPythonTool(token) {
+    return ['coverage', 'pyright', 'pytest', 'ruff'].includes(token);
+  }
+
+  /**
+   * Checks if Python -c argument contains multiline code.
+   */
+  function checkPythonCArgument(tokens, pythonIndex) {
+    for (let j = pythonIndex + 1; j < tokens.length; j++) {
+      if (tokens[j] === '-c' && j + 1 < tokens.length) {
+        const cArgument = tokens[j + 1];
+        return cArgument.includes('\n');
+      }
+      if (!tokens[j].startsWith('-')) {
+        // Non-option argument, stop looking for -c
+        break;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Checks for direct python usage patterns.
+   */
+  function checkDirectPythonUsage(tokens) {
+    const emessage = (
+      "Warning: Direct Python usage detected in command.\n" +
+      "Consider using 'hatch run python' or " +
+      "'hatch --env develop run python' to ensure dependencies " +
+      "are available."
+    );
+    
+    for (const token of tokens) {
+      if (token === 'hatch') return;
+      if (isPythonCommand(token)) {
+        throw new Error(emessage);
+      }
+    }
+  }
+
+  /**
+   * Checks for multi-line python -c scripts using shlex parsing.
+   */
+  function checkMultilinePythonC(tokens) {
+    const emessage = (
+      "Warning: Multi-line Python script detected in command.\n" +
+      "Consider writing the script to a file " +
+      "in the '.auxiliary/scribbles' directory " +
+      "instead of using 'python -c' with multi-line code."
+    );
+    
+    for (let i = 0; i < tokens.length; i++) {
+      const token = tokens[i];
+      if (isPythonCommand(token) && checkPythonCArgument(tokens, i)) {
+        throw new Error(emessage);
+      }
+    }
+  }
+
+  /**
+   * Checks for direct usage of Python tools outside Hatch environment.
+   */
+  function checkDirectToolUsage(tokens) {
+    for (const token of tokens) {
+      if (token === 'hatch') return;
+      if (isPythonTool(token)) {
+        const emessage = (
+          `Warning: Direct Python tool usage detected in command.\n` +
+          `Use 'hatch --env develop run ${token}' instead to ensure ` +
+          `proper environment and configuration.`
+        );
+        throw new Error(emessage);
+      }
+    }
+  }
+
+  /**
+   * Partitions command line into separate commands using shell splitters.
+   */
+  function partitionCommandLine(commandLine) {
+    // Use shlex.split for proper shell parsing (matches Python hook)
+    const tokens = split(commandLine);
+    
+    // Now partition by shell splitters
+    const commands = [];
+    let commandTokens = [];
+
+    for (const token of tokens) {
+      if (SPLITTERS.has(token)) {
+        if (commandTokens.length > 0) {
+          commands.push(commandTokens);
+          commandTokens = [];
+        }
+        continue;
+      }
+      commandTokens.push(token);
+    }
+
+    if (commandTokens.length > 0) {
+      commands.push(commandTokens);
+    }
+
+    return commands;
+  }
+
+  return {
+    "tool.execute.before": async (input, output) => {
+      // Only run for bash tool
+      if (input.tool !== "bash") return;
+
+      // Extract command from input
+      const command = input.args?.command || '';
+      if (!command) return;
+
+      // Partition command line into separate commands
+      const commands = partitionCommandLine(command);
+
+      // Check each command for Python usage issues
+      for (const commandTokens of commands) {
+        checkDirectPythonUsage(commandTokens);
+        checkMultilinePythonC(commandTokens);
+        checkDirectToolUsage(commandTokens);
+      }
+    }
+  };
+};
