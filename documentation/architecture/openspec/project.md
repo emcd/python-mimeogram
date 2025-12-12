@@ -1,7 +1,7 @@
 # Project Context
 
 ## Purpose
-Mimeogram is a command-line tool for **exchanging collections of files with Large Language Models (LLMs)**. It bundles multiple files into a single clipboard-ready document while preserving directory structure and metadata, making it ideal for code reviews, project sharing, and LLM interactions. It supports interactive reviews, clipboard integration, and path protection.
+This is a command-line tool for **exchanging collections of files with Large Language Models (LLMs)**. It bundles multiple files into a single clipboard-ready document while preserving directory structure and metadata, making it ideal for code reviews, project sharing, and LLM interactions. It supports interactive reviews, clipboard integration, and path protection.
 
 ## Tech Stack
 - **Language**: Python 3.10+
@@ -30,7 +30,6 @@ Mimeogram is a command-line tool for **exchanging collections of files with Larg
 - **Linters**:
   - `ruff` (general linting)
   - `isort` (import sorting)
-  - `vibelinter` (custom linter)
 - **Configuration**: See `pyproject.toml` for detailed linter configurations.
 
 ### Architecture Patterns
