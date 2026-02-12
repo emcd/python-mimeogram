@@ -1,0 +1,104 @@
+
+
+
+# Codex rules (Starlark): allow safe development commands outside the sandbox.
+#
+# Generated from the emcd-agents Copier template.
+#
+# Notes:
+# - Rules match an argv *prefix* (not globs). For example:
+#     pattern=["git", "diff"] matches "git diff --stat".
+# - We intentionally do NOT allow `git commit` or `git push` here.
+
+# Common filesystem and text utilities.
+prefix_rule(pattern=["awk"], decision="allow")
+prefix_rule(pattern=["cat"], decision="allow")
+prefix_rule(pattern=["cut"], decision="allow")
+prefix_rule(pattern=["df"], decision="allow")
+prefix_rule(pattern=["du"], decision="allow")
+prefix_rule(pattern=["echo"], decision="allow")
+prefix_rule(pattern=["file"], decision="allow")
+prefix_rule(pattern=["find"], decision="allow")
+prefix_rule(pattern=["grep"], decision="allow")
+prefix_rule(pattern=["head"], decision="allow")
+prefix_rule(pattern=["ls"], decision="allow")
+prefix_rule(pattern=["ps"], decision="allow")
+prefix_rule(pattern=["pwd"], decision="allow")
+prefix_rule(pattern=["rg"], decision="allow")
+prefix_rule(pattern=["sed"], decision="allow")
+prefix_rule(pattern=["sort"], decision="allow")
+prefix_rule(pattern=["tail"], decision="allow")
+prefix_rule(pattern=["uniq"], decision="allow")
+prefix_rule(pattern=["wc"], decision="allow")
+prefix_rule(pattern=["which"], decision="allow")
+
+# Git commands used by normal development workflows.
+prefix_rule(
+    pattern=["git", ["add", "branch", "diff", "log", "show", "status"]],
+    decision="allow",
+    justification="Common git inspection/staging commands.",
+)
+prefix_rule(
+    pattern=["git", ["fetch", "rebase", "rev-parse"]],
+    decision="allow",
+    justification="Common git maintenance commands.",
+)
+prefix_rule(
+    pattern=["git", "stash", "list"],
+    decision="allow",
+    justification="List git stashes.",
+)
+
+# GitHub CLI (read-oriented operations).
+prefix_rule(
+    pattern=["gh", "browse"],
+    decision="allow",
+    justification="Open browser for GitHub resources.",
+)
+prefix_rule(
+    pattern=["gh", "status"],
+    decision="allow",
+    justification="Show GitHub auth and repo status.",
+)
+prefix_rule(
+    pattern=["gh", "issue", ["list", "view"]],
+    decision="allow",
+    justification="Read GitHub issues.",
+)
+prefix_rule(
+    pattern=["gh", "pr", ["checks", "list", "view"]],
+    decision="allow",
+    justification="Read GitHub pull requests.",
+)
+prefix_rule(
+    pattern=["gh", "release", ["list", "view"]],
+    decision="allow",
+    justification="Read GitHub releases.",
+)
+prefix_rule(
+    pattern=["gh", "repo", ["list", "view"]],
+    decision="allow",
+    justification="Read GitHub repository metadata.",
+)
+prefix_rule(
+    pattern=["gh", "run", ["list", "view", "watch"]],
+    decision="allow",
+    justification="Read GitHub Actions runs.",
+)
+prefix_rule(
+    pattern=["gh", "search", "issues"],
+    decision="allow",
+    justification="Search GitHub issues.",
+)
+
+# Python workflows.
+prefix_rule(
+    pattern=["hatch", "run"],
+    decision="allow",
+    justification="Run Hatch-managed project tooling.",
+)
+prefix_rule(
+    pattern=["hatch", "--env", "develop", "run"],
+    decision="allow",
+    justification="Run Hatch-managed tooling in the develop environment.",
+)

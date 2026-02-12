@@ -9,6 +9,8 @@
       "mcp__context7__get-library-docs",
       "mcp__librovore__query_content",
       "mcp__librovore__query_inventory",
+      "mcp__nb__nb",
+      "mcp__nb__help",
       "mcp__pyright__definition",
       "mcp__pyright__diagnostics",
       "mcp__pyright__hover",
@@ -32,6 +34,8 @@
       "mcp__context7__get-library-docs",
       "mcp__librovore__query_content",
       "mcp__librovore__query_inventory",
+      "mcp__nb__nb",
+      "mcp__nb__help",
       "mcp__pyright__definition",
       "mcp__pyright__diagnostics",
       "mcp__pyright__hover",
@@ -66,6 +70,7 @@
       "run_shell_command(gh run list)",
       "run_shell_command(gh run view)",
       "run_shell_command(gh run watch)",
+      "run_shell_command(gh search issues)",
       "run_shell_command(gh status)",
       "run_shell_command(git add)",
       "run_shell_command(git diff)",
@@ -112,6 +117,13 @@
     "librovore": {
       "command": "uvx",
       "args": [ "librovore", "serve" ]
+    },
+    "nb": {
+      "command": "nb-mcp",
+      "args": [
+        "--notebook", "python-mimeogram",
+        "--no-commit-signing"
+      ]
     }
   }
 }

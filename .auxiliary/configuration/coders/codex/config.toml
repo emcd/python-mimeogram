@@ -1,0 +1,25 @@
+model = "gpt-5.3-codex"
+model_reasoning_effort = "high"
+personality = "friendly"
+
+# approval_policy = "on-request"
+# sandbox_mode = "workspace-write"
+trust_level = "trusted"
+# web_search = "cached"
+[mcp_servers.pyright]
+command = "/bin/bash"
+args = ["-lc", "mcp-language-server --lsp pyright-langserver --workspace . -- --stdio 2>/dev/null"]
+startup_timeout_sec = 30
+tool_timeout_sec = 90
+
+[mcp_servers.context7]
+command = "npx"
+args = ["-y", "@upstash/context7-mcp"]
+
+[mcp_servers.librovore]
+command = "uvx"
+args = ["librovore", "serve"]
+
+[mcp_servers.nb]
+command = "nb-mcp"
+args = ["--notebook", "python-mimeogram", "--no-commit-signing"]

@@ -1,8 +1,9 @@
 # Changes here will be overwritten by Copier
-_commit: v1.0a7-25-gbb445ee
+_commit: v1.0a8-13-g00da4f1
 _src_path: gh:emcd/agents-common
 coders:
 - claude
+- codex
 - gemini
 - opencode
 instructions_sources:
@@ -15,3 +16,4 @@ languages:
 - python
 project_name: python-mimeogram
 provide_instructions: true
+support_local_models: true
