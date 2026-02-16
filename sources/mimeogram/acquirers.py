@@ -21,6 +21,8 @@
 ''' Content acquisition from various sources. '''
 
 
+import codecs as _codecs
+
 import aiofiles as _aiofiles
 import httpx as _httpx
 
@@ -30,6 +32,9 @@ from . import parts as _parts
 
 
 _scribe = __.produce_scribe( __name__ )
+_decode_inform_behaviors = __.dcls.replace(
+    __.detextive.BEHAVIORS_DEFAULT,
+    trial_decode_confidence = 0.75 )
 
 
 async def acquire(
@@ -73,6 +78,17 @@ async def acquire(
     return tuple( values )
 
 
+def _canonicalize_charset_from_bom( charset: str, content: bytes ) -> str:
+    ''' Canonicalizes charset based on BOM presence in content bytes. '''
+    if charset.lower( ).replace( '_', '-' ) != 'utf-8-sig': return charset
+    # TODO: Replace this with explicit BOM metadata from Detextive.
+    #
+    # We only canonicalize UTF-8-SIG here. UTF-16/UTF-32 BOM behavior is
+    # carried by their codec names (e.g., 'utf-16' vs 'utf-16-le').
+    if content.startswith( _codecs.BOM_UTF8 ): return 'utf-8-sig'
+    return 'utf-8'
+
+
 async def _acquire_from_file( location: __.Path ) -> _parts.Part:
     ''' Acquires content from text file. '''
     from .exceptions import ContentAcquireFailure, ContentDecodeFailure
@@ -80,25 +96,28 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
         async with _aiofiles.open( location, 'rb' ) as f: # pyright: ignore
             content_bytes = await f.read( )
     except Exception as exc: raise ContentAcquireFailure( location ) from exc
-    mimetype, charset = __.detextive.infer_mimetype_charset(
-        content_bytes, location = str( location ) )
+    try:
+        result = __.detextive.decode_inform(
+            content_bytes,
+            location = str( location ),
+            behaviors = _decode_inform_behaviors )
+    except Exception as exc:
+        raise ContentDecodeFailure( location, '???' ) from exc
+    mimetype = result.mimetype.mimetype
+    charset = result.charset.charset
     if charset is None: raise ContentDecodeFailure( location, '???' )
-    linesep = __.detextive.LineSeparators.detect_bytes( content_bytes )
+    charset = _canonicalize_charset_from_bom( charset, content_bytes )
+    linesep = result.linesep
     if linesep is None:
         _scribe.warning( f"No line separator detected in '{location}'." )
         linesep = __.detextive.LineSeparators( __.os.linesep )
-    try:
-        content = __.detextive.decode(
-            content_bytes, location = str( location ) )
-    except Exception as exc:
-        raise ContentDecodeFailure( location, charset ) from exc
     _scribe.debug( f"Read file: {location}" )
     return _parts.Part(
         location = str( location ),
         mimetype = mimetype,
         charset = charset,
         linesep = linesep,
-        content = linesep.normalize( content ) )
+        content = linesep.normalize( result.text ) )
 
 
 async def _acquire_via_http(
@@ -112,29 +131,29 @@ async def _acquire_via_http(
     except Exception as exc: raise ContentAcquireFailure( url ) from exc
     http_content_type = response.headers.get( 'content-type' )
     content_bytes = response.content
-    mimetype, charset = __.detextive.infer_mimetype_charset(
-        content_bytes,
-        location = url,
-        http_content_type = http_content_type or __.absent )
+    try:
+        result = __.detextive.decode_inform(
+            content_bytes,
+            location = url,
+            behaviors = _decode_inform_behaviors,
+            http_content_type = http_content_type or __.absent )
+    except Exception as exc:
+        raise ContentDecodeFailure( url, '???' ) from exc
+    mimetype = result.mimetype.mimetype
+    charset = result.charset.charset
     if charset is None: raise ContentDecodeFailure( url, '???' )
-    linesep = __.detextive.LineSeparators.detect_bytes( content_bytes )
+    charset = _canonicalize_charset_from_bom( charset, content_bytes )
+    linesep = result.linesep
     if linesep is None:
         _scribe.warning( f"No line separator detected in '{url}'." )
         linesep = __.detextive.LineSeparators( __.os.linesep )
-    try:
-        content = __.detextive.decode(
-            content_bytes,
-            location = url,
-            http_content_type = http_content_type or __.absent )
-    except Exception as exc:
-        raise ContentDecodeFailure( url, charset ) from exc
     _scribe.debug( f"Fetched URL: {url}" )
     return _parts.Part(
         location = url,
         mimetype = mimetype,
         charset = charset,
         linesep = linesep,
-        content = linesep.normalize( content ) )
+        content = linesep.normalize( result.text ) )
 
 
 _files_to_ignore = frozenset( ( '.DS_Store', '.env' ) )
