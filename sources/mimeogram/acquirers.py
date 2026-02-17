@@ -21,8 +21,6 @@
 ''' Content acquisition from various sources. '''
 
 
-import codecs as _codecs
-
 import aiofiles as _aiofiles
 import httpx as _httpx
 
@@ -77,18 +75,6 @@ async def acquire(
         values.append( result.extract( ) )
     return tuple( values )
 
-
-def _canonicalize_charset_from_bom( charset: str, content: bytes ) -> str:
-    ''' Canonicalizes charset based on BOM presence in content bytes. '''
-    if charset.lower( ).replace( '_', '-' ) != 'utf-8-sig': return charset
-    # TODO: Replace this with explicit BOM metadata from Detextive.
-    #
-    # We only canonicalize UTF-8-SIG here. UTF-16/UTF-32 BOM behavior is
-    # carried by their codec names (e.g., 'utf-16' vs 'utf-16-le').
-    if content.startswith( _codecs.BOM_UTF8 ): return 'utf-8-sig'
-    return 'utf-8'
-
-
 async def _acquire_from_file( location: __.Path ) -> _parts.Part:
     ''' Acquires content from text file. '''
     from .exceptions import ContentAcquireFailure, ContentDecodeFailure
@@ -106,7 +92,6 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
     mimetype = result.mimetype.mimetype
     charset = result.charset.charset
     if charset is None: raise ContentDecodeFailure( location, '???' )
-    charset = _canonicalize_charset_from_bom( charset, content_bytes )
     linesep = result.linesep
     if linesep is None:
         _scribe.warning( f"No line separator detected in '{location}'." )
@@ -142,7 +127,6 @@ async def _acquire_via_http(
     mimetype = result.mimetype.mimetype
     charset = result.charset.charset
     if charset is None: raise ContentDecodeFailure( url, '???' )
-    charset = _canonicalize_charset_from_bom( charset, content_bytes )
     linesep = result.linesep
     if linesep is None:
         _scribe.warning( f"No line separator detected in '{url}'." )
