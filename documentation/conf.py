@@ -49,17 +49,28 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
     'sphinx.ext.githubpages',
+    'myst_parser',
     'sphinx_copybutton',
     'sphinx_inline_tabs',
 ]
 
 templates_path = [ '_templates' ]
 
-exclude_patterns = [ ]
+exclude_patterns = [
+    # Openspec workflow/meta files (not documentation)
+    'architecture/openspec/AGENTS.md',
+    'architecture/openspec/project.md',
+    'architecture/openspec/changes/**',
+]
 
 rst_prolog = f'''
 .. |project| replace:: {project}
 '''
+
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown',
+}
 
 nitpicky = True
 nitpick_ignore = [
@@ -81,6 +92,10 @@ nitpick_ignore = [
     ( 'py:class', "Suppress" ),
     ( 'py:class', "absence.objects.AbsentSingleton" ),
     ( 'py:class', "accretive.dictionaries.Dictionary" ),
+    ( 'py:class', "appcore.application.Information" ),
+    ( 'py:class', "appcore.dictedits.Edit" ),
+    ( 'py:class', "appcore.inscription.Control" ),
+    ( 'py:class', "appcore.state.Globals" ),
     ( 'py:class', "builtins.NotImplementedType" ),
     ( 'py:class', "frigid.classes.Class" ),
     ( 'py:class', "frigid.classes.DataclassObject" ),
@@ -89,17 +104,6 @@ nitpick_ignore = [
     ( 'py:class', "frigid.classes.ProtocolClass" ),
     ( 'py:class', "frigid.dictionaries.Dictionary" ),
     ( 'py:class', "frigid.objects.Object" ),
-    ( 'py:class', "mimeogram.__.application.Information" ),
-    ( 'py:class', "mimeogram.__.dictedits.Edit" ),
-    ( 'py:class', "mimeogram.__.dictedits.ElementsEntryEdit" ),
-    ( 'py:class', "mimeogram.__.dictedits.SimpleEdit" ),
-    ( 'py:class', "mimeogram.__.distribution.Information" ),
-    ( 'py:class', "mimeogram.__.generics.E" ),
-    ( 'py:class', "mimeogram.__.generics.T" ),
-    ( 'py:class', "mimeogram.__.generics.U" ),
-    ( 'py:class', "mimeogram.__.inscription.Control" ),
-    ( 'py:class', "mimeogram.__.inscription.Modes" ),
-    ( 'py:class', "mimeogram.__.state.DirectorySpecies" ),
     ( 'py:class', "mimeogram.apply.Command" ),
     ( 'py:class', "mimeogram.fsprotect.core.Protector" ),
     ( 'py:class', "mimeogram.fsprotect.core.Reasons" ),
@@ -112,8 +116,6 @@ nitpick_ignore = [
     ( 'py:class', "typing_extensions.Self" ),
     ( 'py:class', "typing_extensions.TypeIs" ),
     ( 'py:class', "tyro.conf._markers.CallableType" ),
-    ( 'py:obj', "mimeogram.__.generics.E" ),
-    ( 'py:obj', "mimeogram.__.generics.T" ),
 ]
 nitpick_ignore_regex = [
     ( r'py:class', r"(?ms)mimeogram\.create\.Annotated\[.*\]" ),
@@ -142,6 +144,8 @@ linkcheck_ignore = [
     # Other blockades...
     r'https://claude\.site/artifacts/.*',
     r'https://docs\.anthropic\.com/.*',
+    # Avoid timeouts for slow sites.
+    r'http://www\.catb\.org/~esr/faqs/smart-questions\.html',
 ]
 
 # -- Options for HTML output -------------------------------------------------
@@ -177,7 +181,35 @@ intersphinx_mapping = {
         'https://docs.python.org/3', None),
     'typing-extensions': (
         'https://typing-extensions.readthedocs.io/en/latest', None),
+  # --- BEGIN: Injected by Copier ---
+    'absence': (
+        'https://emcd.github.io/python-absence/stable/sphinx-html', None),
+    'dynadoc': (
+        'https://emcd.github.io/python-dynadoc/stable/sphinx-html', None),
+    'frigid': (
+        'https://emcd.github.io/python-frigid/stable/sphinx-html', None),
+  # --- END: Injected by Copier ---
 }
+
+# -- Options for Myst extension ----------------------------------------------
+
+# https://myst-parser.readthedocs.io/en/latest/syntax/optional.html
+myst_enable_extensions = [
+    # 'amsmath',
+    # 'attrs_inline',
+    'colon_fence',      # ::: blocks
+    'deflist',          # Definition lists
+    # 'dollarmath',
+    # 'fieldlist',
+    # 'html_admonition',
+    # 'html_image',
+    # 'linkify',
+    # 'replacements',
+    # 'smartquotes',
+    # 'strikethrough',
+    # 'substitution',
+    'tasklist',         # - [ ] tasks
+]
 
 # -- Options for todo extension ----------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/extensions/todo.html#configuration

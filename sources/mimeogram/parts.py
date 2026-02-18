@@ -25,48 +25,6 @@ from . import __
 from . import fsprotect as _fsprotect
 
 
-class LineSeparators( __.enum.Enum ):
-    ''' Line separators for various platforms. '''
-
-    CR =    '\r'    # Classic MacOS
-    CRLF =  '\r\n'  # DOS/Windows
-    LF =    '\n'    # Unix/Linux
-
-    @classmethod
-    def detect_bytes(
-        selfclass, content: bytes, limit = 1024
-    ) -> "LineSeparators | None":
-        ''' Detects newline characters in bytes array. '''
-        sample = content[ : limit ]
-        found_cr = False
-        for byte in sample:
-            match byte:
-                case 0xd:
-                    if found_cr: return selfclass.CR
-                    found_cr = True
-                case 0xa: # linefeed
-                    if found_cr: return selfclass.CRLF
-                    return selfclass.LF
-                case _:
-                    if found_cr: return selfclass.CR
-        return None
-
-    @classmethod
-    def normalize_universal( selfclass, content: str ) -> str:
-        ''' Normalizes all varieties of newline characters in text. '''
-        return content.replace( '\r\n', '\r' ).replace( '\r', '\n' )
-
-    def nativize( self, content: str ) -> str:
-        ''' Nativizes specific variety newline characters in text. '''
-        if LineSeparators.LF is self: return content
-        return content.replace( '\n', self.value )
-
-    def normalize( self, content: str ) -> str:
-        ''' Normalizes specific variety newline characters in text. '''
-        if LineSeparators.LF is self: return content
-        return content.replace( self.value, '\n' )
-
-
 class Resolutions( __.enum.Enum ):
     ''' Available resolutions for each part. '''
 
@@ -79,7 +37,7 @@ class Part( __.immut.DataclassObject ):
     location: str # TODO? 'Url' class
     mimetype: str
     charset: str
-    linesep: "LineSeparators"
+    linesep: __.detextive.LineSeparators
     content: str
 
     # TODO? 'format' method

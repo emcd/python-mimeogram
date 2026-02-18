@@ -32,12 +32,16 @@ class CliCommand(
     ''' CLI command. '''
 
     @__.abc.abstractmethod
-    async def __call__( self, auxdata: __.Globals ) -> None:
+    async def __call__(
+        self, auxdata: __.appcore.state.Globals
+    ) -> None:
         ''' Executes command with global state. '''
         raise NotImplementedError
 
     @__.abc.abstractmethod
-    def provide_configuration_edits( self ) -> __.DictionaryEdits:
+    def provide_configuration_edits(
+        self,
+    ) -> __.appcore.dictedits.Edits:
         ''' Provides edits against configuration from options. '''
         raise NotImplementedError
 

@@ -42,18 +42,14 @@ def discover_editor( ) -> __.cabc.Callable[ [ str ], str ]:
     match editor:
         case 'code': posargs = ( '--wait', )
         case _: posargs = ( )
-
     if editor:
-
         # TODO? async
         def editor_executor( filename: str ) -> str:
             ''' Executes editor with file. '''
             run( ( editor, *posargs, filename ), check = True ) # noqa: S603
             with open( filename, 'r', encoding = 'utf-8' ) as stream:
                 return stream.read( )
-
         return editor_executor
-
     _scribe.error(
         "No suitable text editor found. "
         "Please install a console-based editor "

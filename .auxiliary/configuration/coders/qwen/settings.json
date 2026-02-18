@@ -1,0 +1,67 @@
+{
+  "mcpServers": {
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
+    "librovore": {
+      "command": "uvx",
+      "args": ["librovore", "serve"]
+    },
+    "pyright": {
+      "command": "mcp-language-server",
+      "args": [
+        "--lsp", "pyright-langserver", "--workspace", ".",
+        "--", "--stdio"
+      ]
+    }
+  },
+
+  "coreTools": [
+    "run_shell_command",
+    "run_shell_command(awk)",
+    "run_shell_command(cat)",
+    "run_shell_command(cut)",
+    "run_shell_command(df)",
+    "run_shell_command(du)",
+    "run_shell_command(echo)",
+    "run_shell_command(file)",
+    "run_shell_command(find)",
+    "run_shell_command(gh)",
+    "run_shell_command(git)",
+    "run_shell_command(grep)",
+    "run_shell_command(hatch)",
+    "run_shell_command(head)",
+    "run_shell_command(ls)",
+    "run_shell_command(ps)",
+    "run_shell_command(pwd)",
+    "run_shell_command(rg)",
+    "run_shell_command(sed)",
+    "run_shell_command(sort)",
+    "run_shell_command(tail)",
+    "run_shell_command(uniq)",
+    "run_shell_command(wc)",
+    "run_shell_command(which)",
+    "read_file",
+    "write_file",
+    "edit",
+    "list_directory",
+    "glob",
+    "search_file_content",
+    "todo_write",
+    "web_fetch",
+    "web_search",
+    "mcp__context7__resolve-library-id",
+    "mcp__context7__get-library-docs",
+    "mcp__pyright__definition",
+    "mcp__pyright__diagnostics",
+    "mcp__pyright__edit_file",
+    "mcp__pyright__hover",
+    "mcp__pyright__references",
+    "mcp__pyright__rename_symbol"
+  ],
+
+  "approvalMode": "auto-edit",
+  "autoAccept": true,
+  "showLineNumbers": true
+}

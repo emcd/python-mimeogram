@@ -1,0 +1,13 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# TypeScript build outputs
+dist/
+*.tsbuildinfo
+
+# Bun
+.bun.lockb
+.bun-debug.log

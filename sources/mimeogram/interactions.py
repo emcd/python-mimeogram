@@ -45,7 +45,7 @@ async def _display_differences(
         from .exceptions import ContentAcquireFailure
         try:
             original = (
-                await __.acquire_text_file_async(
+                await __.appcore.io.acquire_text_file_async(
                     destination, charset = part.charset ) )
         except Exception as exc:
             raise ContentAcquireFailure( destination ) from exc
@@ -153,8 +153,8 @@ def _calculate_differences(
     original: __.Absential[ str ] = __.absent,
 ) -> list[ str ]:
     ''' Generates unified diff between contents. '''
-    from patiencediff import (
-        unified_diff, PatienceSequenceMatcher ) # pyright: ignore
+    from patiencediff import PatienceSequenceMatcher  # pyright: ignore
+    from patiencediff import unified_diff  # pyright: ignore
     from_lines = (
         original.split( '\n' ) if not __.is_absent( original ) else [ ] )
     to_lines = revision.split( '\n' )

@@ -1,0 +1,129 @@
+{
+  "ui": {
+    "showLineNumbers": true
+  },
+  "tools": {
+    "autoAccept": true,
+    "core": [
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "mcp__librovore__query_content",
+      "mcp__librovore__query_inventory",
+      "mcp__nb__nb",
+      "mcp__nb__help",
+      "mcp__pyright__definition",
+      "mcp__pyright__diagnostics",
+      "mcp__pyright__hover",
+      "mcp__pyright__references",
+      "mcp__pyright__rename_symbol",
+      "edit",
+      "glob",
+      "google_web_search",
+      "list_directory",
+      "read_file",
+      "replace",
+      "run_shell_command",
+      "save_memory",
+      "search_file_content",
+      "web_fetch",
+      "write_file",
+      "write_todos"
+    ],
+    "allowed": [
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__get-library-docs",
+      "mcp__librovore__query_content",
+      "mcp__librovore__query_inventory",
+      "mcp__nb__nb",
+      "mcp__nb__help",
+      "mcp__pyright__definition",
+      "mcp__pyright__diagnostics",
+      "mcp__pyright__hover",
+      "mcp__pyright__references",
+      "mcp__pyright__rename_symbol",
+      "edit",
+      "glob",
+      "google_web_search",
+      "list_directory",
+      "read_file",
+      "replace",
+      "run_shell_command(hatch run)",
+      "run_shell_command(hatch --env develop run)",
+      "run_shell_command(awk)",
+      "run_shell_command(cat)",
+      "run_shell_command(cut)",
+      "run_shell_command(df)",
+      "run_shell_command(du)",
+      "run_shell_command(echo)",
+      "run_shell_command(file)",
+      "run_shell_command(find)",
+      "run_shell_command(gh browse)",
+      "run_shell_command(gh issue list)",
+      "run_shell_command(gh issue view)",
+      "run_shell_command(gh pr checks)",
+      "run_shell_command(gh pr list)",
+      "run_shell_command(gh pr view)",
+      "run_shell_command(gh release list)",
+      "run_shell_command(gh release view)",
+      "run_shell_command(gh repo list)",
+      "run_shell_command(gh repo view)",
+      "run_shell_command(gh run list)",
+      "run_shell_command(gh run view)",
+      "run_shell_command(gh run watch)",
+      "run_shell_command(gh search issues)",
+      "run_shell_command(gh status)",
+      "run_shell_command(git add)",
+      "run_shell_command(git diff)",
+      "run_shell_command(git log)",
+      "run_shell_command(git show)",
+      "run_shell_command(git status)",
+      "run_shell_command(grep)",
+      "run_shell_command(head)",
+      "run_shell_command(ls)",
+      "run_shell_command(ps)",
+      "run_shell_command(pwd)",
+      "run_shell_command(rg)",
+      "run_shell_command(sed)",
+      "run_shell_command(sort)",
+      "run_shell_command(tail)",
+      "run_shell_command(uniq)",
+      "run_shell_command(wc)",
+      "run_shell_command(which)",
+      "save_memory",
+      "search_file_content",
+      "web_fetch",
+      "write_file",
+      "write_todos"
+    ]
+  },
+  "general": {
+    "checkpointing": {
+      "enabled": true
+    }
+  },
+  "mcpServers": {
+    "pyright": {
+      "command": "mcp-language-server",
+      "args": [
+        "--lsp", "pyright-langserver", "--workspace", ".",
+        "--", "--stdio"
+      ],
+      "excludeTools": [ "edit_file" ]
+    },
+    "context7": {
+      "command": "npx",
+      "args": [ "-y", "@upstash/context7-mcp" ]
+    },
+    "librovore": {
+      "command": "uvx",
+      "args": [ "librovore", "serve" ]
+    },
+    "nb": {
+      "command": "nb-mcp",
+      "args": [
+        "--notebook", "python-mimeogram",
+        "--no-commit-signing"
+      ]
+    }
+  }
+}

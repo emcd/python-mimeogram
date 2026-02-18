@@ -46,6 +46,28 @@ Ways to Contribute
 Development
 ===============================================================================
 
+Architecture
+-------------------------------------------------------------------------------
+
+* The :doc:`capability specifications <specifications/index>` provide a good
+  starting point to understand the requirements and motivations for the project.
+  These should be reviewed and updated through the Openspec workflow when making
+  changes that affect product functionality or user experience.
+
+* The :doc:`system architecture overview <architecture/summary>` should be
+  reviewed to understand the structure and operational patterns of the project.
+  Major changes to the architecture should be reflected in this document.
+
+* Document significant architectural decisions using Architectural Decision
+  Records (ADRs) in the ``architecture/decisions/`` directory. See the
+  `architecture documentation guide
+  <https://emcd.github.io/python-project-common/stable/sphinx-html/common/architecture.html>`_
+  for ADR format and best practices.
+
+* Document technical design specifications for Python interfaces, module
+  organization, and implementation patterns in :doc:`design documents
+  <architecture/designs/index>` to guide implementation efforts.
+
 Guidance and Standards
 -------------------------------------------------------------------------------
 
@@ -106,4 +128,6 @@ Resources
 .. toctree::
    :maxdepth: 2
 
+   specifications/index
+   architecture/index
    devapi

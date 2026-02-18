@@ -44,7 +44,10 @@ class Cache( _core.Protector ):
         __.Path, tuple[ frozenset[ str ], frozenset[ str ] ] ]
 
     @classmethod
-    def from_configuration( selfclass, auxdata: __.Globals ) -> __.typx.Self:
+    def from_configuration(
+        selfclass,
+        auxdata: __.appcore.state.Globals,
+    ) -> __.typx.Self:
         ''' Initializes protection cache for current platform. '''
         _scribe.debug( 'Initializing protection cache.' )
         rules: dict[ _core.Reasons, Rule ] = { }
@@ -61,10 +64,8 @@ class Cache( _core.Protector ):
         ''' Verifies if a path should be protected using cached data. '''
         path = _normalize_path( path )
         _scribe.debug( f"Path: {path}" )
-
         if any( part in self.defaults_disablement for part in path.parts ):
             return _core.Status( path = path, active = False )
-
         for dir_path, ( ignore, protect ) in self.rules_supercession.items( ):
             dir_path_ = _normalize_path( dir_path )
             if not path.is_relative_to( dir_path_ ): continue
@@ -76,7 +77,6 @@ class Cache( _core.Protector ):
                     path = path,
                     reason = _core.Reasons.PlatformSensitive,
                     active = True )
-
         for reason, rule in self.rules.items( ):
             for protected_path in rule.paths:
                 protected_path_ = _normalize_path( protected_path )
@@ -90,7 +90,6 @@ class Cache( _core.Protector ):
                     path = path,
                     reason = reason,
                     active = True )
-
         return _core.Status( path = path, active = False )
 
 
@@ -127,7 +126,8 @@ def _check_path_patterns( path: __.Path, patterns: frozenset[ str ] ) -> bool:
 
 
 def discover_platform_locations(
-    auxdata: __.Globals, rules: dict[ _core.Reasons, Rule ]
+    auxdata: __.appcore.state.Globals,
+    rules: dict[ _core.Reasons, Rule ],
 ) -> None:
     ''' Discovers system and user locations based on platform. '''
     match __.sys.platform:
@@ -176,7 +176,7 @@ def _normalize_path( path: __.Path ) -> __.Path:
 
 
 def _process_configuration(
-    auxdata: __.Globals,
+    auxdata: __.appcore.state.Globals,
     rules: dict[ _core.Reasons, Rule ],
 ) -> tuple[
     frozenset[ str ],

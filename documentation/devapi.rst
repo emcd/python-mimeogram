@@ -31,85 +31,13 @@ Package ``mimeogram.__``
 .. automodule:: mimeogram.__
 
 
-Module ``mimeogram.__.application``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.application
-
-
-Module ``mimeogram.__.asyncf``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.asyncf
-
-
-Module ``mimeogram.__.configuration``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.configuration
-
-
-Module ``mimeogram.__.dictedits``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.dictedits
-
-
-Module ``mimeogram.__.distribution``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.distribution
-
-
-Module ``mimeogram.__.environment``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.environment
-
-
-Module ``mimeogram.__.exceptions``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.exceptions
-
-
-Module ``mimeogram.__.generics``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.generics
-
-
 Module ``mimeogram.__.imports``
 -------------------------------------------------------------------------------
 
 .. automodule:: mimeogram.__.imports
 
 
-Module ``mimeogram.__.inscription``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.inscription
-
-
-Module ``mimeogram.__.io``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.io
-
-
 Module ``mimeogram.__.nomina``
 -------------------------------------------------------------------------------
 
 .. automodule:: mimeogram.__.nomina
-
-
-Module ``mimeogram.__.preparation``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.preparation
-
-
-Module ``mimeogram.__.state``
--------------------------------------------------------------------------------
-
-.. automodule:: mimeogram.__.state

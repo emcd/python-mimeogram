@@ -48,6 +48,7 @@ def test_000_basic_parse( ):
     ''' Simple valid mimeogram. '''
     parsers = cache_import_module( f"{PACKAGE_NAME}.parsers" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     # Create a simple test mimeogram
     mimeogram_text = _create_sample_mimeogram()
@@ -61,7 +62,7 @@ def test_000_basic_parse( ):
     assert first_part.location == 'test.txt'
     assert first_part.mimetype == 'text/plain'
     assert first_part.charset == 'utf-8'
-    assert first_part.linesep == parts.LineSeparators.LF
+    assert first_part.linesep == detextive.LineSeparators.LF
     assert first_part.content == 'Sample content'
 
 
@@ -95,7 +96,7 @@ def test_010_parse_multiple_parts( ):
 def test_020_parse_part_details( ):
     ''' Details of a single part. '''
     parsers = cache_import_module( f"{PACKAGE_NAME}.parsers" )
-    parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     # Create mimeogram with detailed headers
     mimeogram_text = (
@@ -113,7 +114,7 @@ def test_020_parse_part_details( ):
     assert first_part.location == 'detailed.txt'
     assert first_part.mimetype == 'application/json'
     assert first_part.charset == 'utf-8'
-    assert first_part.linesep == parts.LineSeparators.CRLF
+    assert first_part.linesep == detextive.LineSeparators.CRLF
     assert first_part.content == '{"key": "value"}'
 
 
@@ -204,12 +205,12 @@ def test_070_unicode_content( ):
 def test_080_line_separator_variations( ):
     ''' Mimeograms with different line separators. '''
     parsers = cache_import_module( f"{PACKAGE_NAME}.parsers" )
-    parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     # Create test cases for LF and CRLF line separators
     separators = [
-        ('\n', parts.LineSeparators.LF),
-        ('\r\n', parts.LineSeparators.CRLF)
+        ('\n', detextive.LineSeparators.LF),
+        ('\r\n', detextive.LineSeparators.CRLF)
     ]
 
     for sep, expected_type in separators:

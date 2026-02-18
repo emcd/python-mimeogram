@@ -30,12 +30,13 @@ def test_100_calculate_differences( ):
     ''' Difference calculation handles various content cases. '''
     interactions = cache_import_module( f"{PACKAGE_NAME}.interactions" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     part = parts.Part(
         location = "test.txt",
         mimetype = "text/plain",
         charset = "utf-8",
-        linesep = parts.LineSeparators.LF,
+        linesep = detextive.LineSeparators.LF,
         content = "" )
 
     # Empty both
@@ -58,6 +59,7 @@ async def test_200_interact_simple_apply( provide_tempdir ):
     ''' Apply resolution returned for unprotected content. '''
     interactions = cache_import_module( f"{PACKAGE_NAME}.interactions" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     async def mock_noop( *args ): pass
@@ -70,7 +72,7 @@ async def test_200_interact_simple_apply( provide_tempdir ):
         location = "test.txt",
         mimetype = "text/plain",
         charset = "utf-8",
-        linesep = parts.LineSeparators.LF,
+        linesep = detextive.LineSeparators.LF,
         content = "test content" )
     target = parts.Target(
         part = part,
@@ -98,6 +100,7 @@ async def test_210_interact_simple_ignore( provide_tempdir ):
     ''' Ignore resolution returned for protected content. '''
     interactions = cache_import_module( f"{PACKAGE_NAME}.interactions" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     async def mock_noop( *args ): pass
@@ -110,7 +113,7 @@ async def test_210_interact_simple_ignore( provide_tempdir ):
         location = "test.txt",
         mimetype = "text/plain",
         charset = "utf-8",
-        linesep = parts.LineSeparators.LF,
+        linesep = detextive.LineSeparators.LF,
         content = "test content" )
     target = parts.Target(
         part = part,
@@ -138,6 +141,7 @@ async def test_220_interact_edit_then_apply( provide_tempdir ):
     ''' Content editing followed by apply resolution. '''
     interactions = cache_import_module( f"{PACKAGE_NAME}.interactions" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     choices = iter( [ 'e', 'a' ] )
@@ -151,7 +155,7 @@ async def test_220_interact_edit_then_apply( provide_tempdir ):
         location = "test.txt",
         mimetype = "text/plain",
         charset = "utf-8",
-        linesep = parts.LineSeparators.LF,
+        linesep = detextive.LineSeparators.LF,
         content = "test content" )
     target = parts.Target(
         part = part,
@@ -179,6 +183,7 @@ async def test_230_interact_displays_content( provide_tempdir ):
     ''' Content display operations invoked appropriately. '''
     interactions = cache_import_module( f"{PACKAGE_NAME}.interactions" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     content_displayed = False
@@ -202,7 +207,7 @@ async def test_230_interact_displays_content( provide_tempdir ):
         location = "test.txt",
         mimetype = "text/plain",
         charset = "utf-8",
-        linesep = parts.LineSeparators.LF,
+        linesep = detextive.LineSeparators.LF,
         content = "test content" )
     target = parts.Target(
         part = part,
@@ -231,6 +236,7 @@ async def test_240_interact_select_segments( provide_tempdir ):
     ''' Segment selection updates content. '''
     interactions = cache_import_module( f"{PACKAGE_NAME}.interactions" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     choices = iter( [ 's', 'a' ] )
@@ -249,7 +255,7 @@ async def test_240_interact_select_segments( provide_tempdir ):
         location = "test.txt",
         mimetype = "text/plain",
         charset = "utf-8",
-        linesep = parts.LineSeparators.LF,
+        linesep = detextive.LineSeparators.LF,
         content = "test content" )
     target = parts.Target(
         part = part,
@@ -278,6 +284,7 @@ async def test_300_interact_protected_flow( provide_tempdir ):
     ''' Protection removal enables edits. '''
     interactions = cache_import_module( f"{PACKAGE_NAME}.interactions" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     fsprotect = cache_import_module( f"{PACKAGE_NAME}.fsprotect" )
 
     choices = iter( [ 'e', 'p', 'e', 'a' ] )
@@ -291,7 +298,7 @@ async def test_300_interact_protected_flow( provide_tempdir ):
         location = "test.txt",
         mimetype = "text/plain",
         charset = "utf-8",
-        linesep = parts.LineSeparators.LF,
+        linesep = detextive.LineSeparators.LF,
         content = "test content" )
     target = parts.Target(
         part = part,

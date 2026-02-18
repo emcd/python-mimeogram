@@ -119,7 +119,7 @@ Examples 💡
 ===============================================================================
 
 Below are some simple examples. Please see the `examples documentation
-<https://github.com/emcd/python-mimeogram/blob/master/documentation/sphinx/examples/cli.rst>`_
+<https://github.com/emcd/python-mimeogram/blob/master/documentation/examples/cli.rst>`_
 for more detailed usage patterns.
 
 ::
@@ -144,9 +144,11 @@ for more detailed usage patterns.
 Working with Simple LLM Interfaces
 -------------------------------------------------------------------------------
 
-Use with API workbenches and with LLM GUIs which do not support persistent
-user-customized instructions (e.g., `DeepSeek <https://chat.deepseek.com/>`_,
-`Google Gemini <https://gemini.google.com/>`_, `Grok <https://grok.com>`_):
+Use with browser chat interfaces and API workbenches when you want explicit,
+portable control over exactly which files are shared with a model. This is
+useful for interfaces with limited repository tooling and for workflows where
+uploaded files may have favorable pricing (for example, some project-oriented
+plans in provider-hosted web interfaces).
 
 * Bundle files with mimeogram format instructions into clipboard.
 
@@ -178,11 +180,10 @@ instructions.
 Working with LLM Project Interfaces
 -------------------------------------------------------------------------------
 
-Some LLM service providers have the concept of projects. These allow you to
-organize chats and persist a set of instructions across chats. Projects might
-only be available for certain models. Examples of LLM service providers, which
-support projects with some of their models, are `Claude <https://claude.ai/>`_
-and `ChatGPT <https://chatgpt.com/>`_.
+Many LLM service providers now offer project-style workspaces that persist
+instructions and uploaded context across chats. When available, this pairs well
+with mimeogram by reducing prompt overhead while preserving structured file
+exchange.
 
 In these cases, you can take advantage of the project instructions so that you
 do not need to include mimeogram instructions with each new chat:
@@ -294,10 +295,16 @@ Default Settings
 Motivation 🎯
 ===============================================================================
 
-Cost and Efficiency 💰
+Why Mimeogram in an Agentic World 💡
 -------------------------------------------------------------------------------
-* Cost optimization through GUI-based LLM services vs API billing.
-* Support for batch operations instead of file-by-file interactions.
+* Portable, provider-agnostic format for sharing and applying multi-file
+  changes.
+* Works in web interfaces and chat surfaces that do not expose local
+  filesystem tools.
+* Useful when you want explicit, auditable context selection instead of
+  full-repository agent access.
+* Supports batch exchange workflows, including scenarios where uploaded files
+  can be cheaper than repeated API context transmission.
 
 Technical Benefits ✅
 -------------------------------------------------------------------------------
@@ -308,52 +315,59 @@ Technical Benefits ✅
 Platform Neutrality ☁️
 -------------------------------------------------------------------------------
 * IDE and platform agnostic.
-* No premium subscriptions required.
-* Works with LLM GUIs lacking project functionality.
+* Works with and without provider-specific agent tooling.
+* Useful with both project-enabled and non-project chat interfaces.
 
 Limitations and Alternatives 🔀
 ===============================================================================
 
 * Manual refresh of files needed (no automatic sync).
 * Cannot retract stale content from conversation history in provider GUIs.
-* Consider dedicated tools (e.g., Cursor) for tighter collaboration loops.
+* For tight edit/test loops inside a local repository, agentic tools and
+  coding IDEs may be faster.
 
 Comparison of General Approaches ⚖️
 -------------------------------------------------------------------------------
 
-+---------------------+------------+------------+-------------+--------------+
-| Feature             | Mimeograms | Projects   | Agents and  | Specialized  |
-|                     |            | (Web) [1]_ | Tools [3]_  | IDEs [2]_    |
-+=====================+============+============+=============+==============+
-| Cost Model          | Flat rate  | Flat rate  | Usage-based | Flat rate    |
-+---------------------+------------+------------+-------------+--------------+
-| Directory Structure | Yes        | No         | Yes [4]_    | Yes          |
-+---------------------+------------+------------+-------------+--------------+
-| IDE Integration     | Any        | Web-only   | Varies      | One          |
-+---------------------+------------+------------+-------------+--------------+
-| Setup Required      | Download   | None       | Varies      | Varies       |
-+---------------------+------------+------------+-------------+--------------+
-| Version Control     | Yes        | No         | Yes [4]_    | Yes          |
-+---------------------+------------+------------+-------------+--------------+
-| Platform Support    | Universal  | Web        | Varies      | Varies       |
-+---------------------+------------+------------+-------------+--------------+
-| Automation Support  | Yes        | No         | Varies      | Varies       |
-+---------------------+------------+------------+-------------+--------------+
++-------------------------+------------+------------+-------------+--------------+
+| Feature                 | Mimeograms | Projects   | Agentic     | Specialized  |
+|                         |            | (Web) [1]_ | CLIs [2]_   | IDEs [3]_    |
++=========================+============+============+=============+==============+
+| Primary Interaction     | Bundle/    | Chat +     | Local tools | IDE-native   |
+| Model                   | apply      | uploads    | + chat      | assistant    |
++-------------------------+------------+------------+-------------+--------------+
+| Directory Structure     | Yes        | No         | Yes         | Yes          |
++-------------------------+------------+------------+-------------+--------------+
+| Version Control         | Yes        | No [4]_    | Yes         | Yes          |
++-------------------------+------------+------------+-------------+--------------+
+| Platform Support        | Cross-     | Web        | Varies      | Varies       |
+|                         | platform   |            |             |              |
++-------------------------+------------+------------+-------------+--------------+
+| Local Repo Live Sync    | Manual     | No         | Yes         | Yes          |
++-------------------------+------------+------------+-------------+--------------+
+| Provider Portability    | High       | Low        | Medium      | Low/Medium   |
++-------------------------+------------+------------+-------------+--------------+
+| Setup Required          | Low        | None       | Medium      | Medium       |
++-------------------------+------------+------------+-------------+--------------+
+| Cost Model              | Varies     | Usually    | Varies      | Usually      |
+|                         |            | subscr.    |             | subscr.      |
++-------------------------+------------+------------+-------------+--------------+
 
-.. [1] ChatGPT and Claude.ai subscription feature
-.. [2] `Cursor <https://cursor.com/en>`_, `Windsurf
-   <https://windsurf.com/editor>`_, etc...
-.. [3] `Aider <https://aider.chat/>`_, `Claude Code
+.. [1] Provider-hosted project workspaces in web interfaces.
+.. [2] `Aider <https://aider.chat/>`_, `Claude Code
    <https://docs.anthropic.com/en/docs/agents-and-tools/claude-code/overview>`_,
-   etc...
-.. [4] Requires custom implementation
+   `Codex CLI <https://developers.openai.com/codex/cli/>`_, etc...
+.. [3] `Cursor <https://cursor.com/en-US>`_, `Windsurf
+   <https://windsurf.com/editor>`_, etc...
+.. [4] Some hosted interfaces provide versioned artifacts or revision history
+   (for example, Claude artifacts), but these are not integrated with
+   traditional VCS workflows such as Git.
 
 Notes:
 
-- "Agents and Tools" refers to custom applications providing I/O tools
-  for LLMs to use via APIs, such as the Anthropic or OpenAI API.
-- Cost differences can be significant at scale, especially when considering
-  cache misses against APIs.
+- No single column is universally best.
+- Mimeogram is designed to complement agentic tools, especially when you need
+  explicit scope control or provider portability.
 
 
 Comparison with Similar Tools ⚖️
@@ -361,7 +375,7 @@ Comparison with Similar Tools ⚖️
 
 - `ai-digest <https://github.com/khromov/ai-digest>`_
 - `dump_dir <https://github.com/fargusplumdoodle/dump_dir/>`_
-- `Gitingest <https://github.com/cyclotruc/gitingest>`_
+- `Gitingest <https://github.com/coderamp-labs/gitingest>`_
 - `Repomix <https://github.com/yamadashy/repomix>`_
 
 Mimeogram is unique among file collection tools for LLMs in offering round-trip
@@ -369,7 +383,7 @@ support - the ability to not just collect files but also apply changes proposed
 by LLMs.
 
 `Full Comparison of Tools
-<https://github.com/emcd/python-mimeogram/tree/master/documentation/sphinx/comparisons.rst>`_
+<https://github.com/emcd/python-mimeogram/blob/master/documentation/comparisons.rst>`_
 
 Features Matrix
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -448,7 +462,7 @@ more smoothly, though it is one more syllable than "mime-o-gram". Preferred
 IPA: /ˈmɪm.i.ˌoʊ.ɡræm/.
 
 
-`More Flair <https://www.imdb.com/title/tt0151804/characters/nm0431918>`_
+Additional Indicia
 ===============================================================================
 
 .. image:: https://img.shields.io/github/last-commit/emcd/python-mimeogram
@@ -501,6 +515,9 @@ Other Projects by This Author 🌟
 * `python-classcore <https://github.com/emcd/python-classcore>`_ (`classcore <https://pypi.org/project/classcore/>`_ on PyPI)
 
   🏭 A Python library package which provides **foundational class factories and decorators** for providing classes with attributes immutability and concealment and other custom behaviors.
+* `python-detextive <https://github.com/emcd/python-detextive>`_ (`detextive <https://pypi.org/project/detextive/>`_ on PyPI)
+
+  🕵️ A Python library which provides consolidated text detection capabilities for reliable content analysis. Offers MIME type detection, character set detection, and line separator processing.
 * `python-dynadoc <https://github.com/emcd/python-dynadoc>`_ (`dynadoc <https://pypi.org/project/dynadoc/>`_ on PyPI)
 
   📝 A Python library package which bridges the gap between **rich annotations** and **automatic documentation generation** with configurable renderers and support for reusable fragments.
@@ -513,3 +530,6 @@ Other Projects by This Author 🌟
 * `python-icecream-truck <https://github.com/emcd/python-icecream-truck>`_ (`icecream-truck <https://pypi.org/project/icecream-truck/>`_ on PyPI)
 
   🍦 **Flavorful Debugging** - A Python library which enhances the powerful and well-known ``icecream`` package with flavored traces, configuration hierarchies, customized outputs, ready-made recipes, and more.
+* `python-librovore <https://github.com/emcd/python-librovore>`_ (`librovore <https://pypi.org/project/librovore/>`_ on PyPI) 
+
+  🐲 **Documentation Search Engine** - An intelligent documentation search and extraction tool that provides both a command-line interface for humans and an MCP (Model Context Protocol) server for AI agents. Search across Sphinx and MkDocs sites with fuzzy matching, extract clean markdown content, and integrate seamlessly with AI development workflows.

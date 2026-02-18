@@ -1,0 +1,103 @@
+#!/usr/bin/env python3
+# vim: set filetype=python fileencoding=utf-8:
+# -*- coding: utf-8 -*-
+
+''' Claude Code hook to run linters after file updates. '''
+
+
+import json
+import subprocess
+import sys
+# import os
+# from datetime import datetime
+
+
+def main( ):
+    # event = _acquire_event_data( )
+    if not _is_command_available( 'hatch' ):
+        raise SystemExit( 0 )
+    if not _is_hatch_env_available( 'develop' ):
+        raise SystemExit( 0 )
+    try:
+        result = subprocess.run(
+            [ 'hatch', '--env', 'develop', 'run', 'linters' ],  # noqa: S607
+            capture_output = True, check = False, text = True, timeout = 60 )
+    except Exception as exc:
+        exc_class = type( exc )
+        _reactor_failure( f"{exc_class.__qualname__}: {exc}" )
+    if result.returncode != 0:
+        # Combine stdout and stderr since linting output may go to stdout.
+        result_text = f"{result.stdout}\n\n{result.stderr}".strip( )
+        print( _truncate_if_necessary( result_text ), file = sys.stderr )
+        raise SystemExit( 2 )
+        # Use JSON output for better integration with Claude Code
+        # _emit_decision_json( "block", f"{result.stdout}\n\n{result.stderr}" )
+    raise SystemExit( 0 )
+
+
+def _acquire_event_data( ):
+    try: return json.load( sys.stdin )
+    except json.JSONDecodeError:
+        _reactor_failure( "Invalid event data." )
+
+
+# def _debug_log( message ):
+#     ''' Logs debug message to file in scribbles directory. '''
+#     log_file = '.auxiliary/scribbles/post-edit-linter-debug.log'
+#     os.makedirs( os.path.dirname( log_file ), exist_ok = True )
+#     timestamp = datetime.now().isoformat()
+#     with open( log_file, 'a' ) as f:
+#         f.write( f"[{timestamp}] {message}\n" )
+
+
+def _emit_decision_json( decision, reason ):
+    ''' Outputs JSON decision for Claude Code hook system. '''
+    response = { "decision": decision, "reason": reason }
+    print( json.dumps( response ) )
+    raise SystemExit( 2 )
+
+
+def _error( message ):
+    print( message, file = sys.stderr )
+    raise SystemExit( 2 )
+
+
+def _is_command_available( command ):
+    ''' Checks if a command is available in PATH. '''
+    try:
+        result = subprocess.run(  # noqa: S603
+            [ 'which', command ],  # noqa: S607
+            capture_output = True, check = False, text = True, timeout = 5 )
+    except Exception: return False
+    return result.returncode == 0
+
+
+def _is_hatch_env_available( env_name ):
+    ''' Checks if a specific Hatch environment exists. '''
+    try:
+        result = subprocess.run(
+            [ 'hatch', 'env', 'show' ],  # noqa: S607
+            capture_output = True, check = False, text = True, timeout = 10 )
+    except Exception: return False
+    if result.returncode != 0: return False
+    return env_name in result.stdout
+
+
+def _reactor_failure( message ):
+    print( "Claude Code Hook Failure: {message}", file = sys.stderr )
+    raise SystemExit( 1 )
+
+
+def _truncate_if_necessary( output, lines_max = 50 ):
+    ''' Truncates output to maximum number of lines with truncation notice. '''
+    lines = output.split( '\n' )
+    if len( lines ) <= lines_max: return output
+    lines_to_display = lines[ : lines_max ]
+    truncations_count = len( lines ) - lines_max
+    lines_to_display.append(
+        f"\n[OUTPUT TRUNCATED: {truncations_count} additional lines omitted. "
+        f"Fix the issues above to see remaining diagnostics.]" )
+    return '\n'.join( lines_to_display )
+
+
+if __name__ == '__main__': main( )

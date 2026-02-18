@@ -3,30 +3,23 @@
     "pyright": {
       "command": "mcp-language-server",
       "args": [
-        "--lsp",
-        "pyright-langserver",
-        "--workspace",
-        ".",
-        "--",
-        "--stdio"
+        "--lsp", "pyright-langserver", "--workspace", ".",
+        "--", "--stdio"
       ]
     },
-    "ruff": {
-       "command": "mcp-language-server",
-       "args": [
-         "--lsp",
-         "ruff",
-         "--workspace",
-         ".",
-         "--",
-         "server",
-         "--preview"
-      ]
+    "context7": {
+      "command": "npx",
+      "args": [ "-y", "@upstash/context7-mcp" ]
     },
-    "text-editor": {
+    "librovore": {
       "command": "uvx",
+      "args": [ "librovore", "serve" ]
+    },
+    "nb": {
+      "command": "nb-mcp",
       "args": [
-        "mcp-text-editor"
+        "--notebook", "python-mimeogram",
+        "--no-commit-signing"
       ]
     }
   }

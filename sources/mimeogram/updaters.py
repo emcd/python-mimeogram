@@ -53,7 +53,7 @@ class Reverter( __.immut.DataclassObject ):
         if not path.exists( ): return
         try:
             content = (
-                await __.acquire_text_file_async(
+                await __.appcore.io.acquire_text_file_async(
                     path, charset = part.charset ) )
         except Exception as exc: raise ContentAcquireFailure( path ) from exc
         self.originals[ path ] = content
@@ -89,11 +89,11 @@ class Queue( __.immut.DataclassObject ):
     async def apply( self ) -> None:
         ''' Applies all queued updates with parallel async fanout. '''
         try:
-            await __.gather_async(
+            await __.asyncf.gather_async(
                 *(  self.reverter.save( part, target )
                     for part, target, _ in self.updates ),
                 error_message = "Failed to backup files." )
-            await __.gather_async(
+            await __.asyncf.gather_async(
                 *(  _update_content_atomic(
                         target, content, charset = part.charset )
                     for part, target, content in self.updates ),
@@ -106,7 +106,7 @@ class Queue( __.immut.DataclassObject ):
 
 
 async def update( # noqa: PLR0913
-    auxdata: __.Globals,
+    auxdata: __.appcore.state.Globals,
     parts: __.cabc.Sequence[ _parts.Part ],
     mode: ReviewModes,
     base: __.Absential[ __.Path ] = __.absent,
@@ -133,7 +133,7 @@ async def update( # noqa: PLR0913
 
 
 async def update_part(
-    auxdata: __.Globals,
+    auxdata: __.appcore.state.Globals,
     target: _parts.Target,
     mode: ReviewModes,
     interactor: __.Absential[ _interfaces.PartInteractor ] = __.absent,
@@ -182,7 +182,7 @@ async def _update_content_atomic(
     location: __.Path,
     content: str,
     charset: str = 'utf-8',
-    linesep: _parts.LineSeparators = _parts.LineSeparators.LF
+    linesep: __.detextive.LineSeparators = __.detextive.LineSeparators.LF
 ) -> None:
     ''' Updates file content atomically, if possible. '''
     import aiofiles.os as os # noqa: PLR0402

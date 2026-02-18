@@ -23,6 +23,14 @@ import pytest
 
 from . import PACKAGE_NAME, cache_import_module
 
+
+try:  # pragma: no cover - skip if tiktoken resources unavailable
+    import tiktoken as _tiktoken
+
+    _tiktoken.get_encoding( "cl100k_base" )
+except Exception:  # best-effort check
+    pytest.skip( "tiktoken resources unavailable", allow_module_level = True )
+
 @pytest.mark.asyncio
 async def test_100_produce_tokenizer_default_tiktoken( ):
     ''' Default Tiktoken tokenizer uses expected variant. '''

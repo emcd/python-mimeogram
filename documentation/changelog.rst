@@ -23,6 +23,28 @@ Release Notes
 
 .. towncrier release notes start
 
+mimeogram 1.6 (2026-02-18)
+==========================
+
+Enhancements
+------------
+
+- Acquisition: Use Detextive 3.1 decode_inform for MIME type, charset, and line-separator detection, including BOM-aware UTF-8 charset reporting for round trips.
+- Add Python 3.14 and PyPy 3.11 support.
+- CLI: Add --no-ignores flag to disable gitignore filtering during file collection. When gitignore filtering is enabled (default), warnings are emitted for skipped files with guidance to use --no-ignores flag.
+- Integrate Detextive 2.0 for MIME type and charset detection, replacing internal detection with standardized library. This may produce normalized charset names (e.g., 'iso8859-9' instead of 'iso-8859-9') and treats empty files as valid text.
+- Packaging: Publish Linux aarch64 standalone executables in GitHub releases.
+
+
+Repairs
+-------
+
+- CLI: Disallow explicit None values for optional boolean flags and show {True,False} choices in help text.
+- CLI: Fix parser error that prevented the application from running.
+- CLI: Fix version command to work without requiring --application.name argument.
+- CLI: Prevent Linux/X11 clipboard operations from hanging when xclip forks to the background.
+
+
 Mimeogram 1.5 (2025-07-27)
 ==========================
 

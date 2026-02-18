@@ -27,9 +27,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from unittest.mock import patch
 
+import accretive as accret
 import pytest
 
-import accretive as accret
 from exceptiongroup import ExceptionGroup
 
 from . import (
@@ -77,17 +77,16 @@ def provide_test_interactor( ):
 def produce_mock_auxdata( config = None ):
     ''' Creates a mock Globals object for testing. '''
     from contextlib import AsyncExitStack
+
     from platformdirs import PlatformDirs
 
-    application = cache_import_module( f"{PACKAGE_NAME}.__.application" )
-    distribution = cache_import_module( f"{PACKAGE_NAME}.__.distribution" )
-    state = cache_import_module( f"{PACKAGE_NAME}.__.state" )
+    __ = cache_import_module( f"{PACKAGE_NAME}.__" )
 
     if config is None:
         config = { }
 
-    return state.Globals(
-        application = application.Information(
+    return __.appcore.state.Globals(
+        application = __.appcore.application.Information(
             name = 'mimeogram-test',
             version = '0.0.0'
         ),
@@ -96,7 +95,7 @@ def produce_mock_auxdata( config = None ):
             appname = 'mimeogram-test',
             version = '0.0.0'
         ),
-        distribution = distribution.Information(
+        distribution = __.appcore.distribution.Information(
             name = 'mimeogram-test',
             location = Path( ).resolve( ),
             editable = True
@@ -112,6 +111,7 @@ async def test_100_update_simple_file(
     ''' Basic file update works correctly in Silent mode. '''
     updaters = cache_import_module( f"{PACKAGE_NAME}.updaters" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     files = { 'test.txt': 'original content' }
     with create_test_files( provide_tempdir, files ):
@@ -119,7 +119,7 @@ async def test_100_update_simple_file(
             location = 'test.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = 'updated content'
         )
 
@@ -143,12 +143,13 @@ async def test_110_update_skips_mimeogram_protocol(
     ''' Update should skip parts with mimeogram:// protocol. '''
     updaters = cache_import_module( f"{PACKAGE_NAME}.updaters" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     test_part = parts.Part(
         location = 'mimeogram://message',
         mimetype = 'text/plain',
         charset = 'utf-8',
-        linesep = parts.LineSeparators.LF,
+        linesep = detextive.LineSeparators.LF,
         content = 'test content'
     )
 
@@ -171,6 +172,7 @@ async def test_120_update_respects_protection(
     ''' Update respects filesystem protections (active = True => skip). '''
     updaters = cache_import_module( f"{PACKAGE_NAME}.updaters" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     files = { 'test.txt': 'original content' }
     with create_test_files( provide_tempdir, files ):
@@ -178,7 +180,7 @@ async def test_120_update_respects_protection(
             location = 'test.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = 'updated content'
         )
 
@@ -203,6 +205,7 @@ async def test_130_update_override_protections(
     ''' Update can override protections if disable-protections=true. '''
     updaters = cache_import_module( f"{PACKAGE_NAME}.updaters" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     files = { 'test.txt': 'original content' }
     with create_test_files( provide_tempdir, files ):
@@ -210,7 +213,7 @@ async def test_130_update_override_protections(
             location = 'test.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = 'updated content'
         )
 
@@ -239,6 +242,7 @@ async def test_140_update_respects_interactor( provide_tempdir ):
     ''' Update uses provided interactor for changes in Partitive mode. '''
     updaters = cache_import_module( f"{PACKAGE_NAME}.updaters" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     files = { 'test.txt': 'original content' }
     with create_test_files( provide_tempdir, files ):
@@ -246,7 +250,7 @@ async def test_140_update_respects_interactor( provide_tempdir ):
             location = 'test.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = 'test content'
         )
 
@@ -288,6 +292,7 @@ async def test_160_partitive_ignore_mode( provide_tempdir ):
     ''' Partitive-mode Ignore action should not overwrite file. '''
     updaters = cache_import_module( f"{PACKAGE_NAME}.updaters" )
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     files = { 'test.txt': 'original content' }
     with create_test_files( provide_tempdir, files ):
@@ -295,7 +300,7 @@ async def test_160_partitive_ignore_mode( provide_tempdir ):
             location = 'test.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = 'new content'
         )
 
@@ -324,6 +329,7 @@ async def test_170_queue_and_reverter_rollback_on_error(
     ''' Reverter restores files if error occurs on subsequent updates. '''
     updaters = cache_import_module( f"{PACKAGE_NAME}.updaters" )
     parts_mod = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     exceptions = cache_import_module( f"{PACKAGE_NAME}.exceptions" )
 
     files = {
@@ -335,14 +341,14 @@ async def test_170_queue_and_reverter_rollback_on_error(
             location = 'file1.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts_mod.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = 'file1 updated'
         )
         part2 = parts_mod.Part(
             location = 'file2.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts_mod.LineSeparators.LF,
+            linesep = detextive.LineSeparators.LF,
             content = 'file2 updated'
         )
 
@@ -379,6 +385,7 @@ async def test_180_line_endings_preserved( provide_tempdir ):
     ''' CRLF line separators are preserved in the updated file. '''
     updaters = cache_import_module( f"{PACKAGE_NAME}.updaters" )
     parts_mod = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
 
     files = { 'test_windows.txt': 'line1\r\nline2\r\n' }
     with create_test_files( provide_tempdir, files ):
@@ -386,7 +393,7 @@ async def test_180_line_endings_preserved( provide_tempdir ):
             location = 'test_windows.txt',
             mimetype = 'text/plain',
             charset = 'utf-8',
-            linesep = parts_mod.LineSeparators.CRLF,
+            linesep = detextive.LineSeparators.CRLF,
             content = 'line1\r\nline2\r\nline3\r\n'
         )
 
@@ -406,6 +413,7 @@ async def test_180_line_endings_preserved( provide_tempdir ):
 async def test_190_reverter_direct_coverage( provide_tempdir ):
     ''' Direct Reverter calls for saving non-existent and existing files. '''
     updaters = cache_import_module( f"{PACKAGE_NAME}.updaters" )
+    detextive = cache_import_module( 'detextive' )
     parts_mod = cache_import_module( f"{PACKAGE_NAME}.parts" )
 
     reverter = updaters.Reverter( )
@@ -415,7 +423,7 @@ async def test_190_reverter_direct_coverage( provide_tempdir ):
         location = str( nonexistent_path ),
         mimetype = 'text/plain',
         charset = 'utf-8',
-        linesep = parts_mod.LineSeparators.LF,
+        linesep = detextive.LineSeparators.LF,
         content = ''
     )
     # 1) Non-existent => skip saving

@@ -21,8 +21,9 @@
 ''' Tests for formatters module. '''
 
 
-import pytest
 import re
+
+import pytest
 
 from . import PACKAGE_NAME, cache_import_module
 
@@ -35,11 +36,12 @@ def _create_sample_part(
     content = 'Sample content'
 ):
     parts = cache_import_module( f"{PACKAGE_NAME}.parts" )
+    detextive = cache_import_module( 'detextive' )
     return parts.Part(
         location = location,
         mimetype = mimetype,
         charset = charset,
-        linesep = parts.LineSeparators[ linesep ],
+        linesep = detextive.LineSeparators[ linesep ],
         content = content
     )
 

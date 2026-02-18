@@ -30,16 +30,21 @@ from . import parts as _parts
 
 
 _scribe = __.produce_scribe( __name__ )
+_decode_inform_behaviors = __.dcls.replace(
+    __.detextive.BEHAVIORS_DEFAULT,
+    trial_decode_confidence = 0.75 )
 
 
 async def acquire(
-    auxdata: __.Globals, sources: __.cabc.Sequence[ str | __.Path ]
+    auxdata: __.appcore.state.Globals,
+    sources: __.cabc.Sequence[ str | __.Path ],
 ) -> __.cabc.Sequence[ _parts.Part ]:
     ''' Acquires content from multiple sources. '''
     from urllib.parse import urlparse
     options = auxdata.configuration.get( 'acquire-parts', { } )
     strict = options.get( 'fail-on-invalid', False )
     recursive = options.get( 'recurse-directories', False )
+    no_ignores = options.get( 'no-ignores', False )
     tasks: list[ __.cabc.Coroutine[ None, None, _parts.Part ] ] = [ ]
     for source in sources:
         path = __.Path( source )
@@ -49,22 +54,26 @@ async def acquire(
         scheme = 'file' if path.drive else url_parts.scheme
         match scheme:
             case '' | 'file':
-                tasks.extend( _produce_fs_tasks( source, recursive ) )
+                fs_tasks = _produce_fs_tasks( source, recursive, no_ignores )
+                tasks.extend( fs_tasks )
             case 'http' | 'https':
                 tasks.append( _produce_http_task( str( source ) ) )
             case _:
                 raise _exceptions.UrlSchemeNoSupport( str( source ) )
-    if strict: return await __.gather_async( *tasks )
-    results = await __.gather_async( *tasks, return_exceptions = True )
+    if strict: return await __.asyncf.gather_async( *tasks )
+    results: tuple[ __.generics.GenericResult, ... ] = (
+        await __.asyncf.gather_async(
+            *tasks, return_exceptions = True
+        )
+    )
     # TODO: Factor into '__.generics.extract_results_filter_errors'.
     values: list[ _parts.Part ] = [ ]
     for result in results:
-        if result.is_error( ):
+        if __.generics.is_error( result ):
             _scribe.warning( str( result.error ) )
             continue
         values.append( result.extract( ) )
     return tuple( values )
-
 
 async def _acquire_from_file( location: __.Path ) -> _parts.Part:
     ''' Acquires content from text file. '''
@@ -73,22 +82,27 @@ async def _acquire_from_file( location: __.Path ) -> _parts.Part:
         async with _aiofiles.open( location, 'rb' ) as f: # pyright: ignore
             content_bytes = await f.read( )
     except Exception as exc: raise ContentAcquireFailure( location ) from exc
-    mimetype, charset = _detect_mimetype_and_charset( content_bytes, location )
+    try:
+        result = __.detextive.decode_inform(
+            content_bytes,
+            location = str( location ),
+            behaviors = _decode_inform_behaviors )
+    except Exception as exc:
+        raise ContentDecodeFailure( location, '???' ) from exc
+    mimetype = result.mimetype.mimetype
+    charset = result.charset.charset
     if charset is None: raise ContentDecodeFailure( location, '???' )
-    linesep = _parts.LineSeparators.detect_bytes( content_bytes )
+    linesep = result.linesep
     if linesep is None:
         _scribe.warning( f"No line separator detected in '{location}'." )
-        linesep = _parts.LineSeparators( __.os.linesep )
-    try: content = content_bytes.decode( charset )
-    except Exception as exc:
-        raise ContentDecodeFailure( location, charset ) from exc
+        linesep = __.detextive.LineSeparators( __.os.linesep )
     _scribe.debug( f"Read file: {location}" )
     return _parts.Part(
         location = str( location ),
         mimetype = mimetype,
         charset = charset,
         linesep = linesep,
-        content = linesep.normalize( content ) )
+        content = linesep.normalize( result.text ) )
 
 
 async def _acquire_via_http(
@@ -100,38 +114,43 @@ async def _acquire_via_http(
         response = await client.get( url )
         response.raise_for_status( )
     except Exception as exc: raise ContentAcquireFailure( url ) from exc
-    mimetype = (
-        response.headers.get( 'content-type', 'application/octet-stream' )
-        .split( ';' )[ 0 ].strip( ) )
+    http_content_type = response.headers.get( 'content-type' )
     content_bytes = response.content
-    charset = response.encoding or _detect_charset( content_bytes )
+    try:
+        result = __.detextive.decode_inform(
+            content_bytes,
+            location = url,
+            behaviors = _decode_inform_behaviors,
+            http_content_type = http_content_type or __.absent )
+    except Exception as exc:
+        raise ContentDecodeFailure( url, '???' ) from exc
+    mimetype = result.mimetype.mimetype
+    charset = result.charset.charset
     if charset is None: raise ContentDecodeFailure( url, '???' )
-    if not _is_textual_mimetype( mimetype ):
-        mimetype, _ = (
-            _detect_mimetype_and_charset(
-                content_bytes, url, charset = charset ) )
-    linesep = _parts.LineSeparators.detect_bytes( content_bytes )
+    linesep = result.linesep
     if linesep is None:
         _scribe.warning( f"No line separator detected in '{url}'." )
-        linesep = _parts.LineSeparators( __.os.linesep )
-    try: content = content_bytes.decode( charset )
-    except Exception as exc:
-        raise ContentDecodeFailure( url, charset ) from exc
+        linesep = __.detextive.LineSeparators( __.os.linesep )
     _scribe.debug( f"Fetched URL: {url}" )
     return _parts.Part(
         location = url,
         mimetype = mimetype,
         charset = charset,
         linesep = linesep,
-        content = linesep.normalize( content ) )
+        content = linesep.normalize( result.text ) )
 
 
 _files_to_ignore = frozenset( ( '.DS_Store', '.env' ) )
 _directories_to_ignore = frozenset( ( '.bzr', '.git', '.hg', '.svn' ) )
 def _collect_directory_files(
-    directory: __.Path, recursive: bool
+    directory: __.Path, recursive: bool, no_ignores: bool = False
 ) -> list[ __.Path ]:
-    ''' Collects and filters files from directory hierarchy. '''
+    ''' Collects and filters files from directory hierarchy.
+
+        When no_ignores is True, gitignore filtering is disabled.
+        When gitignore filtering is enabled, warnings are emitted for
+        filtered paths.
+    '''
     import gitignorefile
     cache = gitignorefile.Cache( )
     paths: list[ __.Path ] = [ ]
@@ -143,119 +162,27 @@ def _collect_directory_files(
         if entry.is_file( ) and entry.name in _files_to_ignore:
             _scribe.debug( f"Ignoring file: {entry}" )
             continue
-        if cache( str( entry ) ):
-            _scribe.debug( f"Ignoring path (matched by .gitignore): {entry}" )
+        if not no_ignores and cache( str( entry ) ):
+            _scribe.warning(
+                f"Skipping path (matched by .gitignore): {entry}. "
+                "Use --no-ignores to include." )
             continue
         if entry.is_dir( ) and recursive:
-            paths.extend( _collect_directory_files( entry, recursive ) )
+            collected = _collect_directory_files(
+                entry, recursive, no_ignores )
+            paths.extend( collected )
         elif entry.is_file( ): paths.append( entry )
     return paths
 
 
-def _detect_charset( content: bytes ) -> str | None:
-    from chardet import detect
-    charset = detect( content )[ 'encoding' ]
-    if charset is None: return charset
-    if charset.startswith( 'utf' ): return charset
-    match charset:
-        case 'ascii': return 'utf-8' # Assume superset.
-        case _: pass
-    # Shake out false positives, like 'MacRoman'.
-    try: content.decode( 'utf-8' )
-    except UnicodeDecodeError: return charset
-    return 'utf-8'
-
-
-def _detect_mimetype( content: bytes, location: str | __.Path ) -> str | None:
-    from mimetypes import guess_type
-    from puremagic import PureError, from_string # pyright: ignore
-    try: return from_string( content, mime = True )
-    except ( PureError, ValueError ):
-        return guess_type( str( location ) )[ 0 ]
-
-
-def _detect_mimetype_and_charset(
-    content: bytes,
-    location: str | __.Path, *,
-    mimetype: __.Absential[ str ] = __.absent,
-    charset: __.Absential[ str ] = __.absent,
-) -> tuple[ str, str | None ]:
-    from .exceptions import TextualMimetypeInvalidity
-    if __.is_absent( mimetype ):
-        mimetype_ = _detect_mimetype( content, location )
-    else: mimetype_ = mimetype
-    if __.is_absent( charset ): # noqa: SIM108
-        charset_ = _detect_charset( content )
-    else: charset_ = charset
-    if not mimetype_:
-        if charset_:
-            mimetype_ = 'text/plain'
-            _validate_mimetype_with_trial_decode(
-                content, location, mimetype_, charset_ )
-            return mimetype_, charset_
-        mimetype_ = 'application/octet-stream'
-    if _is_textual_mimetype( mimetype_ ):
-        return mimetype_, charset_
-    if charset_ is None:
-        raise TextualMimetypeInvalidity( location, mimetype_ )
-    _validate_mimetype_with_trial_decode(
-        content, location, mimetype_, charset_ )
-    return mimetype_, charset_
-
-
-def _is_reasonable_text_content( content: str ) -> bool:
-    ''' Checks if decoded content appears to be meaningful text. '''
-    if not content: return False
-    # Check for excessive repetition of single characters (likely binary)
-    if len( set( content ) ) == 1: return False
-    # Check for excessive control characters (excluding common whitespace)
-    common_whitespace = '\t\n\r'
-    ascii_control_limit = 32
-    control_chars = sum(
-        1 for c in content
-        if ord( c ) < ascii_control_limit and c not in common_whitespace )
-    if control_chars > len( content ) * 0.1: return False  # >10% control chars
-    # Check for reasonable printable character ratio
-    printable_chars = sum(
-        1 for c in content if c.isprintable( ) or c in common_whitespace )
-    return printable_chars >= len( content ) * 0.8  # >=80% printable
-
-
-# MIME types that are considered textual beyond those starting with 'text/'.
-_TEXTUAL_MIME_TYPES = frozenset( (
-    'application/json',
-    'application/xml',
-    'application/xhtml+xml',
-    'application/x-perl',
-    'application/x-python',
-    'application/x-php',
-    'application/x-ruby',
-    'application/x-shell',
-    'application/javascript',
-    'image/svg+xml',
-) )
-# MIME type suffixes that indicate textual content.
-_TEXTUAL_SUFFIXES = ( '+xml', '+json', '+yaml', '+toml' )
-def _is_textual_mimetype( mimetype: str ) -> bool:
-    ''' Checks if MIME type represents textual content. '''
-    _scribe.debug( f"MIME type: {mimetype}" )
-    if mimetype.startswith( ( 'text/', 'text/x-' ) ): return True
-    if mimetype in _TEXTUAL_MIME_TYPES: return True
-    if mimetype.endswith( _TEXTUAL_SUFFIXES ):
-        _scribe.debug(
-            f"MIME type '{mimetype}' accepted due to textual suffix." )
-        return True
-    return False
-
-
 def _produce_fs_tasks(
-    location: str | __.Path, recursive: bool = False
+    location: str | __.Path, recursive: bool = False, no_ignores: bool = False
 ) -> tuple[ __.cabc.Coroutine[ None, None, _parts.Part ], ...]:
     location_ = __.Path( location )
     if location_.is_file( ) or location_.is_symlink( ):
         return ( _acquire_from_file( location_ ), )
     if location_.is_dir( ):
-        files = _collect_directory_files( location_, recursive )
+        files = _collect_directory_files( location_, recursive, no_ignores )
         return tuple( _acquire_from_file( f ) for f in files )
     raise _exceptions.ContentAcquireFailure( location )
 
@@ -272,19 +199,3 @@ def _produce_http_task(
         ) as client: return await _acquire_via_http( client, url )
 
     return _execute_session( )
-
-
-def _validate_mimetype_with_trial_decode(
-    content: bytes, location: str | __.Path, mimetype: str, charset: str
-) -> None:
-    ''' Validates charset fallback and returns appropriate MIME type. '''
-    from .exceptions import TextualMimetypeInvalidity
-    try: text = content.decode( charset )
-    except ( UnicodeDecodeError, LookupError ) as exc:
-        raise TextualMimetypeInvalidity( location, mimetype ) from exc
-    if _is_reasonable_text_content( text ):
-        _scribe.debug(
-            f"MIME type '{mimetype}' accepted after successful "
-            f"decode test with charset '{charset}' for '{location}'." )
-        return
-    raise TextualMimetypeInvalidity( location, mimetype )

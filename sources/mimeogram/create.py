@@ -23,6 +23,7 @@
 
 
 from . import __
+from . import exceptions as _exceptions
 from . import interfaces as _interfaces
 from . import tokenizers as _tokenizers
 
@@ -42,12 +43,12 @@ class Command(
         __.tyro.conf.arg( prefix_name = False ),
     ]
     clip: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc( ''' Copy mimeogram to clipboard. ''' ),
         __.tyro.conf.arg( aliases = ( '--clipboard', '--to-clipboard' ) ),
     ] = None
     count_tokens: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc( ''' Count total tokens in mimeogram. ''' ),
     ] = None
     edit: __.typx.Annotated[
@@ -60,13 +61,18 @@ class Command(
         __.typx.Doc( ''' Prepend mimeogram format instructions. ''' ),
     ] = False
     recurse: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc( ''' Recurse into directories. ''' ),
         __.tyro.conf.arg(
             aliases = ( '-r', '--recurse-directories', '--recursive' ) ),
     ] = None
+    no_ignores: __.typx.Annotated[
+        __.tyro.conf.DisallowNone[ bool | None ],
+        __.typx.Doc(
+            ''' Disable gitignore filtering for file collection. ''' ),
+    ] = None
     strict: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc(
             ''' Fail on invalid contents? True, fail. False, skip. ''' ),
         __.tyro.conf.arg( aliases = ( '--fail-on-invalid', ) ),
@@ -87,7 +93,7 @@ class Command(
             ''' ),
     ] = None
     deterministic_boundary: __.typx.Annotated[
-        __.typx.Optional[ bool ],
+        __.tyro.conf.DisallowNone[ bool | None ],
         __.typx.Doc(
             ''' Use deterministic boundary for reproducible output.
 
@@ -98,47 +104,57 @@ class Command(
         __.tyro.conf.arg( aliases = ( '--deterministic-boundary', ) ),
     ] = None
 
-    async def __call__( self, auxdata: __.Globals ) -> None:
+    async def __call__(
+        self, auxdata: __.appcore.state.Globals
+    ) -> None:
         ''' Executes command to create mimeogram. '''
         await create( auxdata, self )
 
-    def provide_configuration_edits( self ) -> __.DictionaryEdits:
+    def provide_configuration_edits(
+        self,
+    ) -> __.appcore.dictedits.Edits:
         ''' Provides edits against configuration from options. '''
-        edits: list[ __.DictionaryEdit ] = [ ]
+        edits: list[ __.appcore.dictedits.Edit ] = [ ]
         if None is not self.clip:
-            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+            edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
                 address = ( 'create', 'to-clipboard' ), value = self.clip ) )
         if None is not self.count_tokens:
-            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+            edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
                 address = ( 'create', 'count-tokens' ),
                 value = self.count_tokens ) )
         if None is not self.recurse:
-            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+            edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
                 address = ( 'acquire-parts', 'recurse-directories' ),
                 value = self.recurse ) )
+        if None is not self.no_ignores:
+            edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
+                address = ( 'acquire-parts', 'no-ignores' ),
+                value = self.no_ignores ) )
         if None is not self.strict:
-            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+            edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
                 address = ( 'acquire-parts', 'fail-on-invalid' ),
                 value = self.strict ) )
         if None is not self.tokenizer:
-            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+            edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
                 address = ( 'tokenizers', 'default' ),
                 value = self.tokenizer ) )
         if None is not self.deterministic_boundary:
-            edits.append( __.SimpleDictionaryEdit( # pyright: ignore
+            edits.append( __.appcore.dictedits.SimpleEdit( # pyright: ignore
                 address = ( 'create', 'deterministic-boundary' ),
                 value = self.deterministic_boundary ) )
         return tuple( edits )
 
 
-async def _acquire_prompt( auxdata: __.Globals ) -> str:
+async def _acquire_prompt(
+    auxdata: __.appcore.state.Globals,
+) -> str:
     from .prompt import acquire_prompt
     return await acquire_prompt( auxdata )
 
 
 async def _copy_to_clipboard( mimeogram: str ) -> None:
-    from pyperclip import copy
-    copy( mimeogram )
+    from . import clipboard
+    clipboard.copy_to_clipboard( mimeogram )
     _scribe.info( "Copied mimeogram to clipboard." )
 
 
@@ -148,24 +164,28 @@ async def _edit_message( ) -> str:
 
 
 async def create(
-    auxdata: __.Globals,
-    command: Command, *,
+    auxdata: __.appcore.state.Globals,
+    command: Command,
+    *,
     editor: __.cabc.Callable[
-        [ ], __.cabc.Coroutine[ None, None, str ] ] = _edit_message,
+        [ ], __.cabc.Coroutine[ None, None, str ]
+    ] = _edit_message,
     clipcopier: __.cabc.Callable[
-        [ str ], __.cabc.Coroutine[ None, None, None ] ] = _copy_to_clipboard,
+        [ str ], __.cabc.Coroutine[ None, None, None ]
+    ] = _copy_to_clipboard,
     prompter: __.cabc.Callable[
-        [ __.Globals ],
-        __.cabc.Coroutine[ None, None, str ] ] = _acquire_prompt,
+        [ __.appcore.state.Globals ],
+        __.cabc.Coroutine[ None, None, str ]
+    ] = _acquire_prompt,
 ) -> __.typx.Never:
     ''' Creates mimeogram. '''
     from .acquirers import acquire
     from .formatters import format_mimeogram
-    with __.report_exceptions(
+    with _exceptions.report_exceptions(
         _scribe, "Could not acquire mimeogram parts."
     ): parts = await acquire( auxdata, command.sources )
     if command.edit:
-        with __.report_exceptions(
+        with _exceptions.report_exceptions(
             _scribe, "Could not acquire user message."
         ): message = await editor( )
     else: message = None
@@ -182,14 +202,14 @@ async def create(
         prompt = await prompter( auxdata )
         mimeogram = f"{prompt}\n\n{mimeogram}"
     if options.get( 'count-tokens', False ):
-        with __.report_exceptions(
+        with _exceptions.report_exceptions(
             _scribe, "Could not count mimeogram tokens."
         ):
             tokenizer = await _tokenizer_from_command( auxdata, command )
             tokens_count = await tokenizer.count( mimeogram )
             _scribe.info( f"Total mimeogram size is {tokens_count} tokens." )
     if options.get( 'to-clipboard', False ):
-        with __.report_exceptions(
+        with _exceptions.report_exceptions(
             _scribe, "Could not copy mimeogram to clipboard."
         ): await clipcopier( mimeogram )
     else: print( mimeogram )
@@ -197,7 +217,8 @@ async def create(
 
 
 async def _tokenizer_from_command(
-    auxdata: __.Globals, command: Command
+    auxdata: __.appcore.state.Globals,
+    command: Command,
 ) -> _tokenizers.Tokenizer:
     options = auxdata.configuration.get( 'tokenizers', { } )
     name = (

@@ -1,5 +1,6 @@
 # ruff: noqa: F403
 
-from .icecream import *
 from .builtins import *
+from .icecream import *
+
 # from .builtins import install, uninstall

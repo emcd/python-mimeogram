@@ -1,5 +1,5 @@
 # Changes here will be overwritten by Copier
-_commit: v1.33
+_commit: v1.57
 _src_path: gh:emcd/python-project-common
 author_email: emcd@users.noreply.github.com
 author_name: Eric McDonald
@@ -19,10 +19,12 @@ package_name: mimeogram
 project_name: python-mimeogram
 pypy_versions:
 - '3.10'
+- '3.11'
 python_version_min: '3.10'
 python_versions:
 - '3.10'
 - '3.11'
 - '3.12'
 - '3.13'
+- '3.14'
 year_of_origin: 2025
