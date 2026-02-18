@@ -162,6 +162,9 @@ docsgen = [
   """sphinx-build -a -d .auxiliary/caches/sphinx --quiet \
       documentation .auxiliary/artifacts/sphinx-html""",
 ]
+check-ignored-links = [
+  """python .auxiliary/scripts/check-ignored-links.py""",
+]
 linters = [
   """ruff check --quiet sources documentation tests""",
   """vibelinter check""",
