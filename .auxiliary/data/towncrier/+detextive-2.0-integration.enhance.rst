@@ -1,1 +1,0 @@
-Integrate Detextive 2.0 for MIME type and charset detection, replacing internal detection with standardized library. This may produce normalized charset names (e.g., 'iso8859-9' instead of 'iso-8859-9') and treats empty files as valid text.
