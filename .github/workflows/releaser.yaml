@@ -87,6 +87,8 @@ jobs:
           include:
             - os: ubuntu-22.04 # Earlier version for better Glibc compatibility.
               platform-name: linux-x86_64
+            - os: ubuntu-22.04-arm # Earlier version for better Glibc compatibility.
+              platform-name: linux-aarch64
             - os: windows-latest
               platform-name: windows-x86_64
             - os: macos-15-intel
