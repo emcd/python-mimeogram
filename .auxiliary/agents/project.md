@@ -14,7 +14,7 @@ context selection or provider portability is needed.
 
 ## Tech Stack
 
-Python >= 3.10; Hatch build and envs; runtime deps emcd-appcore[cli],
+Python >= 3.12 (CPython 3.12 through 3.15); Hatch build and envs; runtime deps emcd-appcore[cli],
 detextive, httpx, rich with CLI via tyro; QA via pytest, pyright, ruff,
 isort, sphinx, towncrier, vulture.
 

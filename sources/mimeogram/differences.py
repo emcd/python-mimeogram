@@ -99,7 +99,7 @@ async def select_segments(
     return revision_
 
 
-def _format_segment( # noqa: PLR0913
+def _format_segment( # noqa: PLR0913, PLR0917
     current_lines: list[ str ],
     revision_lines: list[ str ],
     i1: int, i2: int,

@@ -55,20 +55,14 @@ jobs:
         run: |
           set -eu
           python_descriptors="$(cat <<'EOF' | yq --output-format=json | jq --compact-output
-          "3.10":
-            hatch: "py3.10"
-          "3.11":
-            hatch: "py3.11"
           "3.12":
             hatch: "py3.12"
           "3.13":
             hatch: "py3.13"
           "3.14":
             hatch: "py3.14"
-          "pypy3.10":
-            hatch: "pypy3.10"
-          "pypy3.11":
-            hatch: "pypy3.11"
+          "3.15":
+            hatch: "py3.15"
           EOF
           )"
           echo "specs=${python_descriptors}" >>${GITHUB_OUTPUT}
@@ -80,11 +74,8 @@ jobs:
         id: matrix-exclusions
         run: |
           set -eu
-          # PyPy has slow I/O, even slower on Windows.
           items="$(jq --compact-output <<EOF
           [
-            {"platform": "windows-latest", "python-version": "pypy3.10"},
-            {"platform": "windows-latest", "python-version": "pypy3.11"}
           ]
           EOF
           )"

@@ -112,7 +112,7 @@ def _discover_system_paths_via_api( ) -> set[ __.Path ]:
             dll.SHGetFolderPathW( # pyright: ignore
                 None, key, None, 0, buf )
             paths.add( __.Path( buf.value ) )
-        except Exception: # noqa: PERF203
+        except Exception:
             _scribe.debug( dmessage )
     return paths
 

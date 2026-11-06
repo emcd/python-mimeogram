@@ -57,10 +57,7 @@ extensions = [
 templates_path = [ '_templates' ]
 
 exclude_patterns = [
-    # Openspec workflow/meta files (not documentation)
-    'architecture/openspec/AGENTS.md',
-    'architecture/openspec/project.md',
-    'architecture/openspec/changes/**',
+    'architecture/**',
 ]
 
 rst_prolog = f'''
@@ -136,6 +133,9 @@ linkcheck_ignore = [
     r'https://pypi.org/project/mimeogram/',
     # Github aggressively rate-limits access to certain blobs.
     r'https://github\.com/.*/.*/blob/.*',
+    # Crates.io fingerprints user agents and 404s bot-like probes
+    # (e.g. linkcheck), so all crate pages must be ignored.
+    r'https://crates\.io/crates/.*',
     # Some LLM chat interfaces do not like to be touched by bots.
     r'https://chat\.deepseek\.com/',
     r'https://chatgpt\.com/',

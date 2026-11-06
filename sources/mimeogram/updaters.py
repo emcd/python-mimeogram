@@ -105,7 +105,7 @@ class Queue( __.immut.DataclassObject ):
             self.reverter.revisions.append( target )
 
 
-async def update( # noqa: PLR0913
+async def update( # noqa: PLR0913, PLR0917
     auxdata: __.appcore.state.Globals,
     parts: __.cabc.Sequence[ _parts.Part ],
     mode: ReviewModes,

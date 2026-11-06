@@ -22,6 +22,44 @@ jobs:
   initialize:
     uses: ./.github/workflows/core--initializer.yaml
 
+  check-if-release:
+    runs-on: ubuntu-latest
+    outputs:
+      is-release: ${{ steps.decide.outputs.is-release }}
+    steps:
+
+      - name: Checkout Sources
+        uses: actions/checkout@v6
+
+      - name: Determine Release Eligibility
+        id: decide
+        shell: python
+        run: |
+          import re
+          from os import environ
+          from pathlib import Path
+          init = Path( 'sources/mimeogram/__init__.py' ).read_text( )
+          package_version = re.search(
+              r"^__version__ = '([^']+)'", init, re.M ).group( 1 )
+          ref = environ[ 'GITHUB_REF' ]
+          ref_name = environ[ 'GITHUB_REF_NAME' ]
+          is_release = 'true'
+          reason = 'Publication is allowed for non-tag workflow dispatch.'
+          if ref.startswith( 'refs/tags/' ):
+              tag_version = ref_name[ 1: ] if ref_name.startswith( 'v' ) else ref_name
+              if tag_version == package_version:
+                  reason = f"Tag version {tag_version} matches package version."
+              else:
+                  is_release = 'false'
+                  reason = f"Tag version {tag_version} does not match package version {package_version}; test and report only."
+          with open( environ[ 'GITHUB_OUTPUT' ], 'a', encoding = 'utf-8' ) as file:
+              print( f"is-release={is_release}", file = file )
+          with open( environ[ 'GITHUB_STEP_SUMMARY' ], 'a', encoding = 'utf-8' ) as file:
+              print( '## Release Eligibility', file = file )
+              print( f"- Package version: `{package_version}`", file = file )
+              print( f"- Is release: `{is_release}`", file = file )
+              print( f"- Reason: {reason}", file = file )
+
   test:
     needs: [initialize]
     uses: emcd/python-project-common/.github/workflows/xrepo--tester.yaml@gha-1
@@ -38,7 +76,8 @@ jobs:
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
 
   docsgen:
-    needs: [initialize, report]
+    if: ${{ needs.check-if-release.outputs.is-release == 'true' }}
+    needs: [check-if-release, initialize, report]
     permissions:
       contents: write
       id-token: write
@@ -49,15 +88,76 @@ jobs:
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
 
   package:
-    needs: [initialize, docsgen]
+    if: ${{ needs.check-if-release.outputs.is-release == 'true' }}
+    needs: [check-if-release, initialize]
     uses: emcd/python-project-common/.github/workflows/xrepo--packager.yaml@gha-1
     with:
       artifacts-path: '.auxiliary/artifacts/hatch-build' # TODO: Use environment.
       python-version: '${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}'
 
+  check-if-publish:
+    needs: [package, test, report, docsgen]
+    runs-on: ubuntu-latest
+    outputs:
+      package-version: ${{ steps.decide.outputs.package-version }}
+      should-publish: ${{ steps.decide.outputs.should-publish }}
+      tag-version: ${{ steps.decide.outputs.tag-version }}
+    steps:
+
+      - name: Restore Distributions
+        uses: actions/download-artifact@v8
+        with:
+          name: python-package-distributions--${{ github.run_id }}
+          path: ${{ env.DISTRIBUTIONS_PATH }}
+
+      - name: Determine Publication Eligibility
+        id: decide
+        shell: python
+        run: |
+          from email import message_from_bytes
+          from os import environ
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          distributions = Path( environ[ 'DISTRIBUTIONS_PATH' ] )
+          wheels = sorted( distributions.glob( '*.whl' ) )
+          if len( wheels ) != 1:
+              raise SystemExit( f"Expected one wheel in {distributions}, found {len( wheels )}." )
+          with ZipFile( wheels[ 0 ] ) as archive:
+              names = tuple(
+                  name for name in archive.namelist( )
+                  if name.endswith( '.dist-info/METADATA' ) )
+              if len( names ) != 1:
+                  raise SystemExit( f"Expected one METADATA file in {wheels[ 0 ]}, found {len( names )}." )
+              metadata = message_from_bytes( archive.read( names[ 0 ] ) )
+          package_version = metadata[ 'Version' ]
+          ref = environ[ 'GITHUB_REF' ]
+          ref_name = environ[ 'GITHUB_REF_NAME' ]
+          should_publish = 'true'
+          tag_version = ''
+          reason = 'Publication is allowed for non-tag workflow dispatch.'
+          if ref.startswith( 'refs/tags/' ):
+              tag_version = ref_name[ 1: ] if ref_name.startswith( 'v' ) else ref_name
+              if tag_version == package_version:
+                  reason = f"Tag version {tag_version} matches package version."
+              else:
+                  should_publish = 'false'
+                  reason = f"Tag version {tag_version} does not match package version {package_version}."
+          with open( environ[ 'GITHUB_OUTPUT' ], 'a', encoding = 'utf-8' ) as file:
+              print( f"package-version={package_version}", file = file )
+              print( f"should-publish={should_publish}", file = file )
+              print( f"tag-version={tag_version}", file = file )
+          with open( environ[ 'GITHUB_STEP_SUMMARY' ], 'a', encoding = 'utf-8' ) as file:
+              print( '## Publication Eligibility', file = file )
+              print( f"- Package version: `{package_version}`", file = file )
+              if tag_version:
+                  print( f"- Tag version: `{tag_version}`", file = file )
+              print( f"- Should publish: `{should_publish}`", file = file )
+              print( f"- Reason: {reason}", file = file )
+
   publish-pypi:
-    if: ${{ inputs.which-pypi == 'testpypi' || startsWith(github.ref, 'refs/tags/') }}
-    needs: [initialize, package]
+    if: ${{ needs.check-if-publish.outputs.should-publish == 'true' && (inputs.which-pypi == 'testpypi' || startsWith(github.ref, 'refs/tags/')) }}
+    needs: [initialize, package, check-if-publish]
     runs-on: ubuntu-latest
     environment:
       name: ${{ inputs.which-pypi || 'pypi' }}
@@ -67,7 +167,7 @@ jobs:
     steps:
 
       - name: Restore Distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-package-distributions--${{ github.run_id }}
           path: ${{ env.DISTRIBUTIONS_PATH }}
@@ -147,15 +247,17 @@ jobs:
           shell: bash
 
         - name: Save Executable
-          uses: actions/upload-artifact@v4
+          uses: actions/upload-artifact@v7
           with:
             name: executables--${{ matrix.platform-name }}--${{ github.run_id }}
             path: .auxiliary/artifacts/pyinstaller/mimeogram-*
 
   publish-github:
+    if: ${{ always() && needs.check-if-publish.outputs.should-publish == 'true' && needs.package.result == 'success' && needs.publish-pypi.result == 'success' && needs.create-executables.result == 'success' }}
     needs:
       - initialize
       - package
+      - check-if-publish
       - publish-pypi
       # --- BEGIN: Injected by Copier ---
       - create-executables
@@ -173,13 +275,13 @@ jobs:
           python-version: ${{ fromJSON(needs.initialize.outputs.python-versions)[0] }}
 
       - name: Restore Distributions
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: python-package-distributions--${{ github.run_id }}
           path: ${{ env.DISTRIBUTIONS_PATH }}
 
       - name: Restore Executables
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           pattern: executables--*--${{ github.run_id }}
           path: ${{ env.DISTRIBUTIONS_PATH }}
@@ -189,6 +291,8 @@ jobs:
         run: |
           set -eu -o pipefail
           cd ${{ env.DISTRIBUTIONS_PATH }}
+          # Hatchling normalizes both wheels and sdists to underscores
+          # (PEP 625), so the underscore form matches all artifacts.
           sha256sum mimeogram-* >SHA256SUMS.txt
 
       - name: Attest Build Provenance
@@ -214,9 +318,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
+          release_flags=( )
+          if [[ "${{ github.ref_name }}" =~ ^v?[0-9]+(\.[0-9]+)*(a|b|rc)[0-9]+$ ]]; then
+            release_flags+=( --prerelease --latest=false )
+          fi
           gh release create '${{ github.ref_name }}' \
             --repo '${{ github.repository }}' \
-            --notes-file .auxiliary/artifacts/release-notes.rst
+            --notes-file .auxiliary/artifacts/release-notes.rst \
+            "${release_flags[@]}"
 
       - name: Publish Artifacts
         if: ${{ startsWith(github.ref, 'refs/tags/') }}
