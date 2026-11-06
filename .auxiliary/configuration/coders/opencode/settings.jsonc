@@ -46,30 +46,28 @@
     },
     "build": {
       "mode": "primary",
-      // "model": "zai-coding-plan/glm-4.7"
-      "model": "deepseek/deepseek-chat"
+      "model": "meta/muse-spark-1.3-contributor"
     },
     "plan": {
       "mode": "primary",
-      // "model": "zai-coding-plan/glm-4.7"
-      "model": "deepseek/deepseek-chat"
+      "model": "meta/muse-spark-1.3-contributor"
     }
   },
 
   "mcp": {
-    "pyright": {
+    "agentmux": {
       "type": "local",
-      "command": ["mcp-language-server", "--lsp", "pyright-langserver", "--workspace", ".", "--", "--stdio"],
-      "enabled": true
+      "command": [
+        "agentmux",
+        "host",
+        "mcp"
+      ],
+      "enabled": true,
+      "timeout": 900000
     },
     "context7": {
       "type": "local",
       "command": ["npx", "-y", "@upstash/context7-mcp"],
-      "enabled": true
-    },
-    "librovore": {
-      "type": "local",
-      "command": ["uvx", "librovore", "serve"],
       "enabled": true
     },
     "nb": {
@@ -91,8 +89,12 @@
       "hatch --env develop run *": "allow",
       "awk *": "allow",
       "cat *": "allow",
+      "comm *": "allow",
       "cut *": "allow",
+      "date": "allow",
+      "date *": "allow",
       "df *": "allow",
+      "diff *": "allow",
       "du *": "allow",
       "echo *": "allow",
       "file *": "allow",
@@ -114,22 +116,61 @@
       "gh status *": "allow",
       "git add *": "allow",
       "git branch *": "allow",
+      "git cat-file *": "allow",
+      "git checkout *": "allow",
       "git diff *": "allow",
+      "git fetch *": "allow",
+      "git grep *": "allow",
       "git log *": "allow",
+      "git ls-files": "allow",
+      "git ls-files *": "allow",
+      "git ls-tree *": "allow",
+      "git merge-base *": "allow",
+      "git merge-tree *": "allow",
+      "git range-diff *": "allow",
+      "git rebase *": "allow",
+      "git restore *": "allow",
+      "git rev-list *": "allow",
+      "git rev-parse *": "allow",
       "git show *": "allow",
+      "git stash list": "allow",
+      "git stash list *": "allow",
       "git status *": "allow",
+      "git worktree": "allow",
+      "git worktree *": "allow",
       "grep *": "allow",
       "head *": "allow",
       "ls *": "allow",
+      "mkdir *": "allow",
+      "nbspec *": "allow",
+      "nl *": "allow",
+      "npm run *": "allow",
+      "od *": "allow",
+      "openspec *": "allow",
+      "printf": "allow",
+      "printf *": "allow",
       "ps *": "allow",
       "pwd *": "allow",
+      "readlink *": "allow",
       "rg *": "allow",
       "sed *": "allow",
+      "set": "allow",
+      "set *": "allow",
+      "sleep": "allow",
+      "sleep *": "allow",
       "sort *": "allow",
+      "stat": "allow",
+      "stat *": "allow",
       "tail *": "allow",
+      "test *": "allow",
+      "true": "allow",
+      "true *": "allow",
+      "uname": "allow",
+      "uname *": "allow",
       "uniq *": "allow",
       "wc *": "allow",
-      "which *": "allow"
+      "which *": "allow",
+      "xxd *": "allow"
     },
     "edit": "allow",
     "webfetch": "ask"

@@ -2,24 +2,52 @@ model = "gpt-5.3-codex"
 model_reasoning_effort = "high"
 personality = "friendly"
 
-# approval_policy = "on-request"
-# sandbox_mode = "workspace-write"
+approval_policy = "on-request"
+sandbox_mode = "workspace-write"
+approvals_reviewer = "user"
 trust_level = "trusted"
 # web_search = "cached"
-[mcp_servers.pyright]
-command = "/bin/bash"
-args = ["-lc", "mcp-language-server --lsp pyright-langserver --workspace . -- --stdio 2>/dev/null"]
-startup_timeout_sec = 30
-tool_timeout_sec = 90
+
+[features]
+# Temporary mitigation for Bubblewrap/symlink approval-loop regressions.
+# Related issues: #14936 and #14694.
+use_legacy_landlock = true
+# Keep reviewer routing explicit: always surface approval requests to user.
+guardian_approval = false
+
+## MCP Servers
+
+[mcp_servers.agentmux]
+command = "agentmux"
+args = ["host", "mcp"]
+startup_timeout_sec = 60
+tool_timeout_sec = 900
+
+[mcp_servers.agentmux.tools.list]
+approval_mode = "approve"
+
+[mcp_servers.agentmux.tools.look]
+approval_mode = "approve"
+
+[mcp_servers.agentmux.tools.send]
+approval_mode = "approve"
 
 [mcp_servers.context7]
 command = "npx"
 args = ["-y", "@upstash/context7-mcp"]
 
-[mcp_servers.librovore]
-command = "uvx"
-args = ["librovore", "serve"]
+[mcp_servers.context7.tools.query_docs]
+approval_mode = "approve"
+
+[mcp_servers.context7.tools.resolve_library_id]
+approval_mode = "approve"
 
 [mcp_servers.nb]
 command = "nb-mcp"
 args = ["--notebook", "python-mimeogram", "--no-commit-signing"]
+
+[mcp_servers.nb.tools.help]
+approval_mode = "approve"
+
+[mcp_servers.nb.tools.nb]
+approval_mode = "approve"

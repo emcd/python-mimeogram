@@ -1,4 +1,2 @@
+# Claude Code creates project-local settings in this file.
 settings.local.json
-agents/
-commands/
-skills/
