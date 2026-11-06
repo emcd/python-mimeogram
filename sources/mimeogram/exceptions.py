@@ -24,8 +24,6 @@
 import contextlib as _contextlib
 import logging as _logging
 
-import exceptiongroup as _exceptiongroup
-
 from . import __
 
 
@@ -153,7 +151,7 @@ def report_exceptions(
     level = scribe.getEffectiveLevel( )
     try:
         yield
-    except _exceptiongroup.ExceptionGroup as excg:  # pyright: ignore
+    except ExceptionGroup as excg:
         scribe.error( message )
         for exc in excg.exceptions:  # pyright: ignore
             if level <= _logging.DEBUG:  # noqa: SIM108

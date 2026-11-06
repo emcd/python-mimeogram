@@ -24,7 +24,6 @@
 import os
 import sys
 
-import exceptiongroup
 import pytest
 
 from . import (
@@ -355,7 +354,7 @@ async def test_520_nontextual_mime( provide_tempdir, provide_auxdata ):
         # Test strict mode behavior
         provide_auxdata.configuration[
             'acquire-parts' ][ 'fail-on-invalid' ] = True
-        with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
+        with pytest.raises( ExceptionGroup ) as excinfo:
             await acquirers.acquire( provide_auxdata, [ binary_path ] )
 
         assert len( excinfo.value.exceptions ) == 1
@@ -455,7 +454,7 @@ async def test_530_strict_mode_handling( provide_tempdir, provide_auxdata ):
         # Test strict mode
         provide_auxdata.configuration[
             'acquire-parts' ][ 'fail-on-invalid' ] = True
-        with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
+        with pytest.raises( ExceptionGroup ) as excinfo:
             await acquirers.acquire(
                 provide_auxdata, [ valid_path, binary_path ] )
 
@@ -508,7 +507,7 @@ async def test_540_strict_mode_multiple_failures(
         # Test strict mode
         provide_auxdata.configuration[
             'acquire-parts' ][ 'fail-on-invalid' ] = True
-        with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
+        with pytest.raises( ExceptionGroup ) as excinfo:
             await acquirers.acquire(
                 provide_auxdata,
                 [ valid_path, binary1_path, binary2_path ] )
@@ -568,7 +567,7 @@ async def test_550_strict_mode_http_failures( provide_auxdata, httpx_mock ):
         url = error_url,
         status_code = 500 )
 
-    with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
+    with pytest.raises( ExceptionGroup ) as excinfo:
         await acquirers.acquire(
             provide_auxdata, [ valid_url, binary_url, error_url ] )
 
@@ -658,7 +657,7 @@ async def test_610_http_error( provide_auxdata, httpx_mock ):
     # Test strict mode
     provide_auxdata.configuration[
         'acquire-parts' ][ 'fail-on-invalid' ] = True
-    with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
+    with pytest.raises( ExceptionGroup ) as excinfo:
         await acquirers.acquire( provide_auxdata, [ test_url ] )
 
     assert len( excinfo.value.exceptions ) == 1
@@ -700,7 +699,7 @@ async def test_620_http_nontextual_mimetype( provide_auxdata, httpx_mock ):
     # Test strict mode
     provide_auxdata.configuration[
         'acquire-parts' ][ 'fail-on-invalid' ] = True
-    with pytest.raises( exceptiongroup.ExceptionGroup ) as excinfo:
+    with pytest.raises( ExceptionGroup ) as excinfo:
         await acquirers.acquire( provide_auxdata, [ test_url ] )
 
     assert len( excinfo.value.exceptions ) == 1

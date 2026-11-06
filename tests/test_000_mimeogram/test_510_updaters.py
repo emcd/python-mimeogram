@@ -30,7 +30,6 @@ from unittest.mock import patch
 import accretive as accret
 import pytest
 
-from exceptiongroup import ExceptionGroup # noqa: A004
 
 from . import (
     PACKAGE_NAME,

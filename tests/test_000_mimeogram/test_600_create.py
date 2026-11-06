@@ -510,3 +510,22 @@ def test_440_deterministic_boundary_configuration_edit( ):
     
     assert deterministic_edit is not None
     assert deterministic_edit.value is True
+
+
+def test_450_create_deterministic_boundary_parser( ):
+    ''' Real Tyro parser registers deterministic-boundary flags. '''
+    create = cache_import_module( f"{PACKAGE_NAME}.create" )
+    tyro = cache_import_module( 'tyro' )
+
+    cmd = tyro.cli( create.Command, args = [ 'test.txt' ] )
+    assert cmd.deterministic_boundary is None
+    cmd = tyro.cli(
+        create.Command, args = [ 'test.txt', '--deterministic-boundary' ] )
+    assert cmd.deterministic_boundary is True
+    cmd = tyro.cli(
+        create.Command,
+        args = [ 'test.txt', '--no-deterministic-boundary' ] )
+    assert cmd.deterministic_boundary is False
+    with pytest.raises( SystemExit ) as exc_info:
+        tyro.cli( create.Command, args = [ '--help' ] )
+    assert exc_info.value.code == 0

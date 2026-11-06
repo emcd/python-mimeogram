@@ -101,7 +101,6 @@ class Command(
                 content, making output reproducible and diff-friendly.
                 Useful for testing, CI, and batch processing.
             ''' ),
-        __.tyro.conf.arg( aliases = ( '--deterministic-boundary', ) ),
     ] = None
 
     async def __call__(
