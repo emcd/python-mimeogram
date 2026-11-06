@@ -20,6 +20,11 @@ isort, sphinx, towncrier, vulture.
 
 ## Notes
 
+- Fleet: Coordinator (coordinator@infrastructure); Tier-1 Reviewer General
+  (reviewer@infrastructure); Tier-2 Advisor (advisor@infrastructure).
+  Bundle neighbor: Librovore Owner (librovore-o@ai-applications).
+  Template guidance: Template Owner (template-o@python-foundation).
+
 <!-- Accumulate project-specific knowledge, constraints, deviations, and durable
      links here. For structured items, use `nb`.
 
