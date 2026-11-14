@@ -44,14 +44,14 @@ Recurse into subdirectories (subject to Git ignore rules):
 
 .. code-block:: bash
 
-    mimeogram create --recurse-directories=True src/ tests/
+    mimeogram create --recurse-directories src/ tests/
 
 By default, the mimeogram will be copied to the clipboard. To print to stdout
 instead:
 
 .. code-block:: bash
 
-    mimeogram create --clipboard=False src/*.py
+    mimeogram create --no-clipboard src/*.py
 
 Adding Context
 -------------------------------------------------------------------------------
@@ -76,19 +76,19 @@ context window usage:
 
 .. code-block:: bash
 
-    mimeogram create --count-tokens=True src/*.py
+    mimeogram create --count-tokens src/*.py
 
 Specify a tokenizer to use for counting (defaults to "tiktoken"):
 
 .. code-block:: bash
 
-    mimeogram create --count-tokens=True --tokenizer=tiktoken src/*.py
+    mimeogram create --count-tokens --tokenizer=tiktoken src/*.py
 
 Use a specific tokenizer variant, if supported by the tokenizer:
 
 .. code-block:: bash
 
-    mimeogram create --count-tokens=True --tokenizer=tiktoken \
+    mimeogram create --count-tokens --tokenizer=tiktoken \
         --tokenizer-variant=o200k_base src/*.py
 
 The token count will be logged to the console after creating the mimeogram. This
@@ -112,13 +112,13 @@ Apply changes from standard input:
 
 .. code-block:: bash
 
-    mimeogram apply --clipboard=False
+    mimeogram apply --no-clipboard
 
 Apply changes from file:
 
 .. code-block:: bash
 
-    mimeogram apply --clipboard=False changes.mimeogram
+    mimeogram apply --no-clipboard --source changes.mimeogram
 
 Apply changes relative to a different base directory than the current working
 directory:
@@ -198,7 +198,7 @@ Print to stdout instead:
 
 .. code-block:: bash
 
-    mimeogram provide-prompt --clipboard=False
+    mimeogram provide-prompt --no-clipboard
 
 Then paste these into your project instructions. All subsequent chats will
 understand mimeograms without needing to include the format instructions in

@@ -529,3 +529,83 @@ def test_450_create_deterministic_boundary_parser( ):
     with pytest.raises( SystemExit ) as exc_info:
         tyro.cli( create.Command, args = [ '--help' ] )
     assert exc_info.value.code == 0
+
+
+def test_460_create_boolean_flag_forms( capsys ):
+    ''' Real Tyro parser handles flag forms and rejects explicit values. '''
+    create = cache_import_module( f"{PACKAGE_NAME}.create" )
+    tyro = cache_import_module( 'tyro' )
+
+    cmd = tyro.cli( create.Command, args = [ 'test.txt' ] )
+    assert cmd.clip is None
+    assert cmd.recurse is None
+    assert cmd.strict is None
+    assert cmd.edit is False
+    assert cmd.prepend_prompt is False
+    cmd = tyro.cli(
+        create.Command,
+        args = [ 'test.txt', '--clipboard', '--recurse-directories' ] )
+    assert cmd.clip is True
+    assert cmd.recurse is True
+    cmd = tyro.cli(
+        create.Command,
+        args = [ 'test.txt', '--to-clipboard', '--fail-on-invalid' ] )
+    assert cmd.clip is True
+    assert cmd.strict is True
+    cmd = tyro.cli( create.Command, args = [ 'test.txt', '--edit' ] )
+    assert cmd.edit is True
+    for args in (
+        [ 'test.txt', '--clipboard', 'True' ],
+        [ 'test.txt', '--clipboard=True' ],
+        [ 'test.txt', '--clipboard', 'False' ],
+        [ 'test.txt', '--count-tokens=True' ],
+    ):
+        with pytest.raises( SystemExit ) as exc_info:
+            tyro.cli( create.Command, args = args )
+        assert exc_info.value.code == 2
+    with pytest.raises( SystemExit ) as exc_info:
+        tyro.cli( create.Command, args = [ '--help' ] )
+    assert exc_info.value.code == 0
+    help_text = capsys.readouterr( ).out
+    assert '--deterministic-boundary, --no-deterministic-boundary' in help_text
+    assert '--count-tokens, --no-count-tokens' in help_text
+    edits = tyro.cli(
+        create.Command, args = [ 'test.txt', '--recurse-directories' ]
+    ).provide_configuration_edits( )
+    assert ( 'acquire-parts', 'recurse-directories' ) in [
+        edit.address for edit in edits ]
+
+
+def test_470_create_documented_vectors_and_edit_polarity( ):
+    ''' Rewritten doc examples parse; edits track absence/True/False. '''
+    create = cache_import_module( f"{PACKAGE_NAME}.create" )
+    tyro = cache_import_module( 'tyro' )
+
+    for args in (
+        [ '--recurse-directories', 'src/', 'tests/' ],
+        [ '--no-clipboard', 'a.py' ],
+        [ '--count-tokens', 'a.py' ],
+    ):
+        tyro.cli( create.Command, args = args )
+    # Tokenizer vectors need the top-level CLI enum config.
+    config = ( tyro.conf.EnumChoicesFromValues, )
+    for args in (
+        [ '--count-tokens', '--tokenizer=tiktoken', 'a.py' ],
+        [ '--count-tokens', '--tokenizer=tiktoken',
+          '--tokenizer-variant=o200k_base', 'a.py' ],
+    ):
+        tyro.cli( create.Command, args = args, config = config )
+    cmd = tyro.cli( create.Command, args = [ 'a.py' ] )
+    assert cmd.provide_configuration_edits( ) == ( )
+    cmd = tyro.cli(
+        create.Command, args = [ 'a.py', '--no-clipboard' ] )
+    edits = {
+        edit.address: edit.value
+        for edit in cmd.provide_configuration_edits( ) }
+    assert edits == { ( 'create', 'to-clipboard' ): False }
+    cmd = tyro.cli(
+        create.Command, args = [ 'a.py', '--no-count-tokens' ] )
+    edits = {
+        edit.address: edit.value
+        for edit in cmd.provide_configuration_edits( ) }
+    assert edits == { ( 'create', 'count-tokens' ): False }

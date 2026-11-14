@@ -307,3 +307,63 @@ async def test_430_apply_update_failure( ):
             updater = failing_updater )
 
     assert exc_info.value.code == 1
+
+
+def test_460_apply_boolean_flag_forms( capsys ):
+    ''' Real Tyro parser handles flag forms and rejects explicit values. '''
+    apply = cache_import_module( f"{PACKAGE_NAME}.apply" )
+    tyro = cache_import_module( 'tyro' )
+
+    source = [ '--source', 'changes.mimeogram' ]
+    cmd = tyro.cli( apply.Command, args = source )
+    assert cmd.clip is None
+    assert cmd.force is None
+    cmd = tyro.cli(
+        apply.Command,
+        args = [*source, '--from-clipboard', '--force' ] )
+    assert cmd.clip is True
+    assert cmd.force is True
+    cmd = tyro.cli(
+        apply.Command, args = [*source, '--no-force' ] )
+    assert cmd.force is False
+    for args in (
+        [*source, '--force', 'True' ],
+        [*source, '--force=False' ],
+    ):
+        with pytest.raises( SystemExit ) as exc_info:
+            tyro.cli( apply.Command, args = args )
+        assert exc_info.value.code == 2
+    with pytest.raises( SystemExit ) as exc_info:
+        tyro.cli( apply.Command, args = [ '--help' ] )
+    assert exc_info.value.code == 0
+    help_text = capsys.readouterr( ).out
+    assert '--force, --no-force' in help_text
+    edits = tyro.cli(
+        apply.Command, args = [*source, '--force' ]
+    ).provide_configuration_edits( )
+    assert ( 'update-parts', 'disable-protections' ) in [
+        edit.address for edit in edits ]
+
+
+def test_470_apply_documented_vectors_and_edit_polarity( ):
+    ''' Rewritten doc examples parse; edits track absence/True/False. '''
+    apply = cache_import_module( f"{PACKAGE_NAME}.apply" )
+    tyro = cache_import_module( 'tyro' )
+
+    for args in (
+        [ '--no-clipboard' ],
+        [ '--no-clipboard', '--source', 'changes.mimeogram' ],
+    ):
+        tyro.cli( apply.Command, args = args )
+    cmd = tyro.cli( apply.Command, args = [ ] )
+    assert cmd.provide_configuration_edits( ) == ( )
+    cmd = tyro.cli( apply.Command, args = [ '--no-force' ] )
+    edits = {
+        edit.address: edit.value
+        for edit in cmd.provide_configuration_edits( ) }
+    assert edits == { ( 'update-parts', 'disable-protections' ): False }
+    cmd = tyro.cli( apply.Command, args = [ '--no-clipboard' ] )
+    edits = {
+        edit.address: edit.value
+        for edit in cmd.provide_configuration_edits( ) }
+    assert edits == { ( 'apply', 'from-clipboard' ): False }

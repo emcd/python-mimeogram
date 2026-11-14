@@ -26,6 +26,7 @@ dependencies = [
   'readchar',
   'rich',
   'tiktoken',
+  'tyro~=1.0.15',
   'typing-extensions',
   'wcmatch',
   # --- BEGIN: Injected by Copier ---
